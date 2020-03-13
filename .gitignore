@@ -1,2 +1,5 @@
 # Ignore simulation output files for git
 SimulationOutput/
+
+# Ignore build files
+tudat_apps/bin/
