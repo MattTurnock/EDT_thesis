@@ -34,7 +34,7 @@ int main( )
     spice_interface::loadStandardSpiceKernels( );
 
     // Create EDT class
-    EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(12.2, true); //TODO: Change from testmode when ready
+    EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(12.2, false); //TODO: Change from testmode when ready
 
     // Get universal class for propagation bodies
     univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig);
@@ -54,11 +54,11 @@ int main( )
 
     std::map< double, Eigen::VectorXd > integrationResult = dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
 
-    std::string outputSubFolder = "SSO-CHB-Test/";
+    std::string outputSubFolder = "SSO-CHB-Test-custom/";
 
     // Write satellite propagation history to file.
     input_output::writeDataMapToTextFile( integrationResult,
-                                          "SSO-CH-Test-in-0-000325.dat",
+                                          "SSO-CH-Test-out-expo-0-000325.dat",
                                           tudat_applications::getOutputPath( ) + outputSubFolder,
                                           "",
                                           std::numeric_limits< double >::digits10,

@@ -5,22 +5,46 @@
 #ifndef TUDATBUNDLE_ENVIRONMENT_SETTINGS_H
 #define TUDATBUNDLE_ENVIRONMENT_SETTINGS_H
 
-//using namespace tudat::basic_astrodynamics;
-//using namespace tudat::simulation_setup;
-//using namespace tudat::propagators;
-//using namespace tudat::numerical_integrators;
+using namespace tudat::basic_astrodynamics;
+using namespace tudat::simulation_setup;
+using namespace tudat::propagators;
+using namespace tudat::numerical_integrators;
 
-//namespace environment_custom{
+namespace EDT_enviro{
 
-//    class MagneticField {
-//    public:
-//        123;
+    // Class containing properties of the magnetic field and ionosphere
+    class MagneticField {
+    public:
+        MagneticField(double B0, double Bphi0, double R0):
+        B0_(B0),
+        Bphi_(Bphi0),
+        BR_(R0){}
 
-//        MagneticField()
+        void updateMagField(double R){
 
-//    private:
-//        456;
-//    };
+        }
+
+
+        double getB(){
+            return B_;
+        }
+        double getBphi() {
+            return Bphi_;
+        }
+        double getBR(){
+            return BR_;
+        }
+
+
+    protected:
+        double B_;
+        double Bphi_;
+        double BR_;
+        double B0_;
+        double Bphi0_;
+        double BR0_;
+
+    };
 
 
 

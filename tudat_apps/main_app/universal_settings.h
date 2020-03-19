@@ -78,6 +78,8 @@ namespace univ {
             // Create acceleration models and propagation settings
             accelerationModelMap = createAccelerationModelsMap(
                     bodyMap, accelerationMap, bodiesToPropagate, centralBodies );
+
+
         }
 
     private:
@@ -122,7 +124,7 @@ namespace univ {
             // Define propagation termination conditions (varies, so use hybrid termination settings, see lunarascentgroup for an implementation)
             if (useDefaultTimeTermination){
                 // Add default time termination to termination settings list
-                double defaultFinalEphemTime = initialEphemerisTime + 1*365*24*60*60; //TODO: Make this a reasonable number
+                double defaultFinalEphemTime = initialEphemerisTime + 10*365*24*60*60; //TODO: Make this a reasonable number
                 terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
                         defaultFinalEphemTime ) );
             }
