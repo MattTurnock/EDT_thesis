@@ -176,6 +176,6 @@ include(tudatLinkLibraries)
 # MTURNOCK CHANGES - ADD APPLICATIONS ##
 
  # Add simulation_SSO-CHB application
- add_executable(application_simulation_SSO-CHB "${SRCROOT}/simulation_SSO-CHB.cpp" universal_settings.h simulation_SSO-CHB.h EDT_configs.h environment_settings.h)
+ add_executable(application_simulation_SSO-CHB "${SRCROOT}/simulation_SSO-CHB.cpp" universal_settings.h simulation_SSO-CHB.h EDT_configs.h environment_settings.h EDTGuidance.h)
  setup_executable_target(application_simulation_SSO-CHB "${SRCROOT}")
  target_link_libraries(application_simulation_SSO-CHB ${TUDAT_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES})

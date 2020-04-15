@@ -13,7 +13,7 @@ simulation_output_dir = os.path.abspath(os.path.join(main_app_dir, "SimulationOu
 
 "SSO-CHB-Test/SSO-CH-Test-in-0-000325.dat"
 
-def testPlot(filename, accel, scale):
+def testPlot(filename, parName, parVal, scale):
 
     testDataFileDir = os.path.abspath(os.path.join(simulation_output_dir, filename))
 
@@ -26,7 +26,7 @@ def testPlot(filename, accel, scale):
     # Create figure, title, scale etc
     plt.figure(figsize=(10,10))
     ax = plt.gca()
-    plt.title("x-y plot, 10 year, accel = %s" %accel)
+    plt.title("x-y plot, 10 year, %s = %s" %(parName, parVal))
     plt.xlabel("x coord [AU]")
     plt.ylabel("y coord [AU]")
     plt.xlim([-scale, scale])
@@ -51,15 +51,18 @@ def testPlot(filename, accel, scale):
     # Add legend
     plt.legend(legendList)
 
-    plt.savefig("pyplots/%s-%s.png" %(accel,scale))
+    plt.savefig("pyplots/%s-%s-%s.png" %(parName, parVal, scale))
 
 
 # testPlot("SSO-CHB-Test/SSO-CH-Test-out-0-0.dat", "0ms2",1.5)
-testPlot("SSO-CHB-Test/SSO-CH-Test-out-0-000325.dat", "0-000325ms2",75)
+# testPlot("SSO-CHB-Test/SSO-CH-Test-out-0-000325.dat", "0-000325ms2",75)
 # testPlot("SSO-CHB-Test/SSO-CH-Test-out-0-000325.dat", "0-000325ms2",8)
 # testPlot("SSO-CHB-Test/SSO-CH-Test-in-0-000325.dat", "-0-000325ms2",1.1)
-testPlot("SSO-CHB-Test-custom/SSO-CH-Test-out-0-000325.dat", "0-000325ms2",75)
-testPlot("SSO-CHB-Test-custom/SSO-CH-Test-out-expo-0-000325.dat", "0-000325ms2",75)
+# testPlot("SSO-CHB-Test-custom/SSO-CH-Test-out-0-000325.dat", "0-000325ms2",75)
+# testPlot("SSO-CHB-Test-custom/SSO-CH-Test-out-expo-0-000325.dat", "0-000325ms2",75)
+testPlot("SSO-CHB-Test-custom/SSO-CH-Test-out-expo-0-000325.dat", "constAccel", "0-000325ms2",75)
+testPlot("SSO-CHB-Test-custom/SSO-CH-Test-out-expo-enviro__E-7.dat", "constCurrent", "10^-7 T",4)
+testPlot("SSO-CHB-Test-custom/SSO-CH-Test-out-expo-enviro__E-6.dat", "constCurrent", "10^-6 T",10)
 
 plt.show()
 

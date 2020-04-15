@@ -5,39 +5,12 @@
 #ifndef TUDATBUNDLE_EDT_CONFIGS_H
 #define TUDATBUNDLE_EDT_CONFIGS_H
 
+#include "EDTGuidance.h"
+
 using namespace tudat;
 using namespace tudat::simulation_setup;
 
 namespace EDTs {
-
-//    class EDTConfigTEST {
-//    public:
-//        std::shared_ptr<Body> EDTBody = std::make_shared<simulation_setup::Body>();
-//        // Constructor
-//        EDTConfigTEST(
-//                double vehicleMass,
-//                double vehicleAccel) :
-//                vehicleMass_(vehicleMass) {
-//            // Constructor function
-//
-//            // Set EDT vehicle mass
-//            EDTBody->setConstantBodyMass(vehicleMass);
-//
-//            // Set EDT constant thrust based on desired accel. Also specific impulse is maximum
-//            double vehicleThrust = vehicleMass * vehicleAccel;
-//            double specificImpulse = 999999;
-//
-//            // Create some settings variables to be changed at class creation
-//            std::shared_ptr< ThrustDirectionGuidanceSettings > thrustDirectionGuidanceSettings =
-//                    std::make_shared< ThrustDirectionFromStateGuidanceSettings >( "Sun", true, false );
-//            std::shared_ptr< ThrustMagnitudeSettings > thrustMagnitudeSettings =
-//                    std::make_shared< ConstantThrustMagnitudeSettings >( vehicleThrust, specificImpulse );
-//        }
-
-//    private:
-//        // Set values of inputs as private
-//        double vehicleMass_;
-//    };
 
     class EDTConfig {
     public:
@@ -48,55 +21,45 @@ namespace EDTs {
 
         // Constructor
         EDTConfig(
-                double vehicleMass,
-                bool testmode=false,
-                double testmodeVehicleAccel = 0.325E-3) : //TODO: change this to something reasonable Some settings: 0 for free flight, 0.325E-3 for B0 (ie at Earth)
+                EDTGuidance& guidanceClass,
+                double vehicleMass=100,
+                double vehicleISP=9999,
+                double constantThrustAccel = 0.325E-3,
+                Eigen::Vector3d bodyFixedThrustDirection = {1, 0, 0}):
+                guidanceClass_(guidanceClass),
                 vehicleMass_(vehicleMass),
-                testmode_(testmode),
-                testmodeVehicleAccel_(testmodeVehicleAccel) {
+                vehicleISP_(vehicleISP),
+                constantThrustAccel_(constantThrustAccel),
+                bodyFixedThrustDirection_(bodyFixedThrustDirection){
 
-            vehicleThrust_ = vehicleMass_ * testmodeVehicleAccel_;
-            vehicleISP_ = 99999;
-            bodyFixedThrustDirection_ << 1.0, 0.0, 0.0;
+            // Set constant thrust based on mass and accel, and set in guidance class
+            constantThrust_ = vehicleMass_ * constantThrustAccel_;
+            guidanceClass_.setThrustMagnitudeConstant(constantThrust_);
+
+            // Normalize body fixed thrust direction
             bodyFixedThrustDirection_.normalize();
 
-            if (testmode) {
-                // Retrieve relevant test functions
-                thrustMagnitudeFunction_ =
-                        std::bind( &EDTConfig::getThrustMagnitudeConstant, this, std::placeholders::_1 );
-            }
-            else {
-                // Do regular stuff TODO: determine what this is
+            // Set EDT constant bodyMass
+            EDTBody->setConstantBodyMass(vehicleMass);
 
-                // Make a little tester for exponentially decreasing thrust TODO: Change this in future tho
+            // Do initialisation update of guidance settings
+            updateGuidanceSettings();
+        }
 
-                thrustMagnitudeFunction_ =
-                        std::bind( &EDTConfig::getThrustMagnitude, this, std::placeholders::_1 );
-
-            }
+        void updateGuidanceSettings(){
+            // Bind functions properly
+            thrustMagnitudeFunction_ = std::bind( &EDTGuidance::getThrustMagnitude, guidanceClass_, std::placeholders::_1 );
+            thrustDirectionFunction_ = std::bind( &EDTGuidance::getThrustDirection, guidanceClass_, std::placeholders::_1);
 
             // Set thrust direction and magnitude using custom settings
             thrustMagnitudeSettings =
                     std::make_shared< FromFunctionThrustMagnitudeSettings >(
                             thrustMagnitudeFunction_,
-                            [ = ]( const double ){ return vehicleISP_; } );
+                            [ = ]( const double ){ return vehicleISP_; });
 
             thrustDirectionGuidanceSettings =
-                    std::make_shared<ThrustDirectionFromStateGuidanceSettings>("Sun", true, false);
-
-
-            // Set EDT constant bodyMass
-            EDTBody->setConstantBodyMass(vehicleMass);
-        }
-
-        // Thrust and direction return functions
-        double getThrustMagnitudeConstant(const double currentTime){
-
-            return vehicleThrust_;
-        }
-
-        double getThrustMagnitude(const double currentTime){
-            return (1.0E8/currentTime)*vehicleThrust_;
+                    std::make_shared<CustomThrustDirectionSettings>(
+                            thrustDirectionFunction_);
         }
 
         Eigen::Vector3d getBodyFixedThrustDirection( )
@@ -104,28 +67,35 @@ namespace EDTs {
             return bodyFixedThrustDirection_;
         }
 
-        
-
-
+        double getConstantThrust(){
+            return constantThrust_;
+        }
 
     protected:
-        // General values
+
+        /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
+
+        // Guidance class
+        EDTGuidance& guidanceClass_;
+
+        /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
         double vehicleMass_;
-        bool testmode_;
-        double testmodeVehicleAccel_;
-        double vehicleThrust_;
         double vehicleISP_;
+        double constantThrustAccel_;
+
+
+        /////////////////////////// Other set parameters ///////////////////////////////
+        // Initialise constant thrust value
+        double constantThrust_;
+
+        // Initialised body fixed thrust direction
         Eigen::Vector3d bodyFixedThrustDirection_;
 
-        // Binded functions
-        std::function< void( const double ) > updateFunction_;
-        std::function< Eigen::Vector3d( ) > thrustDirectionFunction_;
+        // Custom Thrust standard functions
         std::function< double(const double) > thrustMagnitudeFunction_;
+        std::function< Eigen::Vector3d(const double) > thrustDirectionFunction_;
 
     };
-
-    
-
 
 }
 #endif //TUDATBUNDLE_EDT_CONFIGS_H
