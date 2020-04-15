@@ -131,7 +131,7 @@ protected:
 
 
     /////////////////////////// Other set parameters ///////////////////////////////
-    // Vector representing thrust (both direction and magnitude), then just direction unit vector, then just magnitude
+    // Vector representing thrust (both direction and magnitude), then just direction unit vector, then just magnituden
     Eigen::Vector3d EDTThrust_;
     Eigen::Vector3d EDTThrustDirection_;
     double EDTThrustMagnitude_;
