@@ -1,0 +1,8 @@
+#!/bin/bash
+echo "========== Deleting old bsp ============="
+echo ""
+rm tudat_EDT_spk_kernel.bsp
+
+echo "========== Creating new spk file ============="
+echo ""
+./spkmerge tudat_EDT_spk_kernel.inp

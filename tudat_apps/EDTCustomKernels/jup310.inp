@@ -1,0 +1,12 @@
+ 
+LEAPSECONDS_FILE     = /kernels/gen/lsk/naif0012.tls
+
+SPK_FILE             = jup310.bsp
+   INCLUDE_TEXT_FILE = jup310.cmt
+   BEGIN_TIME        = 1850 JAN 01
+   END_TIME          = 2100 JAN 01
+
+   SOURCE_NIO_FILE   = jup310.nio
+
+   SOURCE_NIO_FILE   = /group/naif/kernels/gen/spk/de431.nio
+     BODIES          = 3, 399, 10, 5

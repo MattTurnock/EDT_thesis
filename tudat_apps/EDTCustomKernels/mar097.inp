@@ -1,0 +1,13 @@
+ 
+LEAPSECONDS_FILE     = /kernels/gen/lsk/naif0010.tls
+
+SPK_FILE             = mar097.bsp
+   INCLUDE_TEXT_FILE = mar097.cmt
+   BEGIN_TIME        = 04 JAN 1900
+   END_TIME          = 01 JAN 2100
+
+
+   SOURCE_NIO_FILE   = mar097.nio
+
+   SOURCE_NIO_FILE   = /kernels/gen/spk/de721.nio
+     BODIES          = 3, 399, 10, 4 

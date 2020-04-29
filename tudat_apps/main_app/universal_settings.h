@@ -14,7 +14,17 @@ using namespace tudat::propagators;
 using namespace tudat::numerical_integrators;
 using namespace EDTs;
 
+
+
+
 namespace univ {
+
+//    void IDFunction(std::string bodyName){
+//        int bodyID = spice_interface::convertBodyNameToNaifId(bodyName);
+//        std::cout << "Body ID for " << bodyName << ": " << std::to_string(bodyID) << std::endl;
+//    } // TODO: Delete me
+
+
 
     // Define Class that contains celestial bodies, and creates acceleration map etc from vehicle body map
     class propBodies {
@@ -36,10 +46,10 @@ namespace univ {
 
             /////////// Define body settings for simulation and create bodymap./////////////////////////
             bodiesToCreate_.push_back("Sun");
-            bodiesToCreate_.push_back("Earth");
-            bodiesToCreate_.push_back("Jupiter");
-            bodiesToCreate_.push_back("Saturn");
-//            bodiesToCreate_.push_back("Uranus"); TODO: encountered SPICE error -- fix this!
+//            bodiesToCreate_.push_back("Earth");
+//            bodiesToCreate_.push_back("Jupiter");
+//            bodiesToCreate_.push_back("Saturn");
+//            bodiesToCreate_.push_back("Uranus");
 //            bodiesToCreate_.push_back("Neptune");
 
             // Create body objects.
@@ -80,6 +90,10 @@ namespace univ {
             return bodyMap;
         }
 
+        EDTs::EDTConfig getVehicleConfig(){
+            return vehicleConfig_;
+        }
+
     protected:
 
         /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
@@ -111,18 +125,23 @@ namespace univ {
         std::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings;
         std::shared_ptr< IntegratorSettings< > > integratorSettings;
 
+        // Define list of dependent variables to save.
+        std::vector< std::shared_ptr< SingleDependentVariableSaveSettings > > dependentVariablesList;
+
         // Constructor
         propSettings(
-                propBodies simulationPropBodies,
+                propBodies& simulationPropBodies,
                 Eigen::Vector3d vehicleInitialPosition = {1.496E11, 0, 0},
                 Eigen::Vector3d vehicleInitialVelocity = {0, 29.78E3, 0},
                 double initialEphemerisTime = 1.0E7,
-                std::string terminationMethod = "nominalTimeTermination") :
+                std::string terminationMethod = "nominalTimeTermination",
+                double simulationLength = 10) :
                 simulationPropBodies_(simulationPropBodies),
                 vehicleInitialPosition_(vehicleInitialPosition),
                 vehicleInitialVelocity_(vehicleInitialVelocity),
                 initialEphemerisTime_(initialEphemerisTime),
-                terminationMethod_(terminationMethod){
+                terminationMethod_(terminationMethod),
+                simulationLength_(simulationLength){
 
             /////////////// Propagation Settings ///////////////////////
             // Create vehicle initial state from position and velocities
@@ -132,7 +151,7 @@ namespace univ {
             // Define propagation termination conditions
             if (terminationMethod_ == "nominalTimeTermination"){
                 // Add default time termination to termination settings list
-                double defaultFinalEphemTime = initialEphemerisTime_ + 10*365*24*60*60;
+                double defaultFinalEphemTime = initialEphemerisTime_ + simulationLength_*365*24*60*60;
                 terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
                         defaultFinalEphemTime ) );
             }
@@ -143,10 +162,25 @@ namespace univ {
             // Using above if-else really make the termination settings
             terminationSettings = std::make_shared< PropagationHybridTerminationSettings >( terminationSettingsList, true );
 
+            // Add dependent variables to save to list (kepler + altitude)
+            dependentVariablesList.push_back(
+                    std::make_shared< SingleDependentVariableSaveSettings >( keplerian_state_dependent_variable,
+                            "Vehicle" ,
+                            "Sun" ) );
+
+            dependentVariablesList.push_back(
+                    std::make_shared< SingleDependentVariableSaveSettings >(altitude_dependent_variable,
+                            "Vehicle", "Sun"));
+
+
+            dependentVariablesToSave_ =
+                    std::make_shared< DependentVariableSaveSettings >( dependentVariablesList );
+
             // Define settings for propagation of translational dynamics.
             propagatorSettings = std::make_shared< TranslationalStatePropagatorSettings< double > >(
                             simulationPropBodies_.centralBodies, simulationPropBodies_.accelerationModelMap,
-                            simulationPropBodies_.bodiesToPropagate, vehicleInitialState_, terminationSettings );
+                            simulationPropBodies_.bodiesToPropagate, vehicleInitialState_, terminationSettings,
+                            cowell, dependentVariablesToSave_ );
 
 
             ///////////////////// Integration Settings //////////////////////
@@ -162,10 +196,14 @@ namespace univ {
                             1e-14);
         }
 
+        propBodies getSimulationPropBodies(){
+            return simulationPropBodies_;
+        }
+
     protected:
 
         /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
-        propBodies simulationPropBodies_;
+        propBodies& simulationPropBodies_;
         Eigen::Vector3d vehicleInitialPosition_;
         Eigen::Vector3d vehicleInitialVelocity_;
 
@@ -173,24 +211,26 @@ namespace univ {
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
         double initialEphemerisTime_;
         std::string terminationMethod_;
+        double simulationLength_;
 
 
         /////////////////////////// Other set parameters ///////////////////////////////
         Eigen::Vector6d vehicleInitialState_;
+        std::shared_ptr< DependentVariableSaveSettings > dependentVariablesToSave_;
     };
 
 
-    void printIntVector(std::vector<int> const &input) {
-        for (int i = 0; i < input.size(); i++) {
-            std::cout << input.at(i) << ' ';
-        }
-    }
-
-    void printStrVector(std::vector<std::string> const &input) {
-        for (int i = 0; i < input.size(); i++) {
-            std::cout << input.at(i) << ' ';
-        }
-    }
+//    void printIntVector(std::vector<int> const &input) {
+//        for (int i = 0; i < input.size(); i++) {
+//            std::cout << input.at(i) << ' ';
+//        }
+//    }
+//
+//    void printStrVector(std::vector<std::string> const &input) {
+//        for (int i = 0; i < input.size(); i++) {
+//            std::cout << input.at(i) << ' ';
+//        }
+//    }
 
 }
 

@@ -1,0 +1,13 @@
+ 
+LEAPSECONDS_FILE     = /kernels/gen/lsk/naif0010.tls
+
+SPK_FILE             = nep081.bsp
+   INCLUDE_TEXT_FILE = nep081.cmt
+   BEGIN_TIME        = 1900 JAN 01
+   END_TIME          = 2100 JAN 01
+
+
+   SOURCE_NIO_FILE   = nep081.nio
+
+   SOURCE_NIO_FILE   = /group/naif/kernels/gen/spk/de431.nio
+     BODIES          = 3, 399, 10, 8

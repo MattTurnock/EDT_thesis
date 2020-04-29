@@ -1,0 +1,14 @@
+ 
+LEAPSECONDS_FILE     = /kernels/gen/lsk/naif0010.tls
+
+SPK_FILE             = ura111.bsp
+   INCLUDE_TEXT_FILE = ura111.cmt
+   BEGIN_TIME        = 1900 JAN 01
+   END_TIME          = 2099 DEC 24
+
+
+   SOURCE_NIO_FILE   = ura111.nio
+     BODIES          = 701, 702, 703, 704, 705, 799
+
+   SOURCE_NIO_FILE   = /group/naif/kernels/gen/spk/de430.nio
+     BODIES          = 3, 399, 10, 7
