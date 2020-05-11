@@ -1,0 +1,32 @@
+{
+  "Spice": {
+    "customKernelName": "tudat_EDT_spk_kernel.bsp"
+  },
+  "ParkerMagField": {
+    "B0_tesla": 12.0E-9,
+    "phi0_deg": 55,
+    "R0_au": 1
+  },
+  "GuidanceConfigs": {
+    "thrustMagnitudeConfig": "nominal",
+    "thrustDirectionConfig": "nominalPrograde",
+    "initialEphemerisTime": 1.0E7,
+    "terminationType": "nominalTimeTermination",
+    "simulationTimeYears": 10,
+    "vehicleInitialKeplerian": {
+      "a_au": 1,
+      "e": 0,
+      "i_deg": 0,
+      "aop_deg": 0,
+      "raan_deg": 0,
+      "ta_deg": 0
+    }
+  },
+  "EDTConfigs": {
+    "configType": "CHB"
+  },
+  "saveDataConfigs": {
+    "outputSubFolder": "SSO-CHB-Test-custom-2/",
+    "baseFilename": "SSO-CH-Test-out-E6-"
+  }
+}

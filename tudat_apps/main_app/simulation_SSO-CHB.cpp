@@ -9,9 +9,6 @@
 #include "applicationOutput.h"
 #include "environment_settings.h"
 
-
-
-
 int main( )
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,6 +22,7 @@ int main( )
     using namespace tudat::numerical_integrators;
     using namespace tudat::basic_mathematics;
     using namespace tudat::basic_astrodynamics;
+    using namespace tudat::orbital_element_conversions;
 
 
     using namespace univ;
@@ -33,42 +31,47 @@ int main( )
     double pi = 3.14159;
     double deg2rad = pi / 180;
     double AU = 1.496e11;
+
+//    std::cout << "TudatBundleRootPathBoost:  " << gen::tudatBundleRootPathBoost << std::endl;
+//    std::cout << "TudatBundleRootPathTemp:  " << gen::tudatBundleRootPathTemp << std::endl;
+//    std::cout << "TudatBundleRootPath:  " << gen::tudatBundleRootPath << std::endl;
+//    std::cout << "TudatRootPath:  " << gen::tudatRootPath << std::endl;
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////             SIMULATION PREP            ////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    std::cout<< "===============Loading Variables From File==================" << std::endl;
+
+    nlohmann::json simulationVariables = gen::readJson("testVariables.json");
+
+
     std::cout<< "===============Prepping Sim==================" << std::endl;
     std::cout<< "Loading spice kernels" << std::endl;
 
-
-    //Load spice kernels (merged).
-//    spice_interface::loadStandardSpiceKernels( );
-
-
     // Get spice path for merged spice kernels and load them
-    std::string currentFilePath(__FILE__);
-    boost::filesystem::path spicePath(currentFilePath);
-    spicePath = spicePath.parent_path().parent_path().parent_path().parent_path().parent_path();
-    spicePath += "/tudat/Tudat/External/SpiceInterface/Kernels/tudat_EDT_spk_kernel.bsp";
-
-    const std::vector<std::string> spicePathVector = {spicePath.string()};
+    std::string customKernelName = simulationVariables["Spice"]["customKernelName"];
+    std::string customSpiceKernelPath = gen::tudatKernelsRootPath + customKernelName;
+    const std::vector<std::string> spicePathVector = {customSpiceKernelPath};
     spice_interface::loadStandardSpiceKernels( spicePathVector );
-
-
-    // Create base body map to be built on by other classes + give initial numbers for magfield data
-    NamedBodyMap baseBodyMap;
-
-    double B0 = 12E-9;
-    double phi0 = 55 * deg2rad;
-    double R0 = 1*AU;
 
     // Create EDT Environment class
     std::cout<< "Creating environment class" << std::endl;
+    // Create base body map to be built on by other classes + give initial numbers for magfield data
+    NamedBodyMap baseBodyMap;
+
+    // Load parker variables from json then convert to proper units
+    double B0 = simulationVariables["ParkerMagField"]["B0_tesla"];
+    double phi0_deg = simulationVariables["ParkerMagField"]["phi0_deg"];
+    double R0_au = simulationVariables["ParkerMagField"]["R0_au"];
+    double phi0 = phi0 * deg2rad;
+    double R0 = R0_au * AU;
+
     EDTEnvironment CHBEDTEnviro = EDTEnvironment(B0, phi0, R0, baseBodyMap);
 
     // Create EDT Guidance class
     std::cout<< "Creating Guidance class" << std::endl;
-    std::string thrustMagnitudeConfig = "nominal";
-    std::string thrustDirectionConfig = "nominalPrograde";
+    std::string thrustMagnitudeConfig = simulationVariables["GuidanceConfigs"]["thrustMagnitudeConfig"];
+    std::string thrustDirectionConfig = simulationVariables["GuidanceConfigs"]["thrustDirectionConfig"];
 
     EDTGuidance CHBEDTGuidance = EDTGuidance(
             thrustMagnitudeConfig,
@@ -78,7 +81,7 @@ int main( )
 
     // Create EDT config class and set constant thrust in guidance class
     std::cout<< "Creating Config class" << std::endl;
-    std::string configType = "CHB";
+    std::string configType = simulationVariables["EDTConfigs"]["configType"];
     EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(CHBEDTGuidance, configType);
     CHBEDTGuidance.setThrustMagnitudeConstant(CHBEDTConfig.getConstantThrust());
 
@@ -88,12 +91,53 @@ int main( )
 
     // Get universal class for propagation settings + set vehicle initial state
     std::cout<< "Creating Propsettings class" << std::endl;
+
+    // Set vehicle initial state using keplerian elements (load from json first and convert to proper value)
+    double a_au = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["a_au"];
+    double e = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["e"];
+    double i_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["i_deg"];
+    double aop_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["aop_deg"];
+    double raan_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["raan_deg"];
+    double ta_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["ta_deg"];
+
+    Eigen::Vector6d vehicleInitialKeplerian;
+    vehicleInitialKeplerian << a_au*AU, e, i_deg*deg2rad, aop_deg*deg2rad, raan_deg*deg2rad, ta_deg*deg2rad;
+
+    // Convert to cartesian state, and create position and velocity vectors
+    double solarGravPar = SSOPropBodies.bodyMap["Sun"]->getGravityFieldModel()->getGravitationalParameter();
+    Eigen::Vector6d vehicleInitialCartesian = convertKeplerianToCartesianElements(
+            vehicleInitialKeplerian,
+            solarGravPar);
+
+    Eigen::Vector3d vehicleInitialPosition;
+    vehicleInitialPosition << vehicleInitialCartesian[0], vehicleInitialCartesian[1], vehicleInitialCartesian[2];
+    Eigen::Vector3d vehicleInitialVelocity;
+    vehicleInitialVelocity << vehicleInitialCartesian[3], vehicleInitialCartesian[4], vehicleInitialCartesian[5];
+
+//    std::cout << "Solar gravitational parameter: " << solarGravPar << std::endl;
+//    std::cout << "Vehicle initial state Keplerian: " << vehicleInitialKeplerian << std::endl;
+//    std::cout << "Vehicle initial state Cartesian: " << vehicleInitialCartesian << std::endl;
+//    std::cout << "Vehicle initial position: " << vehicleInitialPosition << std::endl;
+//    std::cout << "Vehicle initial velocity: " << vehicleInitialVelocity << std::endl;
+
+    // Actually create the propSettings class
+    double initialEphemerisTime = simulationVariables["GuidanceConfigs"]["initialEphemerisTime"];
+    std::string terminationType = simulationVariables["GuidanceConfigs"]["terminationType"];
+    double simulationTimeYears = simulationVariables["GuidanceConfigs"]["simulationTimeYears"];
     univ::propSettings SSOPropSettings = univ::propSettings(SSOPropBodies,
-                                                            {1.496E11, 0, 0},
-                                                            {0, 29.78E3, 0},
-                                                            1.0E7,
-                                                            "nominalTimeTermination",
-                                                            10);
+                                                            vehicleInitialPosition,
+                                                            vehicleInitialVelocity,
+                                                            initialEphemerisTime,
+                                                            terminationType,
+                                                            simulationTimeYears);
+//    univ::propSettings SSOPropSettings = univ::propSettings(SSOPropBodies,
+//                                                            {1.496E11, 0, 0},
+//                                                            {0, 29.78E3, 0},
+//                                                            1.0E7,
+//                                                            "nominalTimeTermination",
+//                                                            0.1);
+
+
 
     // Ensure environment is properly updated
     CHBEDTEnviro.updateAll();
@@ -116,12 +160,13 @@ int main( )
 
     std::cout<< "====================Saving Data==========================" << std::endl;
 
-    // Set output folder for all data
-    std::string outputSubFolder = "SSO-CHB-Test-custom-2/";
+    // Set output folder and base data title for all data
+    std::string outputSubFolder = simulationVariables["saveDataConfigs"]["outputSubFolder"];
+    std::string baseFilename = simulationVariables["saveDataConfigs"]["baseFilename"];
 
     // Write satellite propagation history to file.
     input_output::writeDataMapToTextFile( integrationResult,
-                                          "SSO-CH-Test-out-expo-enviro__E-6_propData.dat",
+                                          baseFilename + "propData.dat",
                                           tudat_applications::getOutputPath( ) + outputSubFolder,
                                           "",
                                           std::numeric_limits< double >::digits10,
@@ -130,7 +175,7 @@ int main( )
 
     // Write dependent variables to file
     input_output::writeDataMapToTextFile( dependentVariableResult,
-                                          "SSO-CH-Test-out-expo-enviro__E-6_depVarData.dat",
+                                          baseFilename + "depVarData.dat",
                                           tudat_applications::getOutputPath( ) + outputSubFolder,
                                           "",
                                           std::numeric_limits< double >::digits10,
@@ -139,7 +184,7 @@ int main( )
 
     // Write magField history to file.
     input_output::writeDataMapToTextFile( CHBEDTGuidance.getMagFieldMap(),
-                                          "SSO-CH-Test-out-expo-enviro__E-6_magData.dat",
+                                          baseFilename + "magData.dat",
                                           tudat_applications::getOutputPath( ) + outputSubFolder,
                                           "",
                                           std::numeric_limits< double >::digits10,
@@ -148,7 +193,7 @@ int main( )
 
     // Write ionosphere history to file.
     input_output::writeDataMapToTextFile( CHBEDTGuidance.getIonosphereMap(),
-                                          "SSO-CH-Test-out-expo-enviro__E-6_ionoData.dat",
+                                          baseFilename + "ionoData.dat",
                                           tudat_applications::getOutputPath( ) + outputSubFolder,
                                           "",
                                           std::numeric_limits< double >::digits10,
@@ -157,7 +202,7 @@ int main( )
 
     // Write thrust history to file.
     input_output::writeDataMapToTextFile( CHBEDTGuidance.getThrustMap(),
-                                          "SSO-CH-Test-out-expo-enviro__E-6_thrustData.dat",
+                                          baseFilename + "thrustData.dat",
                                           tudat_applications::getOutputPath( ) + outputSubFolder,
                                           "",
                                           std::numeric_limits< double >::digits10,
@@ -166,7 +211,16 @@ int main( )
 
     // Write current history to file.
     input_output::writeDataMapToTextFile( CHBEDTGuidance.getCurrentMap(),
-                                          "SSO-CH-Test-out-expo-enviro__E-6_currentData.dat",
+                                          baseFilename + "currentData.dat",
+                                          tudat_applications::getOutputPath( ) + outputSubFolder,
+                                          "",
+                                          std::numeric_limits< double >::digits10,
+                                          std::numeric_limits< double >::digits10,
+                                          "," );
+
+    // Write bodyData history to files
+    input_output::writeDataMapToTextFile( CHBEDTGuidance.getBodyDataMap(),
+                                          baseFilename + "bodyData.dat",
                                           tudat_applications::getOutputPath( ) + outputSubFolder,
                                           "",
                                           std::numeric_limits< double >::digits10,
@@ -174,7 +228,40 @@ int main( )
                                           "," );
 //
 
-//    std::cout<< "============= TESTING ===============" << std::endl;
+    std::cout<< "============= TESTING ===============" << std::endl;
+
+
+//    std::string pathToJson = gen::jsonInputsRootPath + "test1.json";
+//    std::ifstream people_file(pathToJson);
+//    nlohmann::json test1 = nlohmann::json::parse(people_file);
+////    test1 << people_file;
+//
+//    std::cout << test1 << std::endl;
+//    std::cout << test1["Anna"] << std::endl;
+//    std::cout << test1["Anna"]["Profession"] << std::endl;
+//
+//    double annaAge = test1["Anna"]["Age"];
+//    std::string annaProfession = test1["Anna"]["Profession"];
+
+
+
+
+//    Eigen::Vector3d localMag;
+//    Eigen::Vector3d inertialMag;
+//    Eigen::Vector3d localMag2_pos;
+//    Eigen::Vector3d localMag2_neg;
+//    double theta = 0*deg2rad;
+//    localMag << -0.06883, 0.098298, 0;
+//
+//    inertialMag = gen::LvlhToInertial(localMag, theta);
+//    localMag2_pos = gen::LvlhToInertial(inertialMag, theta);
+//    localMag2_neg = gen::LvlhToInertial(inertialMag, -theta);
+//
+//    std::cout << "localMag     : " << localMag << std::endl;
+//    std::cout << "inertialMag  : " << inertialMag << std::endl;
+//    std::cout << "localMag2_pos: " << localMag2_pos << std::endl;
+//    std::cout << "localMag2_neg: " << localMag2_neg << std::endl;
+
 //
 //    std::map< std::string, Eigen::VectorXd > testMap;
 ////    std::pair<std::string, double> testPair;

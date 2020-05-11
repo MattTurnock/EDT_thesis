@@ -5,6 +5,8 @@
 #ifndef TUDATBUNDLE_ENVIRONMENT_SETTINGS_H
 #define TUDATBUNDLE_ENVIRONMENT_SETTINGS_H
 
+#include "general_functions.h"
+
 using namespace tudat::basic_astrodynamics;
 using namespace tudat::simulation_setup;
 using namespace tudat::propagators;
@@ -31,23 +33,11 @@ public:
         double BxLocal = B0_ * cos(phi0_) * pow((R0_/R_), 2);
         double ByLocal = B0_ * sin(phi0_) * pow((R0_/R_), 1);
         double BzLocal = 0;
-//        std::cout << "B0_ = " << B0_ << "    " << "phi0_ = " << phi0_ << "    " << "R0_ = " << R0_ << "    " << "R_ = " << R_ << std::endl;
-//        std::cout << "cos(phi0) = " << cos(phi0_) << "    sin(phi0) = " << sin(phi0_) << "    R0/R = " << (1.496E11)/(R_) << "    (R0/R)^2 = " << pow((R0_/R_), 2) << std::endl;
         magFieldLocal_ << BxLocal, ByLocal, BzLocal;
 
+        // COnvert local magfield to inertial, and calculate magnitude
+        magField_ = gen::LvlhToInertial(magFieldLocal_, theta_);
         magFieldMagnitude_ = magFieldLocal_.norm();
-
-        // Convert local to inertial magnetic field vector
-        double Bx = BxLocal * sin(theta_) + ByLocal * cos(theta_);
-        double By = BxLocal * cos(theta_) - ByLocal * sin(theta_);
-        double Bz = 0;
-        magField_ << Bx, By, Bz;
-        //TODO: delete me down there
-//        environmentBodyMap_["Vehicle"].rot
-//        std::cout << magFieldLocal_ << std::endl;
-//        std::cout << "--------------" << std::endl;
-//        std::cout << magField_ << std::endl;
-//        std::cout << theta_ << std::endl;
 
     }
 
@@ -55,17 +45,13 @@ public:
         vehicleState_ = environmentBodyMap_["Vehicle"]->getState();
         vehiclePosition_ = environmentBodyMap_["Vehicle"]->getPosition();
         vehicleVelocity_ = environmentBodyMap_["Vehicle"]->getVelocity();
-        R_ = vehiclePosition_.norm();
+        R_ = vehiclePosition_.norm(); // TODO: Maybe find way to get actual altitude
 
         theta_ = atan2(vehiclePosition_[1], vehiclePosition_[0]);
         if (theta_ < 0){
             theta_ += 2*PI;
         }
     }
-
-//    void saveMagFieldProperties(){
-////        magFieldSaveVector_ =
-//    }
 
     // Run all updaters
     void updateAll(){

@@ -6,7 +6,7 @@
 #define TUDATBUNDLE_EDT_CONFIGS_H
 
 #include "EDTGuidance.h"
-#include "general_functions.h"
+
 
 using namespace tudat;
 using namespace tudat::simulation_setup;

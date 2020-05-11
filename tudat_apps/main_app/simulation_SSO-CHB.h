@@ -44,4 +44,7 @@
 #include "Tudat/SimulationSetup/PropagationSetup/thrustSettings.h"
 #include "Tudat/SimulationSetup/PropagationSetup/createMassRateModels.h"
 
+#include "Tudat/JsonInterface/Support/errorHandling.h"
+#include <fstream>
+
 #endif //TUDATBUNDLE_SIMULATION_SSO_CHB_H

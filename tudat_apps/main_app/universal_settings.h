@@ -45,7 +45,7 @@ namespace univ {
             // Constructor
 
             /////////// Define body settings for simulation and create bodymap./////////////////////////
-            bodiesToCreate_.push_back("Sun");
+            bodiesToCreate_.push_back("Sun"); // TODO: uncomment following bodies:
 //            bodiesToCreate_.push_back("Earth");
 //            bodiesToCreate_.push_back("Jupiter");
 //            bodiesToCreate_.push_back("Saturn");
@@ -60,18 +60,22 @@ namespace univ {
             bodyMap["Vehicle"] = vehicleConfig.EDTBody;
 
             // Finalise body creation
-            setGlobalFrameBodyEphemerides( bodyMap, "SSB", "ECLIPJ2000" );
+            setGlobalFrameBodyEphemerides( bodyMap, "Sun", "ECLIPJ2000" );
 
-            ///////////////// Create bodies acceleration map///////////////////////
+            ///////////////// Create bodies acceleration map (includes perturbations) ///////////////////////
 
-            // Define acceleration model settings for vehicle
+            // Add acceleration model settings for vehicle - ie thrust guidance settings
             accelerationsOfVehicle_[ "Vehicle" ].push_back(
                     std::make_shared< ThrustAccelerationSettings >( vehicleConfig.thrustDirectionGuidanceSettings, vehicleConfig.thrustMagnitudeSettings ) );
 
-            // Define acceleration model settings for celestials using for loop
+            // Add acceleration model settings for celestials using for loop
             for(std::size_t i=0; i<bodiesToCreate_.size(); ++i){
                 accelerationsOfVehicle_[bodiesToCreate_[i]].push_back(std::make_shared< AccelerationSettings >( central_gravity ) );
             }
+
+            // Add acceleration model for SRP TODO: make sure "Vehicle" sizing includes a way for canonball pressure to work, https://tudat.tudelft.nl/tutorials/applicationWalkthroughs/perturbedEarthOrbitingSatellite.html?highlight=acceleration
+            // TODO: also consider using another pressure model, such as panelled (see link) https://tudat.tudelft.nl/tutorials/tudatFeatures/environmentSetup/availableSettings.html#radiationpressuremodeloptions
+            accelerationsOfVehicle_["Sun"].push_back(std::make_shared< AccelerationSettings >(basic_astrodynamics::cannon_ball_radiation_pressure));
 
             // Create acceleration map
             accelerationMap_["Vehicle"] = accelerationsOfVehicle_;
@@ -169,7 +173,7 @@ namespace univ {
                             "Sun" ) );
 
             dependentVariablesList.push_back(
-                    std::make_shared< SingleDependentVariableSaveSettings >(altitude_dependent_variable,
+                    std::make_shared< SingleDependentVariableSaveSettings >(relative_distance_dependent_variable,
                             "Vehicle", "Sun"));
 
 

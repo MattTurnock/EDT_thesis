@@ -26,8 +26,9 @@ public:
         // Set sizes for save vectors
         magFieldSaveVector_.resize(8);
         ionosphereSaveVector_.resize(1);
-        thrustSaveVector_.resize(4);
+        thrustSaveVector_.resize(7);
         currentSaveVector_.resize(4);
+        bodyDataSaveVector_.resize(7);
     };
 
     /////////////////////// Update functions based on config settings for custom thrust ///////////////////////////////
@@ -67,11 +68,13 @@ public:
             // Get thrust vector and normalise to use as guidance vector
             thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
             thrustDirection_ = thrustVector_.normalized();
+
+            // Convert inertial thrust vector to local vector for saving
+            thrustVectorLocal_ = gen::InertialToLvlh(thrustVector_, guidanceEnvironment_.getTheta());
         }
 
         // Save simulation time and relevant data to save map
         simulationTime_ = simulationTime;
-
         saveParametersToMap();
     }
 
@@ -97,6 +100,9 @@ public:
         thrustSaveVector_[1] = thrustVector_[0];
         thrustSaveVector_[2] = thrustVector_[1];
         thrustSaveVector_[3] = thrustVector_[2];
+        thrustSaveVector_[4] = thrustVectorLocal_[0];
+        thrustSaveVector_[5] = thrustVectorLocal_[1];
+        thrustSaveVector_[6] = thrustVectorLocal_[2];
         thrustMap_.insert(std::pair<double, Eigen::VectorXd> (simulationTime_, thrustSaveVector_));
 
         // Save Current parameters TODO: TBF
@@ -105,6 +111,16 @@ public:
         currentSaveVector_[2] = currentToSet_[1];
         currentSaveVector_[3] = currentToSet_[2];
         currentMap_.insert(std::pair<double, Eigen::VectorXd> (simulationTime_, currentSaveVector_));
+
+        // Save body data
+        bodyDataSaveVector_[0] = guidanceEnvironment_.getR();
+        bodyDataSaveVector_[1] = guidanceEnvironment_.getVehicleState()[0];
+        bodyDataSaveVector_[2] = guidanceEnvironment_.getVehicleState()[1];
+        bodyDataSaveVector_[3] = guidanceEnvironment_.getVehicleState()[2];
+        bodyDataSaveVector_[4] = guidanceEnvironment_.getVehicleState()[3];
+        bodyDataSaveVector_[5] = guidanceEnvironment_.getVehicleState()[4];
+        bodyDataSaveVector_[6] = guidanceEnvironment_.getVehicleState()[5];
+        bodyDataMap_.insert(std::pair<double, Eigen::VectorXd> (simulationTime_, bodyDataSaveVector_));
 
 
     }
@@ -173,6 +189,10 @@ public:
         return currentMap_;
     }
 
+    std::map<double, Eigen::VectorXd> getBodyDataMap(){
+        return bodyDataMap_;
+    }
+
 
 
 
@@ -198,6 +218,7 @@ protected:
     /////////////////////////// Other set parameters ///////////////////////////////
     // Thrust vector, magnitude and direction variables
     Eigen::Vector3d thrustVector_;
+    Eigen::Vector3d thrustVectorLocal_;
     double thrustMagnitude_;
     Eigen::Vector3d thrustDirection_;
 
@@ -221,9 +242,12 @@ protected:
     std::map < double, Eigen::VectorXd > currentMap_;
     Eigen::VectorXd currentSaveVector_;
 
+    std::map < double, Eigen::VectorXd > bodyDataMap_;
+    Eigen::VectorXd bodyDataSaveVector_;
+
 
     // Current factor, TODO: model properly!
-    double currentFactor_ = 0 * 10E5; //
+    double currentFactor_ = 0* 10E6; //
 
 
 
