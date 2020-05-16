@@ -158,6 +158,23 @@ def testPlot(filename, parName, parVal, scale=10, plotType = "propData", filenam
         # Add legend
         plt.legend(legendList)
 
+    elif plotType == "magField3":
+        legendList = []
+
+        # Create figure, title, scale etc
+        plt.figure(figsize=(10,10))
+        ax = plt.gca()
+        plt.title("Magnetic field B0 plot")
+        plt.xlabel("time (years)")
+        plt.ylabel("Magfield strength (T)")
+        plt.grid()
+
+        # Add local and inertial magfield plots
+        plt.plot(testDataArray[:, 0]/year, testDataArray[:, 9])
+        legendList.append("B0")
+
+        # Add legend
+        plt.legend(legendList)
 
     elif plotType == "keplerPlot1":
         legendList = []
@@ -317,7 +334,7 @@ testPlot(baseDirectE6 %"depVarData", "Kepler plot", "subheading", plotType="kepl
 testPlot(baseDirectE6 %"depVarData", "Altitude plot", "subheading", plotType="altitudePlot", filename2=baseDirectE6 %"bodyData")
 testPlot(baseDirectE6 %"thrustData", "Thrust magnitude plot", "subheading", plotType="thrustPlot")
 testPlot(baseDirectE6 %"bodyData", "States plot", "subheading", plotType="statePlot", filename2=baseDirectE6 %"propData")
-
+testPlot(baseDirectE6 %"magData", "Magfield B0 over time", "subheading", plotType="magField3")
 
 plt.show()
 

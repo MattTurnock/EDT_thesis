@@ -75,7 +75,7 @@ namespace univ {
 
             // Add acceleration model for SRP TODO: make sure "Vehicle" sizing includes a way for canonball pressure to work, https://tudat.tudelft.nl/tutorials/applicationWalkthroughs/perturbedEarthOrbitingSatellite.html?highlight=acceleration
             // TODO: also consider using another pressure model, such as panelled (see link) https://tudat.tudelft.nl/tutorials/tudatFeatures/environmentSetup/availableSettings.html#radiationpressuremodeloptions
-            accelerationsOfVehicle_["Sun"].push_back(std::make_shared< AccelerationSettings >(basic_astrodynamics::cannon_ball_radiation_pressure));
+//            accelerationsOfVehicle_["Sun"].push_back(std::make_shared< AccelerationSettings >(basic_astrodynamics::cannon_ball_radiation_pressure));
 
             // Create acceleration map
             accelerationMap_["Vehicle"] = accelerationsOfVehicle_;

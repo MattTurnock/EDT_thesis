@@ -66,7 +66,16 @@ int main( )
     double phi0 = phi0 * deg2rad;
     double R0 = R0_au * AU;
 
-    EDTEnvironment CHBEDTEnviro = EDTEnvironment(B0, phi0, R0, baseBodyMap);
+    std::vector<double> twoSinePars;
+    twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["a1"]);
+    twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["b1"]);
+    twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["c1"]);
+    twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["a2"]);
+    twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["b2"]);
+    twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["c2"]);
+    twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["d"]);
+
+    EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap);
 
     // Create EDT Guidance class
     std::cout<< "Creating Guidance class" << std::endl;
@@ -230,6 +239,8 @@ int main( )
 
     std::cout<< "============= TESTING ===============" << std::endl;
 
+    double tehTime = gen::tudatTime2DecimalYear(1E7);
+    std::cout << "teh time is: " << tehTime << std::endl;
 
 //    std::string pathToJson = gen::jsonInputsRootPath + "test1.json";
 //    std::ifstream people_file(pathToJson);

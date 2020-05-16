@@ -125,7 +125,12 @@ def get_fbarrad(CR, r, A, M, W0=constants["SC"], r0=1*u.AU, c=constants["c"], un
     return fbar
 
 CR = 1.5
-A = (2*(27*14*u.imperial.inch**2) + 3*u.mm*4*u.km).to(u.m**2)    # First term for sat, second term for tether
+Asat = (2*(27*14*u.imperial.inch**2)).to(u.m**2)
+Atether = (3*u.mm*4*u.km).to(u.m**2)
+A = (Asat + Atether).to(u.m**2)    # First term for sat, second term for tether
+print("Satellite area: ", Asat)
+print("Tether area: ", Atether)
+
 M = (127*u.imperial.lb).to(u.kg)
 
 r=12*u.AU

@@ -1,0 +1,25 @@
+0 Decimal Year
+1 Scalar B, nT
+2 Vector B Magnitude,nT
+3 Lat. Angle of B (GSE)
+4 Long. Angle of B (GSE)
+5 BX, nT (GSE, GSM)
+6 BY, nT (GSE)
+7 BZ, nT (GSE)
+8 BY, nT (GSM)
+9 BZ, nT (GSM)
+10 RMS_magnitude, nT
+11 RMS_field_vector, nT
+12 RMS_BX_GSE, nT
+13 RMS_BY_GSE, nT
+14 RMS_BZ_GSE, nT
+15 SW Plasma Temperature, K
+16 SW Proton Density, N/cm^3
+17 SW Plasma Speed, km/s
+18 SW Plasma flow long. angle
+19 SW Plasma flow lat. angle
+20 sigma-V, km/s
+21 Flow pressure
+22 E elecrtric field
+23 R (Sunspot No.)
+24 Dst-index, nT

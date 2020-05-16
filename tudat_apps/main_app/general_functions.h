@@ -46,6 +46,7 @@ namespace gen {
         return jsonObject;
     }
 
+    // Calculate circle area
     double getCircleArea(double diameter){
         double radius = 0.5*diameter;
         double area =  PI * std::pow(radius, 2);
@@ -53,6 +54,7 @@ namespace gen {
         return area;
     }
 
+    // Calculate donut area (of 2 circles)
     double getDonutArea(double diameterInner, double diameterOuter){
         double areaInner = gen::getCircleArea(diameterInner);
         double areaOuter = gen::getCircleArea(diameterOuter);
@@ -81,6 +83,27 @@ namespace gen {
         Eigen::Vector3d lvlhVector = LvlhToInertial(inertialVector, rotationAngle);
 
         return lvlhVector;
+    }
+
+    // Convert tudat time (seconds since j2000) to the (decimal) year
+    double tudatTime2DecimalYear(double tudatTime){
+        // convert by starting at year 2000, and adding seconds as years
+        double decimalYear = 2000 + tudatTime/60/60/24/365.25;
+        return decimalYear;
+    }
+
+    // Function to return 2 sines superimposed
+    double twoSines(double x, std::vector<double> sinParameters ){
+        double a1 = sinParameters[0];
+        double b1 = sinParameters[1];
+        double c1 = sinParameters[2];
+        double a2 = sinParameters[3];
+        double b2 = sinParameters[4];
+        double c2 = sinParameters[5];
+        double d = sinParameters[6];
+
+        double y = a1*sin(b1*x + c1) + a2*sin(b2*x + c2) + d;
+        return y;
     }
 }
 

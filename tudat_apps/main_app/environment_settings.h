@@ -18,8 +18,8 @@ using namespace tudat::mathematical_constants;
 class EDTEnvironment{
 
 public:
-    EDTEnvironment(double& B0, double& phi0, double& R0, NamedBodyMap& environmentBodyMap):
-    B0_(B0), phi0_(phi0), R0_(R0), environmentBodyMap_(environmentBodyMap){};
+    EDTEnvironment(std::vector<double>& B0EstimationParameters, double& phi0, double& R0, NamedBodyMap& environmentBodyMap):
+            B0EstimationParameters_(B0EstimationParameters), phi0_(phi0), R0_(R0), environmentBodyMap_(environmentBodyMap){};
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // ////////////////// Define Update functions ///////////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +41,8 @@ public:
 
     }
 
-    void updateBodyParameters(){
+    // Update various body parameters from state, or calculation
+    void updateBodyParameters(double simulationTime=0){
         vehicleState_ = environmentBodyMap_["Vehicle"]->getState();
         vehiclePosition_ = environmentBodyMap_["Vehicle"]->getPosition();
         vehicleVelocity_ = environmentBodyMap_["Vehicle"]->getVelocity();
@@ -51,11 +52,20 @@ public:
         if (theta_ < 0){
             theta_ += 2*PI;
         }
+
+        // Update B0 using approximate sin relationship (need to convert to proper time, and convert to nanotesla
+        simulationTimeYears_ = gen::tudatTime2DecimalYear(simulationTime);
+        B0_ = 1E-9 * gen::twoSines(simulationTimeYears_, B0EstimationParameters_);
+        std::cout << "simulationTimeYears: " << simulationTimeYears_ << std::endl;
+        std::cout << "B0EstimationParameters ";
+        for(int i=0; i < B0EstimationParameters_.size(); i++)
+            std::cout << B0EstimationParameters_.at(i) << ' ';
+        std::cout << "B0: " << B0_ << std::endl;
     }
 
     // Run all updaters
-    void updateAll(){
-        updateBodyParameters();
+    void updateAll(double simulationTime=0){
+        updateBodyParameters(simulationTime);
         updateMagField();
     }
 
@@ -142,10 +152,12 @@ public:
 protected:
 
     /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
-    // Base variables for Parker model of magnetic field
-    double& B0_;
+    // Base variables for Parker model of magnetic field (including vector for estimating B0_)
+    double B0_;
     double& phi0_;
     double& R0_;
+
+    std::vector<double>& B0EstimationParameters_;
 
     // Body map for simulation
     NamedBodyMap& environmentBodyMap_;
@@ -174,6 +186,9 @@ protected:
     Eigen::Vector3d vehicleVelocity_;
     double R_;
     double theta_; // Angle of rotation in inertial frame
+
+    // Simulation time in years
+    double simulationTimeYears_;
 
 };
 

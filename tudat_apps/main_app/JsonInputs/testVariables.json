@@ -4,8 +4,17 @@
   },
   "ParkerMagField": {
     "B0_tesla": 12.0E-9,
-    "phi0_deg": 55,
-    "R0_au": 1
+    "phi0_deg": 42.748,
+    "R0_au": 1,
+    "twoSinePars": {
+      "a1": 1,
+      "b1": 0.1,
+      "c1": 4,
+      "a2": 1.5,
+      "b2": 0.5,
+      "c2": -0.9,
+      "d": 6.2
+    }
   },
   "GuidanceConfigs": {
     "thrustMagnitudeConfig": "nominal",

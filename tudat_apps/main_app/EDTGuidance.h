@@ -24,7 +24,7 @@ public:
             guidanceEnvironment_(guidanceEnvironment),
             throttleSetting_(throttleSetting){
         // Set sizes for save vectors
-        magFieldSaveVector_.resize(8);
+        magFieldSaveVector_.resize(9);
         ionosphereSaveVector_.resize(1);
         thrustSaveVector_.resize(7);
         currentSaveVector_.resize(4);
@@ -39,7 +39,7 @@ public:
             thrustMagnitude_ = thrustMagnitudeConstant_;
         }
         else if (thrustMagnitudeConfig_ == "nominal") {
-            guidanceEnvironment_.updateAll();
+            guidanceEnvironment_.updateAll(simulationTime_);
             thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
             thrustMagnitude_ = thrustVector_.norm();
 //            std::cout << std::to_string(thrustMagnitude_) << std::endl ; // TODO: remove me (for printing acceleration)
@@ -64,7 +64,7 @@ public:
             }
             // Set current in guidance class and update it
             guidanceEnvironment_.setCurrent(currentToSet_);
-            guidanceEnvironment_.updateAll();
+            guidanceEnvironment_.updateAll(simulationTime_);
             // Get thrust vector and normalise to use as guidance vector
             thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
             thrustDirection_ = thrustVector_.normalized();
@@ -88,6 +88,7 @@ public:
         magFieldSaveVector_[5] = guidanceEnvironment_.getMagFieldInertial()[0];
         magFieldSaveVector_[6] = guidanceEnvironment_.getMagFieldInertial()[1];
         magFieldSaveVector_[7] = guidanceEnvironment_.getMagFieldInertial()[2];
+        magFieldSaveVector_[8] = guidanceEnvironment_.getB0();
 
         magFieldMap_.insert(std::pair<double, Eigen::VectorXd> (simulationTime_, magFieldSaveVector_));
 
