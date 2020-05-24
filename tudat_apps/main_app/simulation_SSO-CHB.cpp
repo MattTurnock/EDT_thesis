@@ -27,10 +27,9 @@ int main( )
 
     using namespace univ;
     using namespace EDTs;
+    using namespace gen;
 
-    double pi = 3.14159;
-    double deg2rad = pi / 180;
-    double AU = 1.496e11;
+
 
 //    std::cout << "TudatBundleRootPathBoost:  " << gen::tudatBundleRootPathBoost << std::endl;
 //    std::cout << "TudatBundleRootPathTemp:  " << gen::tudatBundleRootPathTemp << std::endl;
@@ -60,10 +59,10 @@ int main( )
     NamedBodyMap baseBodyMap;
 
     // Load parker variables from json then convert to proper units
-    double B0 = simulationVariables["ParkerMagField"]["B0_tesla"];
+    double B0 = simulationVariables["ParkerMagField"]["B0_tesla"]; // Note: B0 not currently used since is calculated using sine relationship
     double phi0_deg = simulationVariables["ParkerMagField"]["phi0_deg"];
     double R0_au = simulationVariables["ParkerMagField"]["R0_au"];
-    double phi0 = phi0 * deg2rad;
+    double phi0 = phi0_deg * deg2rad;
     double R0 = R0_au * AU;
 
     std::vector<double> twoSinePars;
@@ -75,7 +74,9 @@ int main( )
     twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["c2"]);
     twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["d"]);
 
-    EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap);
+    nlohmann::json ISMFVariables = simulationVariables["InterstellarMagField"];
+
+    EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, ISMFVariables);
 
     // Create EDT Guidance class
     std::cout<< "Creating Guidance class" << std::endl;
@@ -91,7 +92,12 @@ int main( )
     // Create EDT config class and set constant thrust in guidance class
     std::cout<< "Creating Config class" << std::endl;
     std::string configType = simulationVariables["EDTConfigs"]["configType"];
-    EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(CHBEDTGuidance, configType);
+    double tetherLength = simulationVariables["EDTConfigs"]["tetherLength"];
+    double tetherDiameterInner = simulationVariables["EDTConfigs"]["tetherDiameterInner"];
+    double tetherDiameterOuter = simulationVariables["EDTConfigs"]["tetherDiameterOuter"];
+    nlohmann::json hoytetherVariables = simulationVariables["EDTConfigs"]["hoytether"];
+    nlohmann::json SRPVariables = simulationVariables["scConfigs"]["SRP"];
+    EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(CHBEDTGuidance, configType, hoytetherVariables, SRPVariables, tetherLength, tetherDiameterInner, tetherDiameterOuter);
     CHBEDTGuidance.setThrustMagnitudeConstant(CHBEDTConfig.getConstantThrust());
 
     // Get universal class for propagation bodies

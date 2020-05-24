@@ -36,6 +36,15 @@ namespace gen {
     // Custom kernels MUST be placed into tudat kernels directory to work properly. This is that path
     std::string tudatKernelsRootPath = tudatRootPath + "Tudat/External/SpiceInterface/Kernels/";
 
+    /////////////////////////// Some useful constants and conversion factors //////////////////////
+
+    double pi = 3.14159;
+    double deg2rad = pi / 180;
+    double AU = 1.496e11;
+
+
+    /////////////////////////// Some useful functions //////////////////////
+
     // Function to read json file (from JsonInputs directory)
     nlohmann::json readJson(std::string filename, std::string fileDirectory=gen::jsonInputsRootPath){
 

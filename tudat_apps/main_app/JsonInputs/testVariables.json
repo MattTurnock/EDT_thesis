@@ -16,6 +16,11 @@
       "d": 6.2
     }
   },
+  "InterstellarMagField": {
+    "BInf_tesla": 0.293E-9,
+    "longitudeInf_deg": 227.28,
+    "latitudeInf_deg": 34.62
+  },
   "GuidanceConfigs": {
     "thrustMagnitudeConfig": "nominal",
     "thrustDirectionConfig": "nominalPrograde",
@@ -32,10 +37,31 @@
     }
   },
   "EDTConfigs": {
-    "configType": "CHB"
+    "configType": "CHB",
+    "tetherLength": 100,
+    "tetherDiameterInner": 0.01,
+    "tetherDiameterOuter": 0.01,
+    "hoytether": {
+      "tetherDiameterInnerSecondary": 0.01,
+      "tetherDiameterOuterSecondary": 0.01,
+      "noPrimaryLines": 6,
+      "primaryLineSegmentLength": 0.2,
+      "slackCoefficient": 1.005,
+      "primaryLineSeparation": 0.5,
+      "occultationCoefficient": 0.7
+    }
   },
   "saveDataConfigs": {
     "outputSubFolder": "SSO-CHB-Test-custom-2/",
     "baseFilename": "SSO-CH-Test-out-E6-"
+  },
+  "scConfigs": {
+    "SRP": {
+      "endmassArea1": 1.2,
+      "endmassArea2": 1.2,
+      "endmassRadiationCoefficient": 0.5,
+      "tetherRadiationCoefficient": 0.5,
+      "rotationFactor": 0.7
+    }
   }
 }

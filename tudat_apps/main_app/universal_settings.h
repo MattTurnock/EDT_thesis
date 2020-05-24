@@ -73,9 +73,18 @@ namespace univ {
                 accelerationsOfVehicle_[bodiesToCreate_[i]].push_back(std::make_shared< AccelerationSettings >( central_gravity ) );
             }
 
-            // Add acceleration model for SRP TODO: make sure "Vehicle" sizing includes a way for canonball pressure to work, https://tudat.tudelft.nl/tutorials/applicationWalkthroughs/perturbedEarthOrbitingSatellite.html?highlight=acceleration
-            // TODO: also consider using another pressure model, such as panelled (see link) https://tudat.tudelft.nl/tutorials/tudatFeatures/environmentSetup/availableSettings.html#radiationpressuremodeloptions
-//            accelerationsOfVehicle_["Sun"].push_back(std::make_shared< AccelerationSettings >(basic_astrodynamics::cannon_ball_radiation_pressure));
+            // Add acceleration model for cannonball SRP
+            SRPReferenceArea_ = vehicleConfig_.getEffectiveSRPArea();
+            SRPCoefficient_ = vehicleConfig_.getEffectiveSRPCoefficient();
+
+            vehicleRadiationPressureSettings_ = std::make_shared< CannonBallRadiationPressureInterfaceSettings >(
+                    "Sun", SRPReferenceArea_, SRPCoefficient_);
+
+            bodyMap["Vehicle"]->setRadiationPressureInterface(
+                    "Sun", createRadiationPressureInterface(
+                            vehicleRadiationPressureSettings_, "Vehicle", bodyMap ) );
+
+            accelerationsOfVehicle_["Sun"].push_back(std::make_shared< AccelerationSettings >(basic_astrodynamics::cannon_ball_radiation_pressure));
 
             // Create acceleration map
             accelerationMap_["Vehicle"] = accelerationsOfVehicle_;
@@ -114,11 +123,14 @@ namespace univ {
         // Define propagator settings variables.
         SelectedAccelerationMap accelerationMap_;
         std::map< std::string, std::vector< std::shared_ptr< AccelerationSettings > > > accelerationsOfVehicle_;
+        double SRPReferenceArea_;
+        double SRPCoefficient_;
+        std::shared_ptr< RadiationPressureInterfaceSettings > vehicleRadiationPressureSettings_;
 
 
     };
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Define Class that creates propagation and integration settings
     class propSettings {

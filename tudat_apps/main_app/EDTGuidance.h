@@ -42,7 +42,6 @@ public:
             guidanceEnvironment_.updateAll(simulationTime_);
             thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
             thrustMagnitude_ = thrustVector_.norm();
-//            std::cout << std::to_string(thrustMagnitude_) << std::endl ; // TODO: remove me (for printing acceleration)
         }
 
         // Save simulation time and relevant data to save map

@@ -15,11 +15,31 @@ using namespace tudat::basic_mathematics;
 using namespace tudat::mathematical_constants;
 
 
+
 class EDTEnvironment{
 
 public:
-    EDTEnvironment(std::vector<double>& B0EstimationParameters, double& phi0, double& R0, NamedBodyMap& environmentBodyMap):
-            B0EstimationParameters_(B0EstimationParameters), phi0_(phi0), R0_(R0), environmentBodyMap_(environmentBodyMap){};
+    EDTEnvironment(std::vector<double>& B0EstimationParameters,
+            double& phi0,
+            double& R0,
+            NamedBodyMap& environmentBodyMap,
+            nlohmann::json ISMFVariables):
+            B0EstimationParameters_(B0EstimationParameters),
+            phi0_(phi0),
+            R0_(R0),
+            environmentBodyMap_(environmentBodyMap),
+            ISMFVariables_(ISMFVariables){
+        //////////// CONSTRUCTOR ////////////////
+
+        // Set values for ISMF values from json data, and calculate the new ones
+        BInfMagnitude_ = ISMFVariables_["BInf_tesla"];
+        longitudeInf_deg_ = ISMFVariables_["longitudeInf_deg"];
+        latitudeInf_deg_ = ISMFVariables_["latitudeInf_deg"];
+        longitudeInf_ = gen::deg2rad * longitudeInf_deg_;
+        latitudeInf_ = gen::deg2rad * latitudeInf_deg_;
+
+        calculateBinfDirection();
+    };
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // ////////////////// Define Update functions ///////////////////////////////////////////////////////////////////////////////////////
@@ -27,17 +47,36 @@ public:
 
     // Update magnetic field vector using base variables, and determining if Parker model or other should be used
     void updateMagField(){
-        //TODO: Add if-else statement using state for parker model, transitional, or interstellar use. Currently only uses Parker
+        //TODO: Make some way of determining the magnetic field region. Currently uses one predefined here
+        magFieldRegion_ = "Parker";
 
-        // Define local magnetic field vector
-        double BxLocal = B0_ * cos(phi0_) * pow((R0_/R_), 2);
-        double ByLocal = B0_ * sin(phi0_) * pow((R0_/R_), 1);
-        double BzLocal = 0;
-        magFieldLocal_ << BxLocal, ByLocal, BzLocal;
 
-        // COnvert local magfield to inertial, and calculate magnitude
-        magField_ = gen::LvlhToInertial(magFieldLocal_, theta_);
-        magFieldMagnitude_ = magFieldLocal_.norm();
+        if (magFieldRegion_ == "Parker") {
+            // Define local magnetic field vector
+            double BxLocal = B0_ * cos(phi0_) * pow((R0_ / R_), 2);
+            double ByLocal = B0_ * sin(phi0_) * pow((R0_ / R_), 1);
+            double BzLocal = 0;
+            magFieldLocal_ << BxLocal, ByLocal, BzLocal;
+
+            // COnvert local magfield to inertial, and calculate magnitude
+            magField_ = gen::LvlhToInertial(magFieldLocal_, theta_);
+            magFieldMagnitude_ = magFieldLocal_.norm();
+        }
+
+        else if (magFieldRegion_ == "Transitional"){
+            //TODO: make transitional magfield info here
+        }
+
+        else if (magFieldRegion_ == "Interstellar"){
+
+            // set magnetic field magnitude and vector, directly from data, and from the calculated values
+            magFieldMagnitude_ = BInfMagnitude_;
+            magField_ = magFieldMagnitude_ * BInfDirection_;
+
+        }
+        else{
+            std::cout << "Magnetic field region is unknown -  " << magFieldRegion_ << std::endl;
+        }
 
     }
 
@@ -46,7 +85,7 @@ public:
         vehicleState_ = environmentBodyMap_["Vehicle"]->getState();
         vehiclePosition_ = environmentBodyMap_["Vehicle"]->getPosition();
         vehicleVelocity_ = environmentBodyMap_["Vehicle"]->getVelocity();
-        R_ = vehiclePosition_.norm(); // TODO: Maybe find way to get actual altitude
+        R_ = vehiclePosition_.norm(); // TODO: Maybe find way to get actual altitude / radius directly
 
         theta_ = atan2(vehiclePosition_[1], vehiclePosition_[0]);
         if (theta_ < 0){
@@ -56,17 +95,29 @@ public:
         // Update B0 using approximate sin relationship (need to convert to proper time, and convert to nanotesla
         simulationTimeYears_ = gen::tudatTime2DecimalYear(simulationTime);
         B0_ = 1E-9 * gen::twoSines(simulationTimeYears_, B0EstimationParameters_);
-        std::cout << "simulationTimeYears: " << simulationTimeYears_ << std::endl;
-        std::cout << "B0EstimationParameters ";
-        for(int i=0; i < B0EstimationParameters_.size(); i++)
-            std::cout << B0EstimationParameters_.at(i) << ' ';
-        std::cout << "B0: " << B0_ << std::endl;
     }
 
     // Run all updaters
     void updateAll(double simulationTime=0){
         updateBodyParameters(simulationTime);
         updateMagField();
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////// Define a few misc functions (eg for creating ISMF variables) ///////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Function to calculate the ISMF direction vector, to be used in constructor
+    void calculateBinfDirection(){
+
+        // Calculate direction vector components (before normalisation)
+        double BInfx_unit = cos(latitudeInf_) * cos(longitudeInf_);
+        double BInfy_unit = cos(latitudeInf_) * sin(longitudeInf_);
+        double BInfz_unit = sin(latitudeInf_);
+
+        // Create, initialise, and normalise (inplace) direction vector from above components
+        BInfDirection_ << BInfx_unit, BInfy_unit, BInfz_unit;
+        BInfDirection_.normalize();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -175,10 +226,20 @@ protected:
     Eigen::Vector3d current_;
     double currentMagnitude_;
 
-    // Vectors for magnetic field (needs a local orientation magFieldLocal_ and real one magField_
+    // Vectors for general + parker magnetic field (needs a local orientation magFieldLocal_ and real one magField_
     Eigen::Vector3d magFieldLocal_;
     Eigen::Vector3d magField_;
     double magFieldMagnitude_;
+    std::string magFieldRegion_;
+
+    // Data values for interstellar magnetic field
+    Eigen::Vector3d BInfDirection_;
+    nlohmann::json ISMFVariables_;
+    double BInfMagnitude_;
+    double longitudeInf_deg_;
+    double latitudeInf_deg_;
+    double longitudeInf_;
+    double latitudeInf_;
 
     // Base vehicle variables. State position and velocity vectors, radius from sun, EDT pitch (or effective pitch) (ie bodyParameters)
     Eigen::Vector6d vehicleState_;
