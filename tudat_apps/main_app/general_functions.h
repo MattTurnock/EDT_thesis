@@ -114,6 +114,7 @@ namespace gen {
         double y = a1*sin(b1*x + c1) + a2*sin(b2*x + c2) + d;
         return y;
     }
+    
 }
 
 #endif //TUDATBUNDLE_GENERAL_FUNCTIONS_H

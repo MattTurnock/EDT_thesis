@@ -38,19 +38,39 @@ namespace univ {
         // Constructor
         propBodies(
                 EDTs::EDTConfig& vehicleConfig,
-                NamedBodyMap& baseBodyMap) :
+                NamedBodyMap& baseBodyMap,
+                nlohmann::json jsonBodiesToInclude) :
                 vehicleConfig_(vehicleConfig),
-                bodyMap(baseBodyMap)
+                bodyMap(baseBodyMap),
+                jsonBodiesToInclude_(jsonBodiesToInclude)
                 {
+
             // Constructor
+            /////////// Initialise all bodies list with all possible bodies that can be used ///////////
+            allBodiesList_.push_back("Sun");
+            allBodiesList_.push_back("Mercury");
+            allBodiesList_.push_back("Venus");
+            allBodiesList_.push_back("Earth");
+            allBodiesList_.push_back("Mars");
+            allBodiesList_.push_back("Jupiter");
+            allBodiesList_.push_back("Saturn");
+            allBodiesList_.push_back("Uranus");
+            allBodiesList_.push_back("Neptune");
+
 
             /////////// Define body settings for simulation and create bodymap./////////////////////////
-            bodiesToCreate_.push_back("Sun"); // TODO: uncomment following bodies:
-//            bodiesToCreate_.push_back("Earth");
-//            bodiesToCreate_.push_back("Jupiter");
-//            bodiesToCreate_.push_back("Saturn");
-//            bodiesToCreate_.push_back("Uranus");
-//            bodiesToCreate_.push_back("Neptune");
+            // Creat bodies list from json data
+            for(std::size_t i=0; i<allBodiesList_.size(); ++i){
+                intPlaceholder_ = jsonBodiesToInclude_[allBodiesList_[i]];
+                if (jsonBodiesToInclude_[allBodiesList_[i]] == 1){
+                    bodiesToCreate_.push_back(allBodiesList_[i]);
+                }
+            }
+
+            std::cout << "Using bodies: " << std::endl;
+            for(std::size_t i=0; i<bodiesToCreate_.size(); ++i){
+                std::cout << bodiesToCreate_[i] << std::endl;
+            }
 
             // Create body objects.
             bodySettings_ = getDefaultBodySettings( bodiesToCreate_ );
@@ -111,7 +131,7 @@ namespace univ {
 
         /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
         EDTs::EDTConfig& vehicleConfig_;
-
+        nlohmann::json jsonBodiesToInclude_;
 
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
 
@@ -119,6 +139,7 @@ namespace univ {
         // Body variables
         std::vector<std::string> bodiesToCreate_;
         std::map< std::string, std::shared_ptr< BodySettings > > bodySettings_;
+        std::vector<std::string> allBodiesList_;
 
         // Define propagator settings variables.
         SelectedAccelerationMap accelerationMap_;
@@ -126,6 +147,9 @@ namespace univ {
         double SRPReferenceArea_;
         double SRPCoefficient_;
         std::shared_ptr< RadiationPressureInterfaceSettings > vehicleRadiationPressureSettings_;
+
+        // misc
+        int intPlaceholder_;
 
 
     };

@@ -45,7 +45,7 @@ int main( )
 
 
     std::cout<< "===============Prepping Sim==================" << std::endl;
-    std::cout<< "Loading spice kernels" << std::endl;
+    std::cout<< " -- Loading spice kernels -- " << std::endl;
 
     // Get spice path for merged spice kernels and load them
     std::string customKernelName = simulationVariables["Spice"]["customKernelName"];
@@ -54,7 +54,7 @@ int main( )
     spice_interface::loadStandardSpiceKernels( spicePathVector );
 
     // Create EDT Environment class
-    std::cout<< "Creating environment class" << std::endl;
+    std::cout<< " -- Creating environment class -- " << std::endl;
     // Create base body map to be built on by other classes + give initial numbers for magfield data
     NamedBodyMap baseBodyMap;
 
@@ -79,7 +79,7 @@ int main( )
     EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, ISMFVariables);
 
     // Create EDT Guidance class
-    std::cout<< "Creating Guidance class" << std::endl;
+    std::cout<< " -- Creating Guidance class -- " << std::endl;
     std::string thrustMagnitudeConfig = simulationVariables["GuidanceConfigs"]["thrustMagnitudeConfig"];
     std::string thrustDirectionConfig = simulationVariables["GuidanceConfigs"]["thrustDirectionConfig"];
 
@@ -90,7 +90,7 @@ int main( )
             CHBEDTEnviro);
 
     // Create EDT config class and set constant thrust in guidance class
-    std::cout<< "Creating Config class" << std::endl;
+    std::cout<< " -- Creating Config class -- " << std::endl;
     std::string configType = simulationVariables["EDTConfigs"]["configType"];
     double tetherLength = simulationVariables["EDTConfigs"]["tetherLength"];
     double tetherDiameterInner = simulationVariables["EDTConfigs"]["tetherDiameterInner"];
@@ -101,11 +101,12 @@ int main( )
     CHBEDTGuidance.setThrustMagnitudeConstant(CHBEDTConfig.getConstantThrust());
 
     // Get universal class for propagation bodies
-    std::cout<< "Creating Propbodies class" << std::endl;
-    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, baseBodyMap);
+    std::cout<< " -- Creating Propbodies class -- " << std::endl;
+    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"];
+    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, baseBodyMap, jsonBodiesToInclude);
 
     // Get universal class for propagation settings + set vehicle initial state
-    std::cout<< "Creating Propsettings class" << std::endl;
+    std::cout<< " -- Creating Propsettings class -- " << std::endl;
 
     // Set vehicle initial state using keplerian elements (load from json first and convert to proper value)
     double a_au = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["a_au"];
@@ -244,6 +245,7 @@ int main( )
 //
 
     std::cout<< "============= TESTING ===============" << std::endl;
+
 
     double tehTime = gen::tudatTime2DecimalYear(1E7);
     std::cout << "teh time is: " << tehTime << std::endl;

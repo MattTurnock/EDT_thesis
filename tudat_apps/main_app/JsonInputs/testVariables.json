@@ -1,6 +1,17 @@
 {
   "Spice": {
-    "customKernelName": "tudat_EDT_spk_kernel.bsp"
+    "customKernelName": "tudat_EDT_spk_kernel.bsp",
+    "bodiesToInclude": {
+      "Sun": 1,
+      "Mercury": 0,
+      "Venus": 0,
+      "Earth": 1,
+      "Mars": 0,
+      "Jupiter": 1,
+      "Saturn": 1,
+      "Uranus": 0,
+      "Neptune": 0
+    }
   },
   "ParkerMagField": {
     "B0_tesla": 12.0E-9,
