@@ -94,6 +94,19 @@ namespace gen {
         return lvlhVector;
     }
 
+    // Functions to convert vetween maglocal (ie Br Bphi) and lvlh coordinates
+    Eigen::Vector3d MaglocalToLvlh(Eigen::Vector3d maglocalVector){
+        Eigen::Vector3d lvlhVector;
+        lvlhVector << maglocalVector[1], maglocalVector[0], maglocalVector[2];
+        return lvlhVector;
+    }
+
+    Eigen::Vector3d LvlhToMaglocal(Eigen::Vector3d lvlhVector){
+        Eigen::Vector3d maglocalVector;
+        maglocalVector << lvlhVector[1], lvlhVector[0], lvlhVector[2];
+        return maglocalVector;
+    }
+
     // Convert tudat time (seconds since j2000) to the (decimal) year
     double tudatTime2DecimalYear(double tudatTime){
         // convert by starting at year 2000, and adding seconds as years
@@ -114,7 +127,7 @@ namespace gen {
         double y = a1*sin(b1*x + c1) + a2*sin(b2*x + c2) + d;
         return y;
     }
-    
+
 }
 
 #endif //TUDATBUNDLE_GENERAL_FUNCTIONS_H

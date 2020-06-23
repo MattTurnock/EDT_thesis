@@ -247,17 +247,7 @@ protected:
 
 
     // Current factor, TODO: model properly!
-    double currentFactor_ = 0* 10E6; //
-
-
-
-
-
-
-
-
-
-
+    double currentFactor_ = 1*10E4; //
 
 };
 

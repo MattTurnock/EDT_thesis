@@ -187,6 +187,9 @@ namespace univ {
             // Create vehicle initial state from position and velocities
             vehicleInitialState_ << vehicleInitialPosition_, vehicleInitialVelocity_;
 
+            // Set maximum CPU termination time for all cases TODO: make set in json properly
+            terminationSettingsList.push_back( std::make_shared< PropagationCPUTimeTerminationSettings >(
+                    60.0 ) );
 
             // Define propagation termination conditions
             if (terminationMethod_ == "nominalTimeTermination"){
@@ -224,7 +227,8 @@ namespace univ {
 
 
             ///////////////////// Integration Settings //////////////////////
-            // TODO: Check general settings of integrator, and adjust as necessary (especially tolerances)
+            // TODO: Check general settings of integrator, and adjust as necessary (especially tolerances).
+            // TODO: part 2, add some integrator settings to the json file
             integratorSettings =
                     std::make_shared< RungeKuttaVariableStepSizeSettings< > >(
                             initialEphemerisTime_,
@@ -232,8 +236,8 @@ namespace univ {
                             numerical_integrators::RungeKuttaCoefficients::rungeKutta87DormandPrince, //TODO: change this integrator to FILG if possible (ask dominic?)
                             1E-5,
                             365*24*60*60,
-                            1e-14,
-                            1e-14);
+                            1e-8,
+                            1e-8);
         }
 
         propBodies getSimulationPropBodies(){

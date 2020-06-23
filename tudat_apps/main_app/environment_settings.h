@@ -53,14 +53,17 @@ public:
 
         if (magFieldRegion_ == "Parker") {
             // Define local magnetic field vector
-            double BxLocal = B0_ * cos(phi0_) * pow((R0_ / R_), 2);
-            double ByLocal = B0_ * sin(phi0_) * pow((R0_ / R_), 1);
+            double BR = B0_ * cos(phi0_) * pow((R0_ / R_), 2);
+            double Bphi = B0_ * sin(phi0_) * pow((R0_ / R_), 1);
             double BzLocal = 0;
-            magFieldLocal_ << BxLocal, ByLocal, BzLocal;
+            magFieldMaglocal_ << BR, Bphi, BzLocal;
 
-            // COnvert local magfield to inertial, and calculate magnitude
-            magField_ = gen::LvlhToInertial(magFieldLocal_, theta_);
-            magFieldMagnitude_ = magFieldLocal_.norm();
+            // Convert magnetic standard local magnetic field to lvlh
+            magFieldLvlh_ = gen::MaglocalToLvlh(magFieldMaglocal_);
+
+            // Convert local magfield to inertial and calculate magnitude
+            magField_ = gen::LvlhToInertial(magFieldLvlh_, theta_);
+            magFieldMagnitude_ = magFieldMaglocal_.norm();
         }
 
         else if (magFieldRegion_ == "Transitional"){
@@ -158,7 +161,7 @@ public:
     }
 
     Eigen::Vector3d getMagFieldLocal(){
-        return magFieldLocal_;
+        return magFieldMaglocal_;
     }
 
     double getMagFieldMagnitude(){
@@ -226,8 +229,9 @@ protected:
     Eigen::Vector3d current_;
     double currentMagnitude_;
 
-    // Vectors for general + parker magnetic field (needs a local orientation magFieldLocal_ and real one magField_
-    Eigen::Vector3d magFieldLocal_;
+    // Vectors for general + parker magnetic field (needs a local orientation magFieldMaglocal_ and real one magField_
+    Eigen::Vector3d magFieldMaglocal_;
+    Eigen::Vector3d magFieldLvlh_;
     Eigen::Vector3d magField_;
     double magFieldMagnitude_;
     std::string magFieldRegion_;
