@@ -5,8 +5,8 @@
 #ifndef TUDATBUNDLE_EDT_CONFIGS_H
 #define TUDATBUNDLE_EDT_CONFIGS_H
 
-#include "EDTGuidance.h"
-
+//#include "EDTGuidance.h"
+#include "general_functions.h"
 
 using namespace tudat;
 using namespace tudat::simulation_setup;
@@ -19,14 +19,10 @@ namespace EDTs {
     public:
         // Create EDT body and thrust guidance settings variables
         std::shared_ptr<Body> EDTBody = std::make_shared<simulation_setup::Body>();
-        std::shared_ptr< ThrustDirectionGuidanceSettings > thrustDirectionGuidanceSettings;
-        std::shared_ptr< ThrustMagnitudeSettings > thrustMagnitudeSettings;
-
-
 
         // Constructor
         EDTConfig(
-                EDTGuidance& guidanceClass,
+//                EDTGuidance& guidanceClass,
                 std::string& configType,
                 nlohmann::json hoytetherVariables,
                 nlohmann::json SRPVariables,
@@ -37,7 +33,7 @@ namespace EDTs {
                 double vehicleISP=9999,
                 double constantThrustAccel = 0.325E-3,
                 Eigen::Vector3d bodyFixedThrustDirection = {1, 0, 0}):
-                guidanceClass_(guidanceClass),
+//                guidanceClass_(guidanceClass),
                 configType_(configType),
                 hoytetherVariables_(hoytetherVariables),
                 SRPVariables_(SRPVariables),
@@ -49,20 +45,11 @@ namespace EDTs {
                 constantThrustAccel_(constantThrustAccel),
                 bodyFixedThrustDirection_(bodyFixedThrustDirection){
 
-            // Set constant thrust based on mass and accel, and set in guidance class
-            constantThrust_ = vehicleMass_ * constantThrustAccel_;
-            guidanceClass_.setThrustMagnitudeConstant(constantThrust_);
-
             // Normalize body fixed thrust direction
             bodyFixedThrustDirection_.normalize();
 
             // Set EDT constant bodyMass
             EDTBody->setConstantBodyMass(vehicleMass);
-
-
-
-            // Do initialisation update of guidance settings
-            updateGuidanceSettings();
 
             // Set and calculate hoytether variables from the hoytether variables json
             tetherDiameterInnerSecondary_ = hoytetherVariables_["tetherDiameterInnerSecondary"];
@@ -84,7 +71,7 @@ namespace EDTs {
             /////////////////////// Calculate derived EDT variables /////////////////////////
 
             // Tether cross sectional areas
-            xSecAreaTotal_ = gen::getCircleArea(diameterOuter_); //TODO: make as a hoytether config, with many cables
+            xSecAreaTotal_ = gen::getCircleArea(diameterOuter_); //TODO: make a function that calculates cross sectional area, depending on config type
             xSecAreaInner_ = gen::getCircleArea(diameterInner_);
             xSecAreaDonut_ = gen::getDonutArea(diameterInner_, diameterOuter_);
 
@@ -107,22 +94,6 @@ namespace EDTs {
             }
 
 
-        }
-
-        void updateGuidanceSettings(){
-            // Bind functions properly
-            thrustMagnitudeFunction_ = std::bind( &EDTGuidance::getThrustMagnitude, &guidanceClass_, std::placeholders::_1 );
-            thrustDirectionFunction_ = std::bind( &EDTGuidance::getThrustDirection, &guidanceClass_, std::placeholders::_1);
-
-            // Set thrust direction and magnitude using custom settings
-            thrustMagnitudeSettings =
-                    std::make_shared< FromFunctionThrustMagnitudeSettings >(
-                            thrustMagnitudeFunction_,
-                            [ = ]( const double ){ return vehicleISP_; });
-
-            thrustDirectionGuidanceSettings =
-                    std::make_shared<CustomThrustDirectionSettings>(
-                            thrustDirectionFunction_);
         }
 
         void initialiseHoytetherProperties(){
@@ -179,10 +150,6 @@ namespace EDTs {
             return constantThrust_;
         }
 
-        EDTGuidance getGuidanceClass(){
-            return guidanceClass_;
-        }
-
         double getEffectiveSRPArea(){
             return totalEffectiveSRPArea_;
         }
@@ -191,12 +158,16 @@ namespace EDTs {
             return totalEffectiveRadiationPressureCoefficient_;
         }
 
+        double getXSecAreaConducting(){
+            return xSecAreaConducting_;
+        }
+
     protected:
 
         /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
 
         // Guidance class and config type
-        EDTGuidance& guidanceClass_;
+//        EDTGuidance& guidanceClass_;
         std::string& configType_;
 
         // Create initial variables for EDT properties
@@ -218,6 +189,7 @@ namespace EDTs {
         double xSecAreaTotal_;
         double xSecAreaInner_;
         double xSecAreaDonut_;
+        double xSecAreaConducting_; // Refers to the cross sectional area used for carrying current TODO: Add functions to calculate this
 
         // Create json hoytether EDT properties
         nlohmann::json hoytetherVariables_;
@@ -259,12 +231,6 @@ namespace EDTs {
 
         // Initialised body fixed thrust direction
         Eigen::Vector3d bodyFixedThrustDirection_;
-
-        // Custom Thrust standard functions
-        std::function< double(const double) > thrustMagnitudeFunction_;
-        std::function< Eigen::Vector3d(const double) > thrustDirectionFunction_;
-
-        // Conductivity values for various materials
 
     };
 

@@ -5,23 +5,30 @@
 #ifndef TUDATBUNDLE_EDTGUIDANCE_H
 #define TUDATBUNDLE_EDTGUIDANCE_H
 
-
+#include "EDT_configs.h"
 #include "environment_settings.h"
 
 using namespace tudat;
 using namespace tudat::simulation_setup;
+using namespace EDTs;
 
 class EDTGuidance{
 public:
+    // Thrust direction and magnitude settings pointers
+    std::shared_ptr< ThrustDirectionGuidanceSettings > thrustDirectionGuidanceSettings;
+    std::shared_ptr< ThrustMagnitudeSettings > thrustMagnitudeSettings;
+
     EDTGuidance(std::string& thrustMagnitudeConfig,
             std::string& thrustDirectionConfig,
             NamedBodyMap& environmentBodyMap,
             EDTEnvironment& guidanceEnvironment,
+            EDTs::EDTConfig& vehicleConfig,
             const double throttleSetting = 1 ):
             thrustMagnitudeConfig_(thrustMagnitudeConfig),
             thrustDirectionConfig_(thrustDirectionConfig),
             environmentBodyMap_(environmentBodyMap),
             guidanceEnvironment_(guidanceEnvironment),
+            vehicleConfig_(vehicleConfig),
             throttleSetting_(throttleSetting){
         // Set sizes for save vectors
         magFieldSaveVector_.resize(9);
@@ -29,6 +36,9 @@ public:
         thrustSaveVector_.resize(7);
         currentSaveVector_.resize(4);
         bodyDataSaveVector_.resize(7);
+
+        // Do initialisation update of guidance settings
+        updateGuidanceSettings();
     };
 
     /////////////////////// Update functions based on config settings for custom thrust ///////////////////////////////
@@ -39,7 +49,7 @@ public:
             thrustMagnitude_ = thrustMagnitudeConstant_;
         }
         else if (thrustMagnitudeConfig_ == "nominal") {
-            guidanceEnvironment_.updateAll(simulationTime_);
+            updateAllEnviro(simulationTime_);
             thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
             thrustMagnitude_ = thrustVector_.norm();
         }
@@ -64,8 +74,8 @@ public:
                 currentToSet_ << 0, 0, -1*guidanceEnvironment_.getCurrentMagnitude(); //TODO: Fix to use EDT length unit vector, instead of hardcode
             }
             // Set current in guidance class and update it
-            guidanceEnvironment_.setCurrent(currentToSet_);
-            guidanceEnvironment_.updateAll(simulationTime_);
+            guidanceEnvironment_.setCurrent(currentToSet_); // TODO: check if this is needed or no
+            updateAllEnviro(simulationTime_);
             // Get thrust vector and normalise to use as guidance vector
             thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
             thrustDirection_ = thrustVector_.normalized();
@@ -77,6 +87,22 @@ public:
         // Save simulation time and relevant data to save map
         simulationTime_ = simulationTime;
         saveParametersToMap();
+    }
+
+    void updateGuidanceSettings(){
+        // Bind functions properly
+        thrustMagnitudeFunction_ = std::bind( &EDTGuidance::getThrustMagnitude, this, std::placeholders::_1 );
+        thrustDirectionFunction_ = std::bind( &EDTGuidance::getThrustDirection, this, std::placeholders::_1);
+
+        // Set thrust direction and magnitude using custom settings
+        thrustMagnitudeSettings =
+                std::make_shared< FromFunctionThrustMagnitudeSettings >(
+                        thrustMagnitudeFunction_,
+                        [ = ]( const double ){ return 999; });
+
+        thrustDirectionGuidanceSettings =
+                std::make_shared<CustomThrustDirectionSettings>(
+                        thrustDirectionFunction_);
     }
 
     void saveParametersToMap(){
@@ -126,6 +152,44 @@ public:
 
 
     }
+
+    //////////////////////////////////// Update all function moved from environment_settings ///////////////
+
+    // Function to update current, different depending on EDT config
+    void updateCurrent(){
+
+        // For spacecraft using a bare tether concept
+        if ( (configType_ == "CHB") or (configType_ == "AlMB") ){
+
+            // Calculate unit current, using sigma, Em and A
+            motionalEMF_ = gen::getMotionalEMF(velocityWrtMagField_, guidanceEnvironment_.getMagFieldInertial(), EDTUnitVector_); // TODO: actually define unit vector
+            unitCurrent_ = gen::getUnitCurrent(EDTConductivity_, motionalEMF_, vehicleConfig_.getXSecAreaConducting());
+
+            // Calculate iavg, from ic, lambda_A and L
+            dimensionlessCurrentC_ = gen::trueCurrentDimensionlessConvert(trueCurrentC_, unitCurrent_);
+            dimensionlessVoltageA_ = gen::getDimensionlessVoltageA(dimensionlessCurrentC_);
+            avgDimensionlessCurrent_ = gen::getAvgDimensionlessCurrent(tetherLength_, dimensionlessVoltageA_);
+
+            // Calculate final average true current, and set current magnitude to it
+            avgTrueCurrent_ = gen::trueCurrentDimensionlessConvert(avgDimensionlessCurrent_, unitCurrent_);
+            currentMagnitude_ = avgTrueCurrent_;
+        }
+
+            // For spacecraft using a transient-current concept
+        else if ( (configType_ == "CHTr") or (configType_ == "AlMTr") ){
+            // TODO: Add an update function for transient-current type spacecraft
+            std::cout << "No calculation for transient-current made yet" << std::endl;
+        }
+    }
+
+    // Run all updaters (mostly from environment settings)
+    void updateAllEnviro(double simulationTime=0){
+        guidanceEnvironment_.updateBodyParameters(simulationTime);
+        guidanceEnvironment_.updateMagField();
+        updateCurrent();
+    }
+
+
     /////////////////////// Get variable functions for custom thrust /////////////////////////////////////////////
 
     double getThrustMagnitude(const double simulationTime){
@@ -210,6 +274,9 @@ protected:
     // Class for EDT environment
     EDTEnvironment& guidanceEnvironment_;
 
+    // Vehicle config class
+    EDTs::EDTConfig& vehicleConfig_;
+
     /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
     // Thrust config variables (can be given default values)
     double thrustMagnitudeConstant_;
@@ -246,6 +313,27 @@ protected:
 
     std::map < double, Eigen::VectorXd > bodyDataMap_;
     Eigen::VectorXd bodyDataSaveVector_;
+
+    // Custom Thrust standard functions
+    std::function< double(const double) > thrustMagnitudeFunction_;
+    std::function< Eigen::Vector3d(const double) > thrustDirectionFunction_;
+
+    // Variables for general current calcs
+    Eigen::Vector3d current_; // TODO: Decide if this vector needed, or can just use magnitude and direction vector
+    double currentMagnitude_;
+    std::string configType_; // Same as config type found in EDT_configs.h, sourced from jsons TODO: give this a value
+    // Variables specific to bare tether concept
+    double avgTrueCurrent_;
+    double avgDimensionlessCurrent_;
+    double dimensionlessCurrentC_;
+    double trueCurrentC_;
+    double unitCurrent_;
+    double EDTConductivity_;
+    double motionalEMF_;
+    Eigen::Vector3d velocityWrtMagField_; // TODO: Consider turning this into a common variable
+    Eigen::Vector3d EDTUnitVector_; // TODO: See if can roll this into a common variable (ie combine with the thrust direction component)
+    double dimensionlessVoltageA_;
+    double tetherLength_; // TODO: Make a common variable from jsons etc
 
 
     // Current factor, TODO: model properly!

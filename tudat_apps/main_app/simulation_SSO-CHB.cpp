@@ -77,7 +77,18 @@ int main( )
 
     nlohmann::json ISMFVariables = simulationVariables["InterstellarMagField"];
 
-    EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, ISMFVariables, configType);
+    EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, ISMFVariables);
+
+    // Create EDT config class and set constant thrust in guidance class
+    std::cout<< " -- Creating Config class -- " << std::endl;
+//    std::string configType = simulationVariables["EDTConfigs"]["configType"];  NOTE: now defined in environment section
+    double tetherLength = simulationVariables["EDTConfigs"]["tetherLength"];
+    double tetherDiameterInner = simulationVariables["EDTConfigs"]["tetherDiameterInner"];
+    double tetherDiameterOuter = simulationVariables["EDTConfigs"]["tetherDiameterOuter"];
+    nlohmann::json hoytetherVariables = simulationVariables["EDTConfigs"]["hoytether"];
+    nlohmann::json SRPVariables = simulationVariables["scConfigs"]["SRP"];
+    EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(configType, hoytetherVariables, SRPVariables, tetherLength, tetherDiameterInner, tetherDiameterOuter);
+
 
     // Create EDT Guidance class
     std::cout<< " -- Creating Guidance class -- " << std::endl;
@@ -88,23 +99,16 @@ int main( )
             thrustMagnitudeConfig,
             thrustDirectionConfig,
             baseBodyMap,
-            CHBEDTEnviro);
-
-    // Create EDT config class and set constant thrust in guidance class
-    std::cout<< " -- Creating Config class -- " << std::endl;
-//    std::string configType = simulationVariables["EDTConfigs"]["configType"];  NOTE: now defined in environment section
-    double tetherLength = simulationVariables["EDTConfigs"]["tetherLength"];
-    double tetherDiameterInner = simulationVariables["EDTConfigs"]["tetherDiameterInner"];
-    double tetherDiameterOuter = simulationVariables["EDTConfigs"]["tetherDiameterOuter"];
-    nlohmann::json hoytetherVariables = simulationVariables["EDTConfigs"]["hoytether"];
-    nlohmann::json SRPVariables = simulationVariables["scConfigs"]["SRP"];
-    EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(CHBEDTGuidance, configType, hoytetherVariables, SRPVariables, tetherLength, tetherDiameterInner, tetherDiameterOuter);
+            CHBEDTEnviro,
+            CHBEDTConfig);
     CHBEDTGuidance.setThrustMagnitudeConstant(CHBEDTConfig.getConstantThrust());
+
+
 
     // Get universal class for propagation bodies
     std::cout<< " -- Creating Propbodies class -- " << std::endl;
     nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"];
-    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, baseBodyMap, jsonBodiesToInclude);
+    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, CHBEDTGuidance, baseBodyMap, jsonBodiesToInclude);
 
     // Get universal class for propagation settings + set vehicle initial state
     std::cout<< " -- Creating Propsettings class -- " << std::endl;
@@ -157,7 +161,7 @@ int main( )
 
 
     // Ensure environment is properly updated
-    CHBEDTEnviro.updateAll();
+    CHBEDTGuidance.updateAllEnviro();
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////             PROPAGATE ORBIT            ////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

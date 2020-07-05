@@ -19,13 +19,6 @@ using namespace EDTs;
 
 namespace univ {
 
-//    void IDFunction(std::string bodyName){
-//        int bodyID = spice_interface::convertBodyNameToNaifId(bodyName);
-//        std::cout << "Body ID for " << bodyName << ": " << std::to_string(bodyID) << std::endl;
-//    } // TODO: Delete me
-
-
-
     // Define Class that contains celestial bodies, and creates acceleration map etc from vehicle body map
     class propBodies {
     public:
@@ -38,9 +31,11 @@ namespace univ {
         // Constructor
         propBodies(
                 EDTs::EDTConfig& vehicleConfig,
+                EDTGuidance& guidanceClass,
                 NamedBodyMap& baseBodyMap,
                 nlohmann::json jsonBodiesToInclude) :
                 vehicleConfig_(vehicleConfig),
+                guidanceClass_(guidanceClass),
                 bodyMap(baseBodyMap),
                 jsonBodiesToInclude_(jsonBodiesToInclude)
                 {
@@ -86,7 +81,7 @@ namespace univ {
 
             // Add acceleration model settings for vehicle - ie thrust guidance settings
             accelerationsOfVehicle_[ "Vehicle" ].push_back(
-                    std::make_shared< ThrustAccelerationSettings >( vehicleConfig.thrustDirectionGuidanceSettings, vehicleConfig.thrustMagnitudeSettings ) );
+                    std::make_shared< ThrustAccelerationSettings >( guidanceClass.thrustDirectionGuidanceSettings, guidanceClass.thrustMagnitudeSettings ) );
 
             // Add acceleration model settings for celestials using for loop
             for(std::size_t i=0; i<bodiesToCreate_.size(); ++i){
@@ -131,6 +126,7 @@ namespace univ {
 
         /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
         EDTs::EDTConfig& vehicleConfig_;
+        EDTGuidance& guidanceClass_;
         nlohmann::json jsonBodiesToInclude_;
 
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
@@ -262,19 +258,6 @@ namespace univ {
         Eigen::Vector6d vehicleInitialState_;
         std::shared_ptr< DependentVariableSaveSettings > dependentVariablesToSave_;
     };
-
-
-//    void printIntVector(std::vector<int> const &input) {
-//        for (int i = 0; i < input.size(); i++) {
-//            std::cout << input.at(i) << ' ';
-//        }
-//    }
-//
-//    void printStrVector(std::vector<std::string> const &input) {
-//        for (int i = 0; i < input.size(); i++) {
-//            std::cout << input.at(i) << ' ';
-//        }
-//    }
 
 }
 
