@@ -128,6 +128,39 @@ namespace gen {
         return y;
     }
 
+
+
+
+    ////////////////////////// Some Equations and formulae for bare tethers ///////////////////////
+
+    // Function to convert from true current to dimensionless current through EDT, or vice versa
+    double trueCurrentDimensionlessConvert(double currentToConvert, double unitCurrent){
+        return currentToConvert / unitCurrent;
+    }
+
+    // Function to get unit current I_0
+    double getUnitCurrent(double conductivity, double motionalEMF, double tetherCrossSectionalArea){
+        return conductivity * motionalEMF * tetherCrossSectionalArea;
+    }
+
+    // Function to get motional EMF Em from simulation parameters
+    double getMotionalEMF(Eigen::Vector3d velocityWrtMagField, Eigen::Vector3d magFieldVector, Eigen::Vector3d EDTLengthUnitVector){
+        return (velocityWrtMagField.cross(magFieldVector)).dot(EDTLengthUnitVector);
+    }
+
+    // Function to get average unit current i_avg
+    double getAvgDimensionlessCurrent(double tetherLength, double dimensionlessVoltageA){
+        return -(1/5*tetherLength)*pow(dimensionlessVoltageA, 5/2) + 0.5*pow(dimensionlessVoltageA, 3/2);
+    }
+
+    // Function to get dimensionless voltage at A lambda_A, using a known value for ic
+    double getDimensionlessVoltageA(double dimensionlessCurrentC){
+        double ic = dimensionlessCurrentC;
+        return pow( (2*ic - pow(ic, 2)), 2/3 );
+    }
+
+
+
 }
 
 #endif //TUDATBUNDLE_GENERAL_FUNCTIONS_H

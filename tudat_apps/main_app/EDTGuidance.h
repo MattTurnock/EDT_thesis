@@ -55,11 +55,13 @@ public:
         if ((thrustDirectionConfig_ == "nominalPrograde") or (thrustDirectionConfig_ == "nominalRetrograde") ){
             if (thrustDirectionConfig_ == "nominalPrograde") {
 
-                currentToSet_ << 0, 0, 1*currentFactor_; //TODO: implement properly
+                // For prograde use current oriented in positive Z-direction
+                currentToSet_ << 0, 0, 1*guidanceEnvironment_.getCurrentMagnitude(); //TODO: Fix to use EDT length unit vector, instead of hardcode
             }
             else if (thrustDirectionConfig_ == "nominalRetrograde") {
-                // Set current vector for retrograde, normalised vector pointing downwards
-                currentToSet_ << 0, 0, -1*currentFactor_; //TODO: implement properly
+
+                // For retrograde use current oriented in negative Z-direction
+                currentToSet_ << 0, 0, -1*guidanceEnvironment_.getCurrentMagnitude(); //TODO: Fix to use EDT length unit vector, instead of hardcode
             }
             // Set current in guidance class and update it
             guidanceEnvironment_.setCurrent(currentToSet_);
@@ -247,7 +249,7 @@ protected:
 
 
     // Current factor, TODO: model properly!
-    double currentFactor_ = 1*10E4; //
+//    double currentFactor_ = 1*10E4; //
 
 };
 

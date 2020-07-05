@@ -23,12 +23,14 @@ public:
             double& phi0,
             double& R0,
             NamedBodyMap& environmentBodyMap,
-            nlohmann::json ISMFVariables):
+            nlohmann::json ISMFVariables,
+            std::string configType):
             B0EstimationParameters_(B0EstimationParameters),
             phi0_(phi0),
             R0_(R0),
             environmentBodyMap_(environmentBodyMap),
-            ISMFVariables_(ISMFVariables){
+            ISMFVariables_(ISMFVariables),
+            configType_(configType){
         //////////// CONSTRUCTOR ////////////////
 
         // Set values for ISMF values from json data, and calculate the new ones
@@ -100,10 +102,25 @@ public:
         B0_ = 1E-9 * gen::twoSines(simulationTimeYears_, B0EstimationParameters_);
     }
 
+    // Function to update current, different depending on EDT config
+    void updateCurrent(){
+
+        // For spacecraft using a bare tether concept
+        if ( (configType_ == "CHB") or (configType_ == "AlMB") ){
+
+        }
+
+        // For spacecraft using a transient-current concept
+        else if ( (configType_ == "CHTr") or (configType_ == "AlMTr") ){
+            // Add an update function for transient-current type spacecraft
+        }
+    }
+
     // Run all updaters
     void updateAll(double simulationTime=0){
         updateBodyParameters(simulationTime);
         updateMagField();
+        updateCurrent();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -225,9 +242,17 @@ protected:
     Eigen::Vector3d EDTThrustDirection_;
     double EDTThrustMagnitude_;
 
-    // Vectors for current
+    // Variables for general current calcs
     Eigen::Vector3d current_;
     double currentMagnitude_;
+    std::string configType_; // Same as config type found in EDT_configs.h, sourced from jsons
+    // Variables specific to bare tether concept
+    double avgTrueCurrent_;
+    double avgDimensionlessCurrent_;
+    double unitCurrent_;
+    double EDTConductivity_;
+    double motionalEMF_;
+//    double
 
     // Vectors for general + parker magnetic field (needs a local orientation magFieldMaglocal_ and real one magField_
     Eigen::Vector3d magFieldMaglocal_;

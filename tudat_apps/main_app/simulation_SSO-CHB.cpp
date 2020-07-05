@@ -64,6 +64,7 @@ int main( )
     double R0_au = simulationVariables["ParkerMagField"]["R0_au"];
     double phi0 = phi0_deg * deg2rad;
     double R0 = R0_au * AU;
+    std::string configType = simulationVariables["EDTConfigs"]["configType"];
 
     std::vector<double> twoSinePars;
     twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["a1"]);
@@ -76,7 +77,7 @@ int main( )
 
     nlohmann::json ISMFVariables = simulationVariables["InterstellarMagField"];
 
-    EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, ISMFVariables);
+    EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, ISMFVariables, configType);
 
     // Create EDT Guidance class
     std::cout<< " -- Creating Guidance class -- " << std::endl;
@@ -91,7 +92,7 @@ int main( )
 
     // Create EDT config class and set constant thrust in guidance class
     std::cout<< " -- Creating Config class -- " << std::endl;
-    std::string configType = simulationVariables["EDTConfigs"]["configType"];
+//    std::string configType = simulationVariables["EDTConfigs"]["configType"];  NOTE: now defined in environment section
     double tetherLength = simulationVariables["EDTConfigs"]["tetherLength"];
     double tetherDiameterInner = simulationVariables["EDTConfigs"]["tetherDiameterInner"];
     double tetherDiameterOuter = simulationVariables["EDTConfigs"]["tetherDiameterOuter"];
