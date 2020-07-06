@@ -81,13 +81,10 @@ int main( )
 
     // Create EDT config class and set constant thrust in guidance class
     std::cout<< " -- Creating Config class -- " << std::endl;
-//    std::string configType = simulationVariables["EDTConfigs"]["configType"];  NOTE: now defined in environment section
-    double tetherLength = simulationVariables["EDTConfigs"]["tetherLength"];
-    double tetherDiameterInner = simulationVariables["EDTConfigs"]["tetherDiameterInner"];
-    double tetherDiameterOuter = simulationVariables["EDTConfigs"]["tetherDiameterOuter"];
-    nlohmann::json hoytetherVariables = simulationVariables["EDTConfigs"]["hoytether"];
+    nlohmann::json configVariables = simulationVariables["EDTConfigs"];
     nlohmann::json SRPVariables = simulationVariables["scConfigs"]["SRP"];
-    EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(configType, hoytetherVariables, SRPVariables, tetherLength, tetherDiameterInner, tetherDiameterOuter);
+    nlohmann::json materialProperties = simulationVariables["materialProperties"];
+    EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(configVariables, configType, SRPVariables, materialProperties);
 
 
     // Create EDT Guidance class

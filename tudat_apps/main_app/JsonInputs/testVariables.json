@@ -52,6 +52,7 @@
     "tetherLength": 100,
     "tetherDiameterInner": 0.01,
     "tetherDiameterOuter": 0.01,
+    "emitterCurrent": 1,
     "hoytether": {
       "tetherDiameterInnerSecondary": 0.01,
       "tetherDiameterOuterSecondary": 0.01,
@@ -73,6 +74,16 @@
       "endmassRadiationCoefficient": 0.5,
       "tetherRadiationCoefficient": 0.5,
       "rotationFactor": 0.7
+    }
+  },
+  "materialProperties": {
+    "resistivity": {
+      "Al": 2.65E-8,
+      "Cu": 1.68E-8
+    },
+    "tempCoefficient": {
+      "Al": 0.00429,
+      "Cu": 0.0068
     }
   }
 }

@@ -22,24 +22,18 @@ namespace EDTs {
 
         // Constructor
         EDTConfig(
-//                EDTGuidance& guidanceClass,
+                nlohmann::json configVariables,
                 std::string& configType,
-                nlohmann::json hoytetherVariables,
                 nlohmann::json SRPVariables,
-                double length=1,
-                double diameterInner=0.1,
-                double diameterOuter=0.1,
+                nlohmann::json materialProperties,
                 double vehicleMass=100,
                 double vehicleISP=9999,
                 double constantThrustAccel = 0.325E-3,
                 Eigen::Vector3d bodyFixedThrustDirection = {1, 0, 0}):
-//                guidanceClass_(guidanceClass),
+                configVariables_(configVariables),
                 configType_(configType),
-                hoytetherVariables_(hoytetherVariables),
                 SRPVariables_(SRPVariables),
-                length_(length),
-                diameterInner_(diameterInner),
-                diameterOuter_(diameterOuter),
+                materialProperties_(materialProperties),
                 vehicleMass_(vehicleMass),
                 vehicleISP_(vehicleISP),
                 constantThrustAccel_(constantThrustAccel),
@@ -77,24 +71,40 @@ namespace EDTs {
 
             // Tether
 
-            // Set some parameters based on config type
-            if (configType_ == "CHB"){ // TODO: add other ors for other hoytether types
+            /////////////////////// Set SRP parameters (based on config type) /////////////////////////////////////
+            if ( (configType_ == "CHB") or (configType_ == "CHTr") ){ // TODO: CHECK DESIGN SPECS - do we use tape tethers or no? IMPORTANT!!!!!!
                 // Calculate some SRP related properties, for hoytethers
                 setSRPForHoytether();
 
 
                 // TODO: Calculate conductivity, assuming both inner and outer used for it
             }
-            else{
+            else if ( (configType_ == "AlMB") or (configType_ == "AlMTr") ){
                 // SRP CALCULATIONS FOR SINGLELINE DESIGNS
                 setSRPForSingleLine();
 
                 //TODO: fill in other config types as if-else
                 std::cout << "EDT Config type " << configType_ << " does not exist" << std::endl;
             }
+            else{
+                std::cout << "Config type: " << configType_ << " Not recognised" << std::endl;
+            }
+
+            ///////////////////////// Set current-based parameters (based on config type) ///////////////////////
+            if ( (configType_ == "CHB") or (configType_ == "CHTr") ) {
+                resistivity_ = getCompositeResistivity(length_, resistivityAl_, resistivityCu_, xSecAreaDonut_, xSecAreaInner_);
+            }
+            else if ( (configType_ == "AlMB") or (configType_ == "AlMTr") ) {
+                resistivity_ = resistivityAl_;
+            }
+            conductivity_ = getConductivity(resistivity_);
+            EDTResistance_ = getResistance(resistivity_, length_, xSecAreaConducting_); // TODO: Check length correct
+
 
 
         }
+
+        ////////////////////////////////////////////// SRP and hoytether properties //////////////////////////////////////
 
         void initialiseHoytetherProperties(){
             // Calculate number of tether segments h
@@ -119,6 +129,10 @@ namespace EDTs {
             effectiveHoytetherSRPArea_ = rotationCoefficient_ * occultationCoefficient_ * (totalPrimarySRPArea_ + totalSecondarySRPArea_);
         }
 
+
+
+
+
         void setSRPForHoytether(){
             // Set total effective SRP Area
             totalEffectiveSRPArea_ = endmassArea1_ + endmassArea2_ + effectiveHoytetherSRPArea_;
@@ -140,7 +154,39 @@ namespace EDTs {
                     (endmassArea1_ + endmassArea2_ + effectiveSingleLineSRPArea_);
         }
 
-        // Get-set functions for protected variables
+
+        ////////////////////// Conductivity and other current-related EDT properties /////////////////////////////
+
+        // Function to calculate conductivity, from length, area, and total resistance
+        void setConductivity(double length, double resistance, double area){
+            conductivity_ = length / (resistance*area);
+        }
+
+        double getResistance(double resistivity, double length, double area){
+            return (resistivity*length)/area;
+        }
+
+        // Function to calculate total resistance for a composite tether (assumed as 2 resistors in parallel)
+        double getCompositeResistance(double resistance1, double resistance2){
+            return pow( (1/resistance1 + 1/resistance2) ,-1);
+        }
+
+        // Function to get composite resistivity, using resistance as an intermediary
+        double getCompositeResistivity(double length, double resistivity1, double resistivity2, double area1, double area2){
+            double Atot = area1 + area2;
+            double R1 = getResistance(resistivity1, length, area1);
+            double R2 = getResistance(resistivity2, length, area2);
+            double Rtot = getCompositeResistance(R1, R2);
+
+            return (Rtot * Atot)/length;
+        }
+
+        // Function to calculate conductivity, from resistivity (ie the inverse)
+        double getConductivity(double resistivity) {
+            return 1/resistivity;
+        }
+
+        /////////////////////////// Get-set functions /////////////////////////////////////////////////////////////////////
         Eigen::Vector3d getBodyFixedThrustDirection( )
         {
             return bodyFixedThrustDirection_;
@@ -166,14 +212,17 @@ namespace EDTs {
 
         /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
 
+        // Config variables from the main json file
+        nlohmann::json configVariables_;
+
         // Guidance class and config type
 //        EDTGuidance& guidanceClass_;
         std::string& configType_;
 
         // Create initial variables for EDT properties
-        double length_;
-        double diameterInner_;
-        double diameterOuter_;
+        double length_ = configVariables_["tetherLength"];
+        double diameterInner_ = configVariables_["tetherDiameterInner"];
+        double diameterOuter_ = configVariables_["tetherDiameterOuter"];
 
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
         double vehicleMass_;
@@ -185,14 +234,14 @@ namespace EDTs {
         // Initialise constant thrust value
         double constantThrust_;
 
-        // Create derived EDT properties - cross sectional areas
+        // Create derived EDT properties - cross sectional areas. Inner is Cu, outer is Al
         double xSecAreaTotal_;
         double xSecAreaInner_;
         double xSecAreaDonut_;
         double xSecAreaConducting_; // Refers to the cross sectional area used for carrying current TODO: Add functions to calculate this
 
         // Create json hoytether EDT properties
-        nlohmann::json hoytetherVariables_;
+        nlohmann::json hoytetherVariables_ = configVariables_["hoytether"];
         double tetherDiameterInnerSecondary_;
         double tetherDiameterOuterSecondary_;
         double noPrimaryLines_;
@@ -214,7 +263,13 @@ namespace EDTs {
 
 
         // Create derived EDT properties - other
+        nlohmann::json materialProperties_;
+        double resistivityAl_ = materialProperties_["resistivity"]["Al"];
+        double resistivityCu_ = materialProperties_["resistivity"]["Cu"];
+        double resistivity_;
         double conductivity_;
+        double EDTResistance_;
+        double emitterCurrent_ = configVariables_["emitterCurrent"]; // Corresponds to Ic, the current from the e- emitter
 
         // Create json object and regular variables for SRP properties
         nlohmann::json SRPVariables_;
