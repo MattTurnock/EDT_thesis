@@ -11,7 +11,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 # Specify project name.
-project(TemplateApplication)
+project(EDTApplication)
 
 # Load UserSettings.txt
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
@@ -154,6 +154,8 @@ else()
   endif( )
 endif( )
 
+ MESSAGE("===================== TITS ========================")
+ MESSAGE("pagmo ${USE_PAGMO}")
 # Find PaGMO library on local system.
 if( USE_PAGMO )
   find_package(PaGMO2)
@@ -174,8 +176,22 @@ include(tudatLinkLibraries)
 
 
 # MTURNOCK CHANGES - ADD APPLICATIONS ##
+message("==================TITS4=======================")
+message(${SRCROOT})
+# set(PAGMO_EXAMPLE_APPLICATIONS_DIR "${SRC_ROOT}/../../../../tudatExampleApplications/libraryExamples/PaGMOEx/Problems")
+# set(PAGMO_EXAMPLE_APPLICATIONS_DIR "/home/matt/tudatBundle/tudatExampleApplications/libraryExamples/PaGMOEx/Problems")
+# add_subdirectory(${PAGMO_EXAMPLE_APPLICATIONS_DIR} ${PAGMO_EXAMPLE_APPLICATIONS_DIR})
+# find_package(Problems)
 
- # Add simulation_SSO-CHB application
+
+ # Add simulation_SSO-CHB application TODO: rename this file to main
  add_executable(application_simulation_SSO-CHB "${SRCROOT}/simulation_SSO-CHB.cpp" universal_settings.h simulation_SSO-CHB.h EDT_configs.h environment_settings.h EDTGuidance.h general_functions.h)
  setup_executable_target(application_simulation_SSO-CHB "${SRCROOT}")
- target_link_libraries(application_simulation_SSO-CHB ${TUDAT_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES})
+ target_link_libraries(application_simulation_SSO-CHB ${TUDAT_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} pagmo pthread)
+
+ # Add GA_calculator application
+ add_executable(application_GA_calculator "${SRCROOT}/GA_calculator.cpp" GA_calculator.h earthPlanetTransfer.cpp earthPlanetTransfer.h)
+ setup_executable_target(application_GA_calculator "${SRCROOT}")
+ target_link_libraries(application_GA_calculator ${TUDAT_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} pagmo pthread)
+
+# ${PAGMO_EXAMPLE_APPLICATIONS_DIR}/

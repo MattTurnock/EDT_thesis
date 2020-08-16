@@ -6,6 +6,7 @@
 #define TUDATBUNDLE_GENERAL_FUNCTIONS_H
 
 #include <Tudat/Astrodynamics/BasicAstrodynamics/accelerationModelTypes.h>
+#include "applicationOutput.h"
 
 using namespace tudat;
 using namespace tudat::mathematical_constants;
@@ -128,7 +129,49 @@ namespace gen {
         return y;
     }
 
+    // Function to convert year to seconds
+    double years2Seconds(double years){
+        return years * 365.25*24*60*60;
+    }
 
+    // Function to convert year (eg 2020) to MJD
+    double year2MJDSeconds(double year){
+        return years2Seconds(year - 2000);
+    }
+
+    // Function to convert km/s to m/s
+    double km2m(double kms){
+        return kms*1000;
+    }
+
+    // Function to print pagmo population to file (based on one in saveOptimizationResults.h)
+    void printPopulationToFile( const std::vector< std::vector< double > >& population,
+                                const std::string filePrefix,
+                                const std::string fileSuffix,
+                                const std::string outputSubFolder,
+                                const bool isFitness )
+    {
+
+        Eigen::MatrixXd matrixToPrint( population.size( ), population.at( 0 ).size( ) );
+        for( unsigned int i = 0; i < population.size( ); i++ )
+        {
+            for( unsigned int j = 0; j < population.at( 0 ).size( ); j++ )
+            {
+                matrixToPrint( i, j ) = population.at( i ).at( j );
+            }
+        }
+
+        if( !isFitness )
+        {
+            tudat::input_output::writeMatrixToFile( matrixToPrint, filePrefix + "population_" + fileSuffix + ".dat", 16,
+                                                    tudat_applications::getOutputPath( ) + outputSubFolder );
+        }
+        else
+        {
+            tudat::input_output::writeMatrixToFile( matrixToPrint, filePrefix + "fitness_" + fileSuffix + ".dat", 16,
+                                                    tudat_applications::getOutputPath( ) + outputSubFolder  );
+        }
+    }
 
 
     ////////////////////////// Some Equations and formulae for bare tethers ///////////////////////
@@ -158,6 +201,9 @@ namespace gen {
         double ic = dimensionlessCurrentC;
         return pow( (2*ic - pow(ic, 2)), 2/3 );
     }
+
+
+
 
 
 

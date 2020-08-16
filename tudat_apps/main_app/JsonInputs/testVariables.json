@@ -85,5 +85,34 @@
       "Al": 0.00429,
       "Cu": 0.0068
     }
+  },
+  "GAConfigs": {
+    "JupiterConfigs": {
+      "Bounds": {
+        "StartYearLower": 2020,
+        "StartYearUpper": 2050,
+        "FlightDurationYearsLower": 0.1,
+        "FlightDurationYearsUpper": 10,
+        "DeltaVKmsLower": 0.1,
+        "DeltaVKmsUpper": 10
+      }
+    },
+    "SaturnConfigs": {
+      "Bounds": {
+        "StartYearLower": 2020,
+        "StartYearUpper": 2050,
+        "FlightDurationYearsLower": 0.1,
+        "FlightDurationYearsUpper": 10,
+        "DeltaVKmsLower": 0.1,
+        "DeltaVKmsUpper": 10
+      }
+    },
+    "planetToFlyby": "Jupiter",
+    "algorithmName": "nsga2",
+    "islandSize": 100,
+    "noGenerations": 10,
+    "saveDataInfo":{
+      "outputSubFolder": "GA_calculator/"
+    }
   }
 }

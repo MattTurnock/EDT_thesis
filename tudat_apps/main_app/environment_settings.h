@@ -67,7 +67,7 @@ public:
         }
 
         else if (magFieldRegion_ == "Transitional"){
-            //TODO: make transitional magfield info here
+            //TODO: make transitional magfield info here (NOTE: No longer required)
         }
 
         else if (magFieldRegion_ == "Interstellar"){

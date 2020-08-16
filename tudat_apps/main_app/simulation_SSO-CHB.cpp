@@ -1,12 +1,11 @@
 // Main file for SSO-CHB simulation run
 
 ///////// Start by defining the SSO simulation ///////////////
-
+//TODO: anywwhere an uncrecognised thing is done (eg magfield type) put a termination in there
 #include "simulation_SSO-CHB.h"
-#include "EDT_configs.h"
+//#include "EDT_configs.h"
 #include "EDTGuidance.h"
 #include "universal_settings.h"
-#include "applicationOutput.h"
 #include "environment_settings.h"
 
 int main( )
@@ -101,7 +100,6 @@ int main( )
     CHBEDTGuidance.setThrustMagnitudeConstant(CHBEDTConfig.getConstantThrust());
 
 
-
     // Get universal class for propagation bodies
     std::cout<< " -- Creating Propbodies class -- " << std::endl;
     nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"];
@@ -131,7 +129,7 @@ int main( )
     vehicleInitialPosition << vehicleInitialCartesian[0], vehicleInitialCartesian[1], vehicleInitialCartesian[2];
     Eigen::Vector3d vehicleInitialVelocity;
     vehicleInitialVelocity << vehicleInitialCartesian[3], vehicleInitialCartesian[4], vehicleInitialCartesian[5];
-
+    
 //    std::cout << "Solar gravitational parameter: " << solarGravPar << std::endl;
 //    std::cout << "Vehicle initial state Keplerian: " << vehicleInitialKeplerian << std::endl;
 //    std::cout << "Vehicle initial state Cartesian: " << vehicleInitialCartesian << std::endl;
