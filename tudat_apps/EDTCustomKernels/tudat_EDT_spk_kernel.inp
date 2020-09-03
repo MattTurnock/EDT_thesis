@@ -2,13 +2,13 @@ LEAPSECONDS_KERNEL   = naif0012.tls
 
 SPK_KERNEL           = tudat_EDT_spk_kernel.bsp
  BEGIN_TIME          = 1995 JAN 01
- END_TIME            = 2040 JAN 01
+ END_TIME            = 2100 JAN 01
  SOURCE_SPK_KERNEL   = de438.bsp
  SOURCE_SPK_KERNEL   = mar097.bsp
    BODIES          = 499
  SOURCE_SPK_KERNEL   = jup310.bsp
    BODIES          = 599
- SOURCE_SPK_KERNEL   = sat425.bsp
+ SOURCE_SPK_KERNEL   = sat368.bsp
    BODIES          = 699
  SOURCE_SPK_KERNEL   = ura111.bsp
    BODIES          = 799

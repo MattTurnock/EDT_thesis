@@ -140,18 +140,14 @@ int main( )
     double initialEphemerisTime = simulationVariables["GuidanceConfigs"]["initialEphemerisTime"];
     std::string terminationType = simulationVariables["GuidanceConfigs"]["terminationType"];
     double simulationTimeYears = simulationVariables["GuidanceConfigs"]["simulationTimeYears"];
+    nlohmann::json integratorSettingsJson = simulationVariables["GuidanceConfigs"]["integratorSettings"];
     univ::propSettings SSOPropSettings = univ::propSettings(SSOPropBodies,
                                                             vehicleInitialPosition,
                                                             vehicleInitialVelocity,
+                                                            integratorSettingsJson,
                                                             initialEphemerisTime,
                                                             terminationType,
                                                             simulationTimeYears);
-//    univ::propSettings SSOPropSettings = univ::propSettings(SSOPropBodies,
-//                                                            {1.496E11, 0, 0},
-//                                                            {0, 29.78E3, 0},
-//                                                            1.0E7,
-//                                                            "nominalTimeTermination",
-//                                                            0.1);
 
 
 

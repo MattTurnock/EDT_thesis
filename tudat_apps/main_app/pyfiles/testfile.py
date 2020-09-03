@@ -1,6 +1,7 @@
 import numpy as np
 import os
 from matplotlib import pyplot as plt
+import matplotlib.animation as animation
 
 AU = 1.496e11 # AU in m
 
@@ -12,11 +13,11 @@ simulation_output_dir = os.path.abspath(os.path.join(main_app_dir, "SimulationOu
 ################### TESTING OUTPUT FROM SSO-CHB TEST 1 #####################
 
 "SSO-CHB-Test/SSO-CH-Test-in-0-000325.dat"
+year = 365*24*60*60
+AU = 1.496E11
+def testPlot(filename, parName, parVal, scale=10, plotType = "propData", filename2="", filename3="", savefig=False, savename=""):
 
-def testPlot(filename, parName, parVal, scale=10, plotType = "propData", filename2="", savefig=False, savename=""):
 
-    year = 365*24*60*60
-    AU = 1.496E11
 
     testDataFileDir = os.path.abspath(os.path.join(simulation_output_dir, filename))
     testDataArray = np.genfromtxt(testDataFileDir, delimiter=",")
@@ -26,6 +27,11 @@ def testPlot(filename, parName, parVal, scale=10, plotType = "propData", filenam
         testDataFileDir2 = os.path.abspath(os.path.join(simulation_output_dir, filename2))
         testDataArray2 = np.genfromtxt(testDataFileDir2, delimiter=",")
         times2 = testDataArray2[:,0]/year
+
+    if filename3 != "":
+        testDataFileDir3 = os.path.abspath(os.path.join(simulation_output_dir, filename3))
+        testDataArray3 = np.genfromtxt(testDataFileDir3, delimiter=",")
+        times3 = testDataArray3[:,0]/year
 
     if plotType == "propData":
 
@@ -306,6 +312,93 @@ def testPlot(filename, parName, parVal, scale=10, plotType = "propData", filenam
         # Add legend
         plt.legend(legendList)
 
+    elif plotType == "propDataGA":
+
+        # scale = 10
+        legendList = []
+
+        # Create figure, title, scale etc
+        plt.figure(figsize=(10,10))
+        ax = plt.gca()
+        # plt.title("x-y plot, Earth to Planet")
+        plt.xlabel("x coord [AU]")
+        plt.ylabel("y coord [AU]")
+        plt.xlim([-scale, scale])
+        plt.ylim([-scale, scale])
+        plt.grid()
+
+        # Add Earth orbit circle
+        an = np.linspace(0, 2 * np.pi, 100)
+        plt.plot(1*np.cos(an), 1*np.sin(an), color='blue')
+        # plt.plot(testDataArray3[:,1]/AU, testDataArray3[:,2]/AU, color='blue')
+        legendList.append("Earth Orbit")
+        # plt.plot(0.4*np.cos(an), 0.4*np.sin(an))
+        # legendList.append("Mercury Orbit")
+        plt.plot(5.2*np.cos(an), 5.2*np.sin(an), color='green')
+        # plt.plot(testDataArray3[:,4]/AU, testDataArray3[:,5]/AU, color='green')
+        legendList.append("Jupiter Orbit")
+        # plt.plot(9.58*np.cos(an), 9.58*np.sin(an))
+        # legendList.append("Saturn Orbit")
+        # plt.plot(70*np.cos(an), 70*np.sin(an))
+        # legendList.append("Termination Shock")
+
+        depVarsFirstRow = testDataArray3[0,:]
+        depVarsFinalRow = testDataArray3[-1,:]
+        EarthStart = [depVarsFirstRow[1], depVarsFirstRow[2]]
+        PlanetEnd = [depVarsFinalRow[4], depVarsFinalRow[5]]
+
+        plt.plot(EarthStart[0]/AU, EarthStart[1]/AU, 'ro', color='blue') # TODO: Make me modular
+        legendList.append("Earth at start")
+        # plt.plot(78934550712.8347/AU, -778090576795.287/AU, 'ro') # TODO: Make me modular
+        # legendList.append("Earth at end")
+        # plt.plot(-38693.254000109/AU, -4496.40733001221/AU, 'ro') # TODO: Make me modular
+        # legendList.append("Jupiter at start")
+        plt.plot(PlanetEnd[0]/AU, PlanetEnd[1]/AU, 'ro', color='green') # TODO: Make me modular
+        legendList.append("Jupiter at end")
+        plt.plot(0,0, 'ro', color='orange')
+        legendList.append('Sun')
+
+        # Add spacecraft plot
+        plt.plot(testDataArray[:, 1]/AU, testDataArray[:, 2]/AU)
+        legendList.append("Lambert Trajectory")
+
+        if filename2 != "":
+            plt.plot(testDataArray2[:, 1]/AU, testDataArray2[:, 2]/AU)
+            legendList.append("Perturbed Trajectory")
+
+        # Add legend
+        plt.legend(legendList)
+
+        initialEpoch = testDataArray[0,0]
+        finalEpoch = testDataArray[-1,0]
+        TOFSseconds = finalEpoch - initialEpoch
+        print("TOF: %s" %(TOFSseconds/60/60/24/365.25))
+        print("Launch date (since 2000): %s" %(initialEpoch/60/60/24/365.25))
+
+        # plt.savefig("pyplots/%s-%s-%s.png" %(parName, parVal, scale))
+
+
+    # elif plotType == "AnimatedPC":
+    #     #NOTE: uses filename as the main trajectory file, and depvars as filename2
+    #     x_earth = testDataArray2[:,1]
+    #     y_earth = testDataArray2[:,2]
+    #     x_target = testDataArray2[:,4]
+    #     y_target = testDataArray2[:,5]
+    #
+    #     x = testDataArray[:,1]/AU
+    #     y = testDataArray[:,2]/AU
+    #
+    #     fig, ax = plt.subplots()
+    #     line, = ax.plot(x, y, color='k')
+    #
+    #     def update(num, x, y, line):
+    #         line.set_data(x[:num], y[:num])
+    #         # line.axes.axis([0, 10, 0, 1])
+    #         return line,
+    #
+    #     ani = animation.FuncAnimation(fig, update, len(x), fargs=[x, y, line],
+    #                                   interval=10, blit=False)
+
 
     if savefig == True:
         if savename == "": plotSaveName = plotType
@@ -326,17 +419,210 @@ def testPlot(filename, parName, parVal, scale=10, plotType = "propData", filenam
 
 baseDirectE6 = "SSO-CHB-Test-custom-2/SSO-CH-Test-out-E6-%s.dat"
 
-testPlot(baseDirectE6 %"propData", "const current", "subheading", plotType="propData")
-testPlot(baseDirectE6 %"magData", "Theta over time", "subheading", plotType="posTheta")
-testPlot(baseDirectE6 %"magData", "Magfield over time", "subheading", plotType="magField")
-testPlot(baseDirectE6 %"magData", "Magfield over time", "subheading", plotType="magField2")
-testPlot(baseDirectE6 %"depVarData", "Kepler plot", "subheading", plotType="keplerPlot1")
-testPlot(baseDirectE6 %"depVarData", "Altitude plot", "subheading", plotType="altitudePlot", filename2=baseDirectE6 %"bodyData")
-testPlot(baseDirectE6 %"thrustData", "Thrust magnitude plot", "subheading", plotType="thrustPlot")
-testPlot(baseDirectE6 %"bodyData", "States plot", "subheading", plotType="statePlot", filename2=baseDirectE6 %"propData")
-testPlot(baseDirectE6 %"magData", "Magfield B0 over time", "subheading", plotType="magField3")
+# testPlot(baseDirectE6 %"propData", "const current", "subheading", plotType="propData")
+# testPlot(baseDirectE6 %"magData", "Theta over time", "subheading", plotType="posTheta")
+# testPlot(baseDirectE6 %"magData", "Magfield over time", "subheading", plotType="magField")
+# testPlot(baseDirectE6 %"magData", "Magfield over time", "subheading", plotType="magField2")
+# testPlot(baseDirectE6 %"depVarData", "Kepler plot", "subheading", plotType="keplerPlot1")
+# testPlot(baseDirectE6 %"depVarData", "Altitude plot", "subheading", plotType="altitudePlot", filename2=baseDirectE6 %"bodyData")
+# testPlot(baseDirectE6 %"thrustData", "Thrust magnitude plot", "subheading", plotType="thrustPlot")
+# testPlot(baseDirectE6 %"bodyData", "States plot", "subheading", plotType="statePlot", filename2=baseDirectE6 %"propData")
+# testPlot(baseDirectE6 %"magData", "Magfield B0 over time", "subheading", plotType="magField3")
+
+GA_calculatorTest = "GA_calculator/unperturbed_fullProblem_leg_0.dat"
+GA_calculatorTestPerturbed = "GA_calculator/perturbed_fullProblem_leg_0.dat"
+GA_calculatorTestDepVars = "GA_calculator/unperturbed_depVars_leg_0.dat"
+# GA_calculatorDepVars = "GA_calculator/fullProblemInterplanetaryTrajectoryDepVars_0_leg_0.dat"
+
+# SOme new testplots
+# testPlot(GA_calculatorTest, "", "", plotType="AnimatedPC", filename2=GA_calculatorDepVars)
+testPlot(GA_calculatorTest, "", "", plotType="propDataGA", savefig=True, savename="GA_test",
+         filename2=GA_calculatorTestPerturbed, filename3=GA_calculatorTestDepVars, scale=6)
+# testPlot(GA_calculatorTestPerturbed, "", "", plotType="propDataGA", savefig=True, savename="GA_test")
+
+
+fitnessFile0Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/fitness_GA_EJ_0.dat"))
+fitnessFile0Array = np.genfromtxt(fitnessFile0Dir, delimiter=",")[:,1:3]
+fitnessFile0ArrayTOFs = fitnessFile0Array[:,1]
+minTOF0 = min(fitnessFile0ArrayTOFs)
+avgTOF0 = np.mean(fitnessFile0ArrayTOFs)
+
+theIs = [10]
+for i in theIs:
+    fitnessFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/fitness_GA_EJ_%s.dat" %i))
+    fitnessFile9Array = np.genfromtxt(fitnessFile9Dir, delimiter=",")[:,1:3]
+    fitnessFile9ArrayTOFs = fitnessFile9Array[:,1]
+    fitnessFile9ArrayDVs = fitnessFile9Array[:,0]
+    minTOF9 = min(fitnessFile9ArrayTOFs)
+    avgTOF9 = np.mean(fitnessFile9ArrayTOFs)
+    avgDV9 = np.mean(fitnessFile9ArrayDVs)
+    # print("Fitness 0 min: %s" %(minTOF0/year))
+    # print("Fitness 0 mean: %s" %(avgTOF0/year))
+    # print("Fitness 9 min: %s" %(minTOF9/year))
+    # print("Fitness 9 mean: %s" %(avgTOF9/year))
+    # print("Fitness 9 mean DV: %s" %(avgDV9))
+
+    popFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/population_GA_EJ_%s.dat" %i))
+    popFile9Array = np.genfromtxt(popFile9Dir, delimiter=",")[:,1:3]
+    launchYears = popFile9Array[:,0]/year
+    dummyList = np.ones(np.size(launchYears))
+
+
+    # Get rid of bad DV cases, and combine into full array:
+    fitnessFile9DVsListFINAL = []
+    fitnessFile9TOFSListFINAL = []
+    launchYearsListFINAL = []
+    arrivalYearsListFINAL = []
+    for i in range(len(fitnessFile9ArrayDVs)):
+        if fitnessFile9ArrayDVs[i] < 10000:
+            fitnessFile9DVsListFINAL.append(fitnessFile9ArrayDVs[i]/1000)
+            TOF = fitnessFile9ArrayTOFs[i]/year
+            fitnessFile9TOFSListFINAL.append(TOF)
+            launchYear = launchYears[i] + 2000
+            launchYearsListFINAL.append(launchYear)
+            arrivalYearsListFINAL.append(launchYear + TOF)
+
+
+
+    JupiterAps = np.arange(2005.267, 2060, 11.9)
+
+
+    plt.figure()
+    plt.scatter(launchYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
+    plt.xlabel("Launch year")
+    plt.ylabel("Time of flight (years)")
+    # plt.ylim([0,5])
+    plt.xlim([2010, 2060])
+    plt.grid()
+    plt.savefig("pyplots/TOF_launch_10k.png")
+
+    plt.figure()
+    plt.scatter(fitnessFile9DVsListFINAL, fitnessFile9TOFSListFINAL, 1)
+    plt.xlabel("DVs (km/s)")
+    plt.ylabel("Time of flight (years)")
+    # plt.ylim([0,5])
+    plt.grid()
+    plt.savefig("pyplots/TOF_DV_10k.png")
+
+    plt.figure()
+    plt.scatter(arrivalYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
+    plt.xlabel("Arrival year")
+    plt.ylabel("Time of flight (years)")
+    for i in JupiterAps:
+        plt.axvline(x=i)
+    # plt.ylim([0,5])
+    plt.xlim([2010, 2060])
+    plt.grid()
+    plt.savefig("pyplots/TOF_arrival_10k.png")
+
+
+theIs = [10,20,30,40,50,60,70,80,90]
+for j in theIs:
+    fitnessFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/fitness_GA_EJ_%s.dat" %j))
+    fitnessFile9Array = np.genfromtxt(fitnessFile9Dir, delimiter=",")[:,1:3]
+    fitnessFile9ArrayTOFs = fitnessFile9Array[:,1]
+    fitnessFile9ArrayDVs = fitnessFile9Array[:,0]
+    minTOF9 = min(fitnessFile9ArrayTOFs)
+    avgTOF9 = np.mean(fitnessFile9ArrayTOFs)
+    avgDV9 = np.mean(fitnessFile9ArrayDVs)
+    # print("Fitness 0 min: %s" %(minTOF0/year))
+    # print("Fitness 0 mean: %s" %(avgTOF0/year))
+    # print("Fitness 9 min: %s" %(minTOF9/year))
+    # print("Fitness 9 mean: %s" %(avgTOF9/year))
+    # print("Fitness 9 mean DV: %s" %(avgDV9))
+
+    popFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/population_GA_EJ_%s.dat" %j))
+    popFile9Array = np.genfromtxt(popFile9Dir, delimiter=",")[:,1:3]
+    launchYears = popFile9Array[:,0]/year
+    dummyList = np.ones(np.size(launchYears))
+
+
+    # Get rid of bad DV cases, and combine into full array:
+    fitnessFile9DVsListFINAL = []
+    fitnessFile9TOFSListFINAL = []
+    launchYearsListFINAL = []
+    arrivalYearsListFINAL = []
+    for i in range(len(fitnessFile9ArrayDVs)):
+        if fitnessFile9ArrayDVs[i] < 12000:
+            fitnessFile9DVsListFINAL.append(fitnessFile9ArrayDVs[i]/1000)
+            TOF = fitnessFile9ArrayTOFs[i]/year
+            fitnessFile9TOFSListFINAL.append(TOF)
+            launchYear = launchYears[i] + 2000
+            launchYearsListFINAL.append(launchYear)
+            arrivalYearsListFINAL.append(launchYear + TOF)
+
+
+
+    JupiterAps = np.arange(2005.267, 2060, 11.9)
+
+
+    plt.figure()
+    plt.scatter(launchYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
+    plt.xlabel("Launch year")
+    plt.ylabel("Time of flight (years)")
+    # plt.ylim([0,5])
+    plt.xlim([2010, 2060])
+    plt.grid()
+    plt.savefig("pyplots/TOF_launch_12k_%s.png" %j)
+
+    plt.figure()
+    plt.scatter(fitnessFile9DVsListFINAL, fitnessFile9TOFSListFINAL, 1)
+    plt.xlabel("DVs (km/s)")
+    plt.ylabel("Time of flight (years)")
+    # plt.ylim([0,5])
+    plt.grid()
+    plt.savefig("pyplots/TOF_DV_12k_%s.png" %j)
+
+    plt.figure()
+    plt.scatter(arrivalYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
+    plt.xlabel("Arrival year")
+    plt.ylabel("Time of flight (years)")
+    for i in JupiterAps:
+        plt.axvline(x=i, color='red')
+    plt.legend(["Jupiter Aphelion Times"])
+    # plt.ylim([0,5])
+    plt.xlim([2010, 2060])
+    plt.grid()
+    plt.savefig("pyplots/TOF_arrival_12k_%s.png" %j)
+
+# # grid search look
+# DVDir = os.path.abspath(os.path.join("/home/matt/tudatBundle/tudatExampleApplications/libraryExamples/PaGMOEx/SimulationOutput/THIS_IS_A_TEST.dat"))
+# DVArray = np.genfromtxt(DVDir, dtype=float, delimiter='\t')[:,1:]
+# launchDir =os.path.abspath(os.path.join("/home/matt/tudatBundle/tudatExampleApplications/libraryExamples/PaGMOEx/SimulationOutput/THIS_IS_A_TEST_x_data.dat"))
+# launchArray = np.genfromtxt(launchDir, dtype=float, delimiter='\t')[:,1:]
+# TOFDir =os.path.abspath(os.path.join("/home/matt/tudatBundle/tudatExampleApplications/libraryExamples/PaGMOEx/SimulationOutput/THIS_IS_A_TEST_y_data.dat"))
+# TOFArray = np.genfromtxt(TOFDir, dtype=float, delimiter='\t')[:,1:]
+# print(np.min(DVArray))
+#
+#
+# plt.figure()
+# for i in range(len(DVArray[:,0])):
+#     plt.scatter(DVArray[:,i]/1000, TOFArray/year, 1)
+# plt.xlabel("DVs (km/s)")
+# plt.ylabel("Time of flight (years)")
+# plt.xlim([2.5,10])
+# plt.ylim([8.5,9.68])
+# plt.grid()
+# plt.title("Gride")
+# # plt.savefig("pyplots/TOF_DV.png")
+
 
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

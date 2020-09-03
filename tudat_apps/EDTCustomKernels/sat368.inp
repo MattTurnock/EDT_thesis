@@ -1,0 +1,13 @@
+ 
+LEAPSECONDS_FILE     = /kernels/gen/lsk/naif0010.tls
+
+SPK_FILE             = sat368.bsp
+   INCLUDE_TEXT_FILE = sat368.cmt
+   BEGIN_TIME        = 1900 JAN 01
+   END_TIME          = 2100 JAN 01
+
+
+   SOURCE_NIO_FILE   = sat368.nio
+
+   SOURCE_NIO_FILE   = /group/naif/kernels/gen/spk/de430.nio
+     BODIES          = 3, 399, 10, 6

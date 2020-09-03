@@ -3,14 +3,14 @@
     "customKernelName": "tudat_EDT_spk_kernel.bsp",
     "bodiesToInclude": {
       "Sun": 1,
-      "Mercury": 1,
-      "Venus": 1,
-      "Earth": 1,
-      "Mars": 1,
-      "Jupiter": 1,
-      "Saturn": 1,
-      "Uranus": 1,
-      "Neptune": 1
+      "Mercury": 0,
+      "Venus": 0,
+      "Earth": 0,
+      "Mars": 0,
+      "Jupiter": 0,
+      "Saturn": 0,
+      "Uranus": 0,
+      "Neptune": 0
     }
   },
   "ParkerMagField": {
@@ -39,23 +39,14 @@
     "integratorSettings": {
       "initialTimeStep": 1.0,
       "integrator": "RK87DP",
-      "minimumStepSize": 1E-20,
-      "maximumStepSize": 86400,
-      "relativeErrorTolerance": 1E-10,
-      "absoluteErrorTolerance": 1E-10
-    },
-    "integratorSettingsPerturbed": {
-      "initialTimeStep": 1.0,
-      "integrator": "RK87DP",
-      "minimumStepSize": 1E-20,
+      "minimumStepSize": 1E-5,
       "maximumStepSize": 31536000,
-      "relativeErrorTolerance": 1E-6,
-      "absoluteErrorTolerance":1E-6
+      "relativeErrorTolerance": 1E-8,
+      "absoluteErrorTolerance":1E-8
     },
     "terminationType": "nominalTimeTermination",
-    "simulationTimeYears": 2.3,
+    "simulationTimeYears": 10,
     "proximityTerminationCutoffAU": 1,
-    "maxCPUTimeSecs": 60,
     "vehicleInitialKeplerian": {
       "a_au": 1,
       "e": 0,
@@ -109,26 +100,26 @@
       "Bounds": {
         "StartYearLower": 2020,
         "StartYearUpper": 2050,
-        "FlightDurationYearsLower": 2.5,
+        "FlightDurationYearsLower": 0.1,
         "FlightDurationYearsUpper": 10,
-        "DeltaVKmsLower": 8.5,
-        "DeltaVKmsUpper": 9.68
+        "DeltaVKmsLower": 0.1,
+        "DeltaVKmsUpper": 10
       }
     },
     "SaturnConfigs": {
       "Bounds": {
         "StartYearLower": 2020,
         "StartYearUpper": 2050,
-        "FlightDurationYearsLower": 6,
-        "FlightDurationYearsUpper": 15,
-        "DeltaVKmsLower": 10,
-        "DeltaVKmsUpper": 11.33
+        "FlightDurationYearsLower": 0.1,
+        "FlightDurationYearsUpper": 10,
+        "DeltaVKmsLower": 0.1,
+        "DeltaVKmsUpper": 10
       }
     },
     "planetToFlyby": "Jupiter",
-    "algorithmName": "moead",
+    "algorithmName": "nsga2",
     "islandSize": 1000,
-    "noGenerations": 100,
+    "noGenerations": 10,
     "saveDataInfo":{
       "outputSubFolder": "GA_calculator/"
     }

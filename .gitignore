@@ -4,5 +4,6 @@ SimulationOutput/
 # Ignore build files
 tudat_apps/bin/
 
-# Ignore .bsp files in custom kernels
+# Ignore .bsp files in custom kernels and old
 tudat_apps/EDTCustomKernels/*.bsp
+tudat_apps/EDTCustomKernels/old/*.bsp

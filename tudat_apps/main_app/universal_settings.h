@@ -33,18 +33,21 @@ namespace univ {
                 EDTs::EDTConfig& vehicleConfig,
                 EDTGuidance& guidanceClass,
                 NamedBodyMap& baseBodyMap,
-                nlohmann::json jsonBodiesToInclude) :
+                nlohmann::json jsonBodiesToInclude,
+                bool useThrust = true) :
                 vehicleConfig_(vehicleConfig),
                 guidanceClass_(guidanceClass),
                 bodyMap(baseBodyMap),
-                jsonBodiesToInclude_(jsonBodiesToInclude)
+                jsonBodiesToInclude_(jsonBodiesToInclude),
+                useThrust_(useThrust)
                 {
 
             // Constructor
-            /////////// Initialise all bodies list with all possible bodies that can be used ///////////
+            /////////// Initialise all bodies list with all possible bodies that can be used //////////
             allBodiesList_.push_back("Sun");
             allBodiesList_.push_back("Mercury");
             allBodiesList_.push_back("Venus");
+            allBodiesList_.push_back("Earth");
             allBodiesList_.push_back("Earth");
             allBodiesList_.push_back("Mars");
             allBodiesList_.push_back("Jupiter");
@@ -78,11 +81,12 @@ namespace univ {
             setGlobalFrameBodyEphemerides( bodyMap, "Sun", "ECLIPJ2000" );
 
             ///////////////// Create bodies acceleration map (includes perturbations) ///////////////////////
-
-            // Add acceleration model settings for vehicle - ie thrust guidance settings
-            accelerationsOfVehicle_[ "Vehicle" ].push_back(
-                    std::make_shared< ThrustAccelerationSettings >( guidanceClass.thrustDirectionGuidanceSettings, guidanceClass.thrustMagnitudeSettings ) );
-
+            // Add acceleration model settings for vehicle - ie thrust guidance settings. Uses boolean for creating acceleration map without vehicle thrust if wanted
+            if (useThrust_) {
+                accelerationsOfVehicle_["Vehicle"].push_back(
+                        std::make_shared<ThrustAccelerationSettings>(guidanceClass.thrustDirectionGuidanceSettings,
+                                                                     guidanceClass.thrustMagnitudeSettings));
+            }
             // Add acceleration model settings for celestials using for loop
             for(std::size_t i=0; i<bodiesToCreate_.size(); ++i){
                 accelerationsOfVehicle_[bodiesToCreate_[i]].push_back(std::make_shared< AccelerationSettings >( central_gravity ) );
@@ -95,9 +99,10 @@ namespace univ {
             vehicleRadiationPressureSettings_ = std::make_shared< CannonBallRadiationPressureInterfaceSettings >(
                     "Sun", SRPReferenceArea_, SRPCoefficient_);
 
-            bodyMap["Vehicle"]->setRadiationPressureInterface(
-                    "Sun", createRadiationPressureInterface(
-                            vehicleRadiationPressureSettings_, "Vehicle", bodyMap ) );
+            SRPInterface_ = createRadiationPressureInterface(
+                    vehicleRadiationPressureSettings_, "Vehicle", bodyMap );
+
+            bodyMap["Vehicle"]->setRadiationPressureInterface("Sun", SRPInterface_ );
 
             accelerationsOfVehicle_["Sun"].push_back(std::make_shared< AccelerationSettings >(basic_astrodynamics::cannon_ball_radiation_pressure));
 
@@ -114,12 +119,21 @@ namespace univ {
 
         }
 
+        //////////////////////////////// Get-set functions //////////////////////////////////////////////////////
         NamedBodyMap getBodyMap(){
             return bodyMap;
         }
 
         EDTs::EDTConfig getVehicleConfig(){
             return vehicleConfig_;
+        }
+
+        std::shared_ptr< electro_magnetism::RadiationPressureInterface > getSRPInterface(){
+            return SRPInterface_;
+        }
+
+        std::map< std::string, std::vector< std::shared_ptr< AccelerationSettings > > > getAccelerationsOfVehicle(){
+            return accelerationsOfVehicle_;
         }
 
     protected:
@@ -130,7 +144,7 @@ namespace univ {
         nlohmann::json jsonBodiesToInclude_;
 
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
-
+        bool useThrust_;
         /////////////////////////// Other set parameters ///////////////////////////////
         // Body variables
         std::vector<std::string> bodiesToCreate_;
@@ -146,6 +160,7 @@ namespace univ {
 
         // misc
         int intPlaceholder_;
+        std::shared_ptr< electro_magnetism::RadiationPressureInterface > SRPInterface_;
 
 
     };
@@ -167,40 +182,76 @@ namespace univ {
         // Constructor
         propSettings(
                 propBodies& simulationPropBodies,
-                Eigen::Vector3d vehicleInitialPosition = {1.496E11, 0, 0},
-                Eigen::Vector3d vehicleInitialVelocity = {0, 29.78E3, 0},
+                Eigen::Vector3d vehicleInitialPosition,
+                Eigen::Vector3d vehicleInitialVelocity,
+                nlohmann::json integratorSettingsJson,
                 double initialEphemerisTime = 1.0E7,
                 std::string terminationMethod = "nominalTimeTermination",
-                double simulationLength = 10) :
+                double simulationLength = 10,
+                std::string proximityTerminationBody1 = "Vehicle",
+                std::string proximityTerminationBody2 = "Jupiter",
+                double proximityCutoffAU = 1,
+                double maxCPUTimeSecs = 60) :
                 simulationPropBodies_(simulationPropBodies),
                 vehicleInitialPosition_(vehicleInitialPosition),
                 vehicleInitialVelocity_(vehicleInitialVelocity),
+                integratorSettingsJson_(integratorSettingsJson),
                 initialEphemerisTime_(initialEphemerisTime),
                 terminationMethod_(terminationMethod),
-                simulationLength_(simulationLength){
-
+                simulationLength_(simulationLength),
+                proximityTerminationBody1_(proximityTerminationBody1),
+                proximityTerminationBody2_(proximityTerminationBody2),
+                proximityCutoffAU_(proximityCutoffAU),
+                maxCPUTimeSecs_(maxCPUTimeSecs){
+            std::cout << "beginning constructor" << std::endl;
             /////////////// Propagation Settings ///////////////////////
             // Create vehicle initial state from position and velocities
             vehicleInitialState_ << vehicleInitialPosition_, vehicleInitialVelocity_;
 
-            // Set maximum CPU termination time for all cases TODO: make set in json properly
+            // Set maximum CPU termination time for all cases
             terminationSettingsList.push_back( std::make_shared< PropagationCPUTimeTerminationSettings >(
-                    60.0 ) );
+                    maxCPUTimeSecs_ ) );
+
+            // Set maximum simulation date to Jan 01 2100, since this is when ephemerides run out
+            terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
+                    gen::year2MJDSeconds(2100) ) );
 
             // Define propagation termination conditions
+            // Time termination - ends after a certain number of years defined from simulationLength
             if (terminationMethod_ == "nominalTimeTermination"){
                 // Add default time termination to termination settings list
                 double defaultFinalEphemTime = initialEphemerisTime_ + simulationLength_*365*24*60*60;
                 terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
                         defaultFinalEphemTime ) );
             }
+            // Proximity termination - define a body and the proximity to it when termination happens. Also uses simulationTime as an upper limit of simulation
+            else if (terminationMethod_ == "proximityTermination"){
+                // Add time termination
+                double maximumEphemTime = initialEphemerisTime_ + simulationLength_*365*24*60*60;
+                terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
+                        maximumEphemTime ) );
+
+                // Add proximity termination
+                proximityTerminationDepVar_ =
+                        std::make_shared< SingleDependentVariableSaveSettings >(
+                                relative_distance_dependent_variable,
+                                proximityTerminationBody1_,
+                                proximityTerminationBody2_);
+
+                terminationSettingsList.push_back(std::make_shared< PropagationDependentVariableTerminationSettings >(
+                        proximityTerminationDepVar_,
+                        proximityCutoffAU_*gen::AU,
+                        true,
+                        false));
+            }
             else{
-                //TODO: work out what happens here
+                std::cout << "ERROR: invalid termination setting" << std::endl;
+                exit(1);
             }
 
             // Using above if-else really make the termination settings
             terminationSettings = std::make_shared< PropagationHybridTerminationSettings >( terminationSettingsList, true );
-
+            std::cout << "Set termination settings" << std::endl;
             // Add dependent variables to save to list (kepler + altitude)
             dependentVariablesList.push_back(
                     std::make_shared< SingleDependentVariableSaveSettings >( keplerian_state_dependent_variable,
@@ -214,26 +265,31 @@ namespace univ {
 
             dependentVariablesToSave_ =
                     std::make_shared< DependentVariableSaveSettings >( dependentVariablesList );
-
+            std::cout << "Set dependent variables to save" << std::endl;
             // Define settings for propagation of translational dynamics.
             propagatorSettings = std::make_shared< TranslationalStatePropagatorSettings< double > >(
                             simulationPropBodies_.centralBodies, simulationPropBodies_.accelerationModelMap,
                             simulationPropBodies_.bodiesToPropagate, vehicleInitialState_, terminationSettings,
                             cowell, dependentVariablesToSave_ );
 
+            std::cout << "Set proagator settings" << std::endl;
 
             ///////////////////// Integration Settings //////////////////////
             // TODO: Check general settings of integrator, and adjust as necessary (especially tolerances).
             // TODO: part 2, add some integrator settings to the json file
+            std::string RKCoefficients = integratorSettingsJson["integrator"];
+            RungeKuttaCoefficients::CoefficientSets coefficientSet = gen::getIntegratorCoefficientSet(RKCoefficients);
+            
             integratorSettings =
                     std::make_shared< RungeKuttaVariableStepSizeSettings< > >(
                             initialEphemerisTime_,
-                            1.0,
-                            numerical_integrators::RungeKuttaCoefficients::rungeKutta87DormandPrince, //TODO: change this integrator to FILG if possible (ask dominic?)
-                            1E-5,
-                            365*24*60*60,
-                            1e-8,
-                            1e-8);
+                            integratorSettingsJson_["initialTimeStep"],
+                            coefficientSet, //TODO: change this integrator to FILG if possible (ask dominic?)
+                            integratorSettingsJson_["minimumStepSize"],
+                            integratorSettingsJson_["maximumStepSize"],
+                            integratorSettingsJson_["relativeErrorTolerance"],
+                            integratorSettingsJson_["absoluteErrorTolerance"]);
+            std::cout << "Set integrator settings" << std::endl;
         }
 
         propBodies getSimulationPropBodies(){
@@ -246,17 +302,24 @@ namespace univ {
         propBodies& simulationPropBodies_;
         Eigen::Vector3d vehicleInitialPosition_;
         Eigen::Vector3d vehicleInitialVelocity_;
+        nlohmann::json integratorSettingsJson_;
 
 
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
         double initialEphemerisTime_;
         std::string terminationMethod_;
         double simulationLength_;
+        std::string proximityTerminationBody1_;
+        std::string proximityTerminationBody2_;
+        double proximityCutoffAU_;
+        double maxCPUTimeSecs_;
 
 
         /////////////////////////// Other set parameters ///////////////////////////////
         Eigen::Vector6d vehicleInitialState_;
         std::shared_ptr< DependentVariableSaveSettings > dependentVariablesToSave_;
+        std::shared_ptr< SingleDependentVariableSaveSettings > proximityTerminationDepVar_;
+
     };
 
 }

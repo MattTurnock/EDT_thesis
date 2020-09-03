@@ -184,7 +184,7 @@ message(${SRCROOT})
 # find_package(Problems)
 
 
- # Add simulation_SSO-CHB application TODO: rename this file to main
+ # Add simulation_SSO-CHB application
  add_executable(application_simulation_SSO-CHB "${SRCROOT}/simulation_SSO-CHB.cpp" universal_settings.h simulation_SSO-CHB.h EDT_configs.h environment_settings.h EDTGuidance.h general_functions.h)
  setup_executable_target(application_simulation_SSO-CHB "${SRCROOT}")
  target_link_libraries(application_simulation_SSO-CHB ${TUDAT_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} pagmo pthread)

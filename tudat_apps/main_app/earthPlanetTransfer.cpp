@@ -99,7 +99,7 @@ EarthPlanetTransfer::EarthPlanetTransfer(std::vector< std::vector< double > > &b
         }
     }
 
-    // Create departure and capture variables. Uses default values TODO: ensure these values are OK
+    // Create departure and capture variables. Uses default values - parabolic escape and (basically) parabolic entry
     semiMajorAxes_.resize( 2 );
     eccentricities_.resize( 2 );
     semiMajorAxes_ << std::numeric_limits< double >::infinity( ), 1.0895e8 / 0.02;
@@ -117,10 +117,13 @@ std::pair<std::vector<double>, std::vector<double> > EarthPlanetTransfer::get_bo
     return { problemBounds_[0], problemBounds_[1] };
 }
 
+
+
 //! Implementation of the fitness function. Returns TOF
 std::vector<double> EarthPlanetTransfer::fitness( const std::vector<double> &xv ) const {
     // Sun gravitational parameter
     const double sunGravitationalParameter = 1.32712428e20;
+
 
     // Create variable vector.
     Eigen::VectorXd variableVector ( numberOfLegs_ + 1 );
@@ -149,13 +152,34 @@ std::vector<double> EarthPlanetTransfer::fitness( const std::vector<double> &xv 
     // Create the DV vector and calculate trajectory
     double resultingDeltaV;
     earthPlanetTraj.calculateTrajectory(resultingDeltaV);
-
-    // Give large TOF penalty if DV exceeds bounded value, or cannot be calculated
-    if ( (std::isnan(resultingDeltaV)) or ( resultingDeltaV < deltaVBounds_[0] ) or (resultingDeltaV > deltaVBounds_[1]) ){
-        TOF += 1.0E12;
-    }
+    // Give large TOF penalty if DV exceeds constrained value, or cannot be calculated TODO: check if needs to be readded
+//    if ( (std::isnan(resultingDeltaV)) or ( resultingDeltaV < deltaVBounds_[0] ) or (resultingDeltaV > deltaVBounds_[1]) ){
+//        TOF += 1.0E12;
+////        std::cout <<"Lower: " <<  deltaVBounds_[0] << "   Upper: " << deltaVBounds_[1] << "   Actual: " << resultingDeltaV <<  std::endl;
+//    }
 
     return {resultingDeltaV, TOF};
+}
 
-
+// Some additional functions for returning important info (see header file)
+std::vector< TransferLegType > EarthPlanetTransfer::getLegTypeVector() const {
+    return legTypeVector_;
+}
+std::vector< std::string > EarthPlanetTransfer::getBodyNamesVector() const {
+    return bodyNamesVector_;
+}
+std::vector< ephemerides::EphemerisPointer > EarthPlanetTransfer::getEphemerisVector() const{
+    return ephemerisVector_;
+}
+Eigen::VectorXd EarthPlanetTransfer::getGravitationalParameterVector() const{
+    return gravitationalParameterVector_;
+}
+Eigen::VectorXd EarthPlanetTransfer::getSemiMajorAxes() const{
+    return semiMajorAxes_;
+}
+Eigen::VectorXd EarthPlanetTransfer::getEccentricities() const{
+    return eccentricities_;
+}
+Eigen::VectorXd EarthPlanetTransfer::getMinimumPericenterRadii() const{
+    return minimumPericenterRadii_;
 }

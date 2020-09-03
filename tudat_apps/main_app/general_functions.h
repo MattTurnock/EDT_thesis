@@ -10,6 +10,8 @@
 
 using namespace tudat;
 using namespace tudat::mathematical_constants;
+using namespace tudat::simulation_setup;
+using namespace tudat::numerical_integrators;
 
 namespace gen {
 
@@ -55,6 +57,8 @@ namespace gen {
 
         return jsonObject;
     }
+
+
 
     // Calculate circle area
     double getCircleArea(double diameter){
@@ -164,13 +168,63 @@ namespace gen {
         if( !isFitness )
         {
             tudat::input_output::writeMatrixToFile( matrixToPrint, filePrefix + "population_" + fileSuffix + ".dat", 16,
-                                                    tudat_applications::getOutputPath( ) + outputSubFolder );
+                                                    tudat_applications::getOutputPath( ) + outputSubFolder,
+                                                    ",");
         }
         else
         {
             tudat::input_output::writeMatrixToFile( matrixToPrint, filePrefix + "fitness_" + fileSuffix + ".dat", 16,
-                                                    tudat_applications::getOutputPath( ) + outputSubFolder  );
+                                                    tudat_applications::getOutputPath( ) + outputSubFolder,
+                                                    ",");
         }
+    }
+
+    // Function to convert from numerical <int> vector for flyby trajectory to named bodies
+    std::vector< std::string > FlybySequence2TransferBodyTrajectory(std::vector< int > flybySequence){
+
+        // Create list of transfer bodies, and list to put the transfer trajectory into. Note, sun is a dummy
+        std::vector< std::string > transferBodies = {"Sun",
+                                                     "Mercury",
+                                                     "Venus",
+                                                     "Earth",
+                                                     "Mars",
+                                                     "Jupiter",
+                                                     "Saturn",
+                                                     "Uranus",
+                                                     "Neptune"};
+        std::vector< std::string > transferBodyTrajectory;
+
+        // For each entry in the sequence, add to the new transferBodyTrajectoryVector
+        int noFlybys = flybySequence.size();
+        for(int i = 0; i < noFlybys; i++){
+            transferBodyTrajectory.push_back( transferBodies[ flybySequence[i] ] );
+        }
+
+        return transferBodyTrajectory;
+    }
+
+    // COnvert an eigen::vector to std::vector (for doubles)
+    std::vector< double > EigenVectorXd2StdVectorDoubles(Eigen::VectorXd inputVector){
+        std::vector< double > outputVector;
+        outputVector.resize(inputVector.size());
+        Eigen::VectorXd::Map(&outputVector[0], inputVector.size()) = inputVector;
+
+        return outputVector;
+    }
+
+    // Return the integrator coefficient set from string input
+    RungeKuttaCoefficients::CoefficientSets getIntegratorCoefficientSet(std::string integratorString){
+
+        RungeKuttaCoefficients::CoefficientSets coefficientSetOutput;
+        if (integratorString == "RK87DP"){ // TODO: add support for more integrators!
+            coefficientSetOutput = numerical_integrators::RungeKuttaCoefficients::rungeKutta87DormandPrince;
+        }
+        else{
+            std::cout << "INTEGRATOR NOT RECOGNISED: terminating simulation" << std::endl;
+            exit(1);
+        }
+
+        return coefficientSetOutput;
     }
 
 

@@ -20,6 +20,9 @@
 
 #include <Tudat/InputOutput/basicInputOutput.h>
 
+#include "Tudat/SimulationSetup/PropagationSetup/propagationPatchedConicFullProblem.h"
+#include "Tudat/SimulationSetup/PropagationSetup/propagationLambertTargeterFullProblem.h"
+
 #include "Tudat/Astrodynamics/Ephemerides/approximatePlanetPositions.h"
 #include "Tudat/Astrodynamics/TrajectoryDesign/trajectory.h"
 #include <random>
@@ -81,6 +84,14 @@ struct EarthPlanetTransfer
         return 2u;
     }
 
+    // A bunch of functions to return private variables if required
+    std::vector< TransferLegType > getLegTypeVector() const;
+    std::vector< std::string > getBodyNamesVector() const;
+    std::vector< ephemerides::EphemerisPointer > getEphemerisVector() const;
+    Eigen::VectorXd getGravitationalParameterVector() const;
+    Eigen::VectorXd getSemiMajorAxes() const;
+    Eigen::VectorXd getEccentricities() const;
+    Eigen::VectorXd getMinimumPericenterRadii() const;
 
 private:
 
