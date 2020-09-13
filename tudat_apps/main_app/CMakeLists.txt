@@ -154,7 +154,7 @@ else()
   endif( )
 endif( )
 
- MESSAGE("===================== TITS ========================")
+ MESSAGE("===================== TEST ========================")
  MESSAGE("pagmo ${USE_PAGMO}")
 # Find PaGMO library on local system.
 if( USE_PAGMO )
@@ -176,7 +176,7 @@ include(tudatLinkLibraries)
 
 
 # MTURNOCK CHANGES - ADD APPLICATIONS ##
-message("==================TITS4=======================")
+message("==================TEST4=======================")
 message(${SRCROOT})
 # set(PAGMO_EXAMPLE_APPLICATIONS_DIR "${SRC_ROOT}/../../../../tudatExampleApplications/libraryExamples/PaGMOEx/Problems")
 # set(PAGMO_EXAMPLE_APPLICATIONS_DIR "/home/matt/tudatBundle/tudatExampleApplications/libraryExamples/PaGMOEx/Problems")

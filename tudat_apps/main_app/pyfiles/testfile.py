@@ -447,7 +447,7 @@ fitnessFile0ArrayTOFs = fitnessFile0Array[:,1]
 minTOF0 = min(fitnessFile0ArrayTOFs)
 avgTOF0 = np.mean(fitnessFile0ArrayTOFs)
 
-theIs = [10]
+theIs = [10,20,30,40,50,60,70,80,90]
 for i in theIs:
     fitnessFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/fitness_GA_EJ_%s.dat" %i))
     fitnessFile9Array = np.genfromtxt(fitnessFile9Dir, delimiter=",")[:,1:3]
@@ -476,7 +476,7 @@ for i in theIs:
     for i in range(len(fitnessFile9ArrayDVs)):
         if fitnessFile9ArrayDVs[i] < 10000:
             fitnessFile9DVsListFINAL.append(fitnessFile9ArrayDVs[i]/1000)
-            TOF = fitnessFile9ArrayTOFs[i]/year
+            TOF = fitnessFile9ArrayTOFs[i]/365.25
             fitnessFile9TOFSListFINAL.append(TOF)
             launchYear = launchYears[i] + 2000
             launchYearsListFINAL.append(launchYear)
@@ -487,14 +487,14 @@ for i in theIs:
     JupiterAps = np.arange(2005.267, 2060, 11.9)
 
 
-    plt.figure()
-    plt.scatter(launchYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
-    plt.xlabel("Launch year")
-    plt.ylabel("Time of flight (years)")
-    # plt.ylim([0,5])
-    plt.xlim([2010, 2060])
-    plt.grid()
-    plt.savefig("pyplots/TOF_launch_10k.png")
+    # plt.figure()
+    # plt.scatter(launchYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
+    # plt.xlabel("Launch year")
+    # plt.ylabel("Time of flight (years)")
+    # # plt.ylim([0,5])
+    # plt.xlim([2010, 2060])
+    # plt.grid()
+    # plt.savefig("pyplots/TOF_launch_10k.png")
 
     plt.figure()
     plt.scatter(fitnessFile9DVsListFINAL, fitnessFile9TOFSListFINAL, 1)
@@ -504,86 +504,86 @@ for i in theIs:
     plt.grid()
     plt.savefig("pyplots/TOF_DV_10k.png")
 
-    plt.figure()
-    plt.scatter(arrivalYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
-    plt.xlabel("Arrival year")
-    plt.ylabel("Time of flight (years)")
-    for i in JupiterAps:
-        plt.axvline(x=i)
-    # plt.ylim([0,5])
-    plt.xlim([2010, 2060])
-    plt.grid()
-    plt.savefig("pyplots/TOF_arrival_10k.png")
+    # plt.figure()
+    # plt.scatter(arrivalYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
+    # plt.xlabel("Arrival year")
+    # plt.ylabel("Time of flight (years)")
+    # for i in JupiterAps:
+    #     plt.axvline(x=i)
+    # # plt.ylim([0,5])
+    # plt.xlim([2010, 2060])
+    # plt.grid()
+    # plt.savefig("pyplots/TOF_arrival_10k.png")
 
 
-theIs = [10,20,30,40,50,60,70,80,90]
-for j in theIs:
-    fitnessFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/fitness_GA_EJ_%s.dat" %j))
-    fitnessFile9Array = np.genfromtxt(fitnessFile9Dir, delimiter=",")[:,1:3]
-    fitnessFile9ArrayTOFs = fitnessFile9Array[:,1]
-    fitnessFile9ArrayDVs = fitnessFile9Array[:,0]
-    minTOF9 = min(fitnessFile9ArrayTOFs)
-    avgTOF9 = np.mean(fitnessFile9ArrayTOFs)
-    avgDV9 = np.mean(fitnessFile9ArrayDVs)
-    # print("Fitness 0 min: %s" %(minTOF0/year))
-    # print("Fitness 0 mean: %s" %(avgTOF0/year))
-    # print("Fitness 9 min: %s" %(minTOF9/year))
-    # print("Fitness 9 mean: %s" %(avgTOF9/year))
-    # print("Fitness 9 mean DV: %s" %(avgDV9))
-
-    popFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/population_GA_EJ_%s.dat" %j))
-    popFile9Array = np.genfromtxt(popFile9Dir, delimiter=",")[:,1:3]
-    launchYears = popFile9Array[:,0]/year
-    dummyList = np.ones(np.size(launchYears))
-
-
-    # Get rid of bad DV cases, and combine into full array:
-    fitnessFile9DVsListFINAL = []
-    fitnessFile9TOFSListFINAL = []
-    launchYearsListFINAL = []
-    arrivalYearsListFINAL = []
-    for i in range(len(fitnessFile9ArrayDVs)):
-        if fitnessFile9ArrayDVs[i] < 12000:
-            fitnessFile9DVsListFINAL.append(fitnessFile9ArrayDVs[i]/1000)
-            TOF = fitnessFile9ArrayTOFs[i]/year
-            fitnessFile9TOFSListFINAL.append(TOF)
-            launchYear = launchYears[i] + 2000
-            launchYearsListFINAL.append(launchYear)
-            arrivalYearsListFINAL.append(launchYear + TOF)
-
-
-
-    JupiterAps = np.arange(2005.267, 2060, 11.9)
-
-
-    plt.figure()
-    plt.scatter(launchYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
-    plt.xlabel("Launch year")
-    plt.ylabel("Time of flight (years)")
-    # plt.ylim([0,5])
-    plt.xlim([2010, 2060])
-    plt.grid()
-    plt.savefig("pyplots/TOF_launch_12k_%s.png" %j)
-
-    plt.figure()
-    plt.scatter(fitnessFile9DVsListFINAL, fitnessFile9TOFSListFINAL, 1)
-    plt.xlabel("DVs (km/s)")
-    plt.ylabel("Time of flight (years)")
-    # plt.ylim([0,5])
-    plt.grid()
-    plt.savefig("pyplots/TOF_DV_12k_%s.png" %j)
-
-    plt.figure()
-    plt.scatter(arrivalYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
-    plt.xlabel("Arrival year")
-    plt.ylabel("Time of flight (years)")
-    for i in JupiterAps:
-        plt.axvline(x=i, color='red')
-    plt.legend(["Jupiter Aphelion Times"])
-    # plt.ylim([0,5])
-    plt.xlim([2010, 2060])
-    plt.grid()
-    plt.savefig("pyplots/TOF_arrival_12k_%s.png" %j)
+# theIs = [10,20,30,40,50,60,70,80,90]
+# for j in theIs:
+#     fitnessFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/fitness_GA_EJ_%s.dat" %j))
+#     fitnessFile9Array = np.genfromtxt(fitnessFile9Dir, delimiter=",")[:,1:3]
+#     fitnessFile9ArrayTOFs = fitnessFile9Array[:,1]
+#     fitnessFile9ArrayDVs = fitnessFile9Array[:,0]
+#     minTOF9 = min(fitnessFile9ArrayTOFs)
+#     avgTOF9 = np.mean(fitnessFile9ArrayTOFs)
+#     avgDV9 = np.mean(fitnessFile9ArrayDVs)
+#     # print("Fitness 0 min: %s" %(minTOF0/year))
+#     # print("Fitness 0 mean: %s" %(avgTOF0/year))
+#     # print("Fitness 9 min: %s" %(minTOF9/year))
+#     # print("Fitness 9 mean: %s" %(avgTOF9/year))
+#     # print("Fitness 9 mean DV: %s" %(avgDV9))
+#
+#     popFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/population_GA_EJ_%s.dat" %j))
+#     popFile9Array = np.genfromtxt(popFile9Dir, delimiter=",")[:,1:3]
+#     launchYears = popFile9Array[:,0]/year
+#     dummyList = np.ones(np.size(launchYears))
+#
+#
+#     # Get rid of bad DV cases, and combine into full array:
+#     fitnessFile9DVsListFINAL = []
+#     fitnessFile9TOFSListFINAL = []
+#     launchYearsListFINAL = []
+#     arrivalYearsListFINAL = []
+#     for i in range(len(fitnessFile9ArrayDVs)):
+#         if fitnessFile9ArrayDVs[i] < 12000:
+#             fitnessFile9DVsListFINAL.append(fitnessFile9ArrayDVs[i]/1000)
+#             TOF = fitnessFile9ArrayTOFs[i]/year
+#             fitnessFile9TOFSListFINAL.append(TOF)
+#             launchYear = launchYears[i] + 2000
+#             launchYearsListFINAL.append(launchYear)
+#             arrivalYearsListFINAL.append(launchYear + TOF)
+#
+#
+#
+#     JupiterAps = np.arange(2005.267, 2060, 11.9)
+#
+#
+#     plt.figure()
+#     plt.scatter(launchYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
+#     plt.xlabel("Launch year")
+#     plt.ylabel("Time of flight (years)")
+#     # plt.ylim([0,5])
+#     plt.xlim([2010, 2060])
+#     plt.grid()
+#     plt.savefig("pyplots/TOF_launch_12k_%s.png" %j)
+#
+#     plt.figure()
+#     plt.scatter(fitnessFile9DVsListFINAL, fitnessFile9TOFSListFINAL, 1)
+#     plt.xlabel("DVs (km/s)")
+#     plt.ylabel("Time of flight (years)")
+#     # plt.ylim([0,5])
+#     plt.grid()
+#     plt.savefig("pyplots/TOF_DV_12k_%s.png" %j)
+#
+#     plt.figure()
+#     plt.scatter(arrivalYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
+#     plt.xlabel("Arrival year")
+#     plt.ylabel("Time of flight (years)")
+#     for i in JupiterAps:
+#         plt.axvline(x=i, color='red')
+#     plt.legend(["Jupiter Aphelion Times"])
+#     # plt.ylim([0,5])
+#     plt.xlim([2010, 2060])
+#     plt.grid()
+#     plt.savefig("pyplots/TOF_arrival_12k_%s.png" %j)
 
 # # grid search look
 # DVDir = os.path.abspath(os.path.join("/home/matt/tudatBundle/tudatExampleApplications/libraryExamples/PaGMOEx/SimulationOutput/THIS_IS_A_TEST.dat"))

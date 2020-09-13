@@ -83,10 +83,10 @@ int main()
 
     if (planetToFlyby == "Jupiter") {
         // Define bounds, by using values defined in the json TODO: set reasonable values in json
-        Bounds[0][0] = gen::year2MJDSeconds(GAConfigs["JupiterConfigs"]["Bounds"]["StartYearLower"]);
-        Bounds[1][0] = gen::year2MJDSeconds(GAConfigs["JupiterConfigs"]["Bounds"]["StartYearUpper"]);
-        Bounds[0][1] = gen::years2Seconds(GAConfigs["JupiterConfigs"]["Bounds"]["FlightDurationYearsLower"]);
-        Bounds[1][1] = gen::years2Seconds(GAConfigs["JupiterConfigs"]["Bounds"]["FlightDurationYearsUpper"]);
+        Bounds[0][0] = gen::year2MJDDays(GAConfigs["JupiterConfigs"]["Bounds"]["StartYearLower"]);
+        Bounds[1][0] = gen::year2MJDDays(GAConfigs["JupiterConfigs"]["Bounds"]["StartYearUpper"]);
+        Bounds[0][1] = gen::years2Days(GAConfigs["JupiterConfigs"]["Bounds"]["FlightDurationYearsLower"]);
+        Bounds[1][1] = gen::years2Days(GAConfigs["JupiterConfigs"]["Bounds"]["FlightDurationYearsUpper"]);
         DVBounds[0] = gen::km2m(GAConfigs["JupiterConfigs"]["Bounds"]["DeltaVKmsLower"]);
         DVBounds[1] = gen::km2m(GAConfigs["JupiterConfigs"]["Bounds"]["DeltaVKmsUpper"]);
 
@@ -99,10 +99,10 @@ int main()
     }
     else if (planetToFlyby == "Saturn"){
         // Define bounds, by using values defined in the json TODO: set reasonable values in json
-        Bounds[0][0] = gen::year2MJDSeconds(GAConfigs["SaturnConfigs"]["Bounds"]["StartYearLower"]);
-        Bounds[1][0] = gen::year2MJDSeconds(GAConfigs["SaturnConfigs"]["Bounds"]["StartYearUpper"]);
-        Bounds[0][1] = gen::years2Seconds(GAConfigs["SaturnConfigs"]["Bounds"]["FlightDurationYearsLower"]);
-        Bounds[1][1] = gen::years2Seconds(GAConfigs["SaturnConfigs"]["Bounds"]["FlightDurationYearsUpper"]);
+        Bounds[0][0] = gen::year2MJDDays(GAConfigs["SaturnConfigs"]["Bounds"]["StartYearLower"]);
+        Bounds[1][0] = gen::year2MJDDays(GAConfigs["SaturnConfigs"]["Bounds"]["StartYearUpper"]);
+        Bounds[0][1] = gen::years2Days(GAConfigs["SaturnConfigs"]["Bounds"]["FlightDurationYearsLower"]);
+        Bounds[1][1] = gen::years2Days(GAConfigs["SaturnConfigs"]["Bounds"]["FlightDurationYearsUpper"]);
         DVBounds[0] = gen::km2m(GAConfigs["SaturnConfigs"]["Bounds"]["DeltaVKmsLower"]);
         DVBounds[1] = gen::km2m(GAConfigs["SaturnConfigs"]["Bounds"]["DeltaVKmsUpper"]);
 
@@ -231,12 +231,16 @@ int main()
 
     // Grab an example trajectory from the previous lambert stuff TODO: make this optimised, currently just example case for testing purposes
     island exampleIsland = islandsList[islandsList.size()-1];
-    std::vector< vector_double > variableVectors = exampleIsland.get_population().get_x();
-    std::vector< double > variableVector = variableVectors[variableVectors.size() - 1 ];
+    std::vector< vector_double > variableVectorsDays = exampleIsland.get_population().get_x();
+    std::vector< double > variableVectorDays = variableVectorsDays[variableVectorsDays.size() - 1 ];
+//    variableVector *= physical_constants::JULIAN_DAY; // Converts transfer times to seconds, since given in days from first stage
+//    std::transform(variableVector.begin(), variableVector.end(), variableVector.begin(),
+//                   std::bind(std::multiplies<T>(), std::placeholders::_1, 3));
+//    auto v2 = 3.0 * variableVector ; // this bastard doesnt want to work :(
+    std::vector<double> variableVector = gen::vectorScaling(variableVectorDays, physical_constants::JULIAN_DAY); // TODO: maybe rename to secs?
     variableVector.push_back(1); // Add dummy variable for TOF of capture leg
 
     // Define integrator settings. TODO: possibly make integrator setting specific to this, currently just uses same as main sim
-
     nlohmann::json integratorSettingsJson = simulationVariables["GuidanceConfigs"]["integratorSettings"];
     std::string RKCoefficients = integratorSettingsJson["integrator"];
     RungeKuttaCoefficients::CoefficientSets coefficientSet = gen::getIntegratorCoefficientSet(RKCoefficients);

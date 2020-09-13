@@ -138,14 +138,33 @@ namespace gen {
         return years * 365.25*24*60*60;
     }
 
-    // Function to convert year (eg 2020) to MJD
+    // FUnction to convert year to days
+    double years2Days(double years){
+        return years * 365.25;
+    }
+
+    // Function to convert year (eg 2020) to MJD, in seconds
     double year2MJDSeconds(double year){
         return years2Seconds(year - 2000);
+    }
+
+    // Function to convert year (eg 2020) to MJD, in days
+    double year2MJDDays(double year){
+        return years2Days(year - 2000);
     }
 
     // Function to convert km/s to m/s
     double km2m(double kms){
         return kms*1000;
+    }
+
+    // Function to multiply all values of a (double) vector by a constant (double)
+    std::vector< double > vectorScaling(std::vector<double> inputVector, double scaleFactor){
+        std::vector<double> outputVector;
+        for( int i=0 ; i<inputVector.size() ; i++){
+            outputVector.push_back( scaleFactor * inputVector[i] );
+        }
+        return outputVector;
     }
 
     // Function to print pagmo population to file (based on one in saveOptimizationResults.h)
@@ -226,6 +245,9 @@ namespace gen {
 
         return coefficientSetOutput;
     }
+
+    // Function to multiply all values of std::vector by a constant
+
 
 
     ////////////////////////// Some Equations and formulae for bare tethers ///////////////////////

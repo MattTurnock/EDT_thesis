@@ -136,7 +136,7 @@ std::vector<double> EarthPlanetTransfer::fitness( const std::vector<double> &xv 
         }
     }
     variableVector[ numberOfLegs_ ] = 1;//dummy
-//    variableVector *= physical_constants::JULIAN_DAY; // removed this so TOF is given in seconds (consistent with other stuff)
+    variableVector *= physical_constants::JULIAN_DAY; // TOF now given in days, so is required
 
     // Create the trajectory problem
     Trajectory earthPlanetTraj( numberOfLegs_,
