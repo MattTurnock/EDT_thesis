@@ -13,6 +13,28 @@ using namespace tudat::transfer_trajectories;
 using namespace tudat;
 using namespace pagmo;
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TODO: SOURCE ME FROM GENERAL FUNCTIONS - had problems with importing, needed to test quick
+namespace gen2 {
+// Function to normalise or denormlaise deltaV or TOF, based on given bounds
+    double normaliseValue(double initialValue, double lowerBound, double upperBound, bool denormalise = false) {
+        double newValue;
+        // if statement true, then denormalised
+        if (denormalise) {
+            double denormalisedValue = initialValue * (upperBound - lowerBound) + lowerBound;
+            newValue = denormalisedValue;
+        }
+            // otherwise normalised
+        else {
+            double normalisedValue = (initialValue - lowerBound) / (upperBound - lowerBound);
+            newValue = normalisedValue;
+        }
+
+        return newValue;
+    }
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 EarthPlanetTransfer::EarthPlanetTransfer(std::vector< std::vector< double > > &bounds,
                                          std::vector< double > &deltaVBounds,
                                          std::vector< int > flybySequence):
@@ -136,7 +158,7 @@ std::vector<double> EarthPlanetTransfer::fitness( const std::vector<double> &xv 
         }
     }
     variableVector[ numberOfLegs_ ] = 1;//dummy
-    variableVector *= physical_constants::JULIAN_DAY; // TOF now given in days, so is required
+    variableVector *= physical_constants::JULIAN_YEAR; // TOF now given in years, so is required
 
     // Create the trajectory problem
     Trajectory earthPlanetTraj( numberOfLegs_,
@@ -147,19 +169,28 @@ std::vector<double> EarthPlanetTransfer::fitness( const std::vector<double> &xv 
                                 sunGravitationalParameter,
                                 minimumPericenterRadii_,
                                 semiMajorAxes_,
-                                eccentricities_);
+                                eccentricities_,
+                                true,
+                                false); // TODO: make sure arrival DV is not included!! ================ <---
 
     // Create the DV vector and calculate trajectory
     double resultingDeltaV;
     earthPlanetTraj.calculateTrajectory(resultingDeltaV);
+    resultingDeltaV = resultingDeltaV / 1000; // TODO: check if this is right
     // Give large TOF penalty if DV exceeds constrained value, or cannot be calculated TODO: check if needs to be readded
-//    if ( (std::isnan(resultingDeltaV)) or ( resultingDeltaV < deltaVBounds_[0] ) or (resultingDeltaV > deltaVBounds_[1]) ){
-//        TOF += 1.0E12;
-////        std::cout <<"Lower: " <<  deltaVBounds_[0] << "   Upper: " << deltaVBounds_[1] << "   Actual: " << resultingDeltaV <<  std::endl;
-//    }
+    if ( (std::isnan(resultingDeltaV)) or ( resultingDeltaV < deltaVBounds_[0] ) or (resultingDeltaV > deltaVBounds_[1]) ){
+        TOF += 1.0E12;
+    }
 
-    return {resultingDeltaV, TOF};
+    double normalisedDV = gen2::normaliseValue(resultingDeltaV, deltaVBounds_[0], deltaVBounds_[1], false);
+    double normalisedTOF = gen2::normaliseValue(TOF, problemBounds_[0][1], problemBounds_[1][1], false);
+
+    return {normalisedDV, normalisedTOF};
+//    return {resultingDeltaV, TOF};
+//    return {resultingDeltaV};
 }
+
+
 
 // Some additional functions for returning important info (see header file)
 std::vector< TransferLegType > EarthPlanetTransfer::getLegTypeVector() const {

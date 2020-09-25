@@ -83,12 +83,12 @@ int main()
 
     if (planetToFlyby == "Jupiter") {
         // Define bounds, by using values defined in the json TODO: set reasonable values in json
-        Bounds[0][0] = gen::year2MJDDays(GAConfigs["JupiterConfigs"]["Bounds"]["StartYearLower"]);
-        Bounds[1][0] = gen::year2MJDDays(GAConfigs["JupiterConfigs"]["Bounds"]["StartYearUpper"]);
-        Bounds[0][1] = gen::years2Days(GAConfigs["JupiterConfigs"]["Bounds"]["FlightDurationYearsLower"]);
-        Bounds[1][1] = gen::years2Days(GAConfigs["JupiterConfigs"]["Bounds"]["FlightDurationYearsUpper"]);
-        DVBounds[0] = gen::km2m(GAConfigs["JupiterConfigs"]["Bounds"]["DeltaVKmsLower"]);
-        DVBounds[1] = gen::km2m(GAConfigs["JupiterConfigs"]["Bounds"]["DeltaVKmsUpper"]);
+        Bounds[0][0] = gen::year2MJDYears(GAConfigs["JupiterConfigs"]["Bounds"]["StartYearLower"]);
+        Bounds[1][0] = gen::year2MJDYears(GAConfigs["JupiterConfigs"]["Bounds"]["StartYearUpper"]);
+        Bounds[0][1] = GAConfigs["JupiterConfigs"]["Bounds"]["FlightDurationYearsLower"];
+        Bounds[1][1] = GAConfigs["JupiterConfigs"]["Bounds"]["FlightDurationYearsUpper"];
+        DVBounds[0] = GAConfigs["JupiterConfigs"]["Bounds"]["DeltaVKmsLower"];
+        DVBounds[1] = GAConfigs["JupiterConfigs"]["Bounds"]["DeltaVKmsUpper"];
 
         // Define flyby sequence
         FlybySequence.push_back(3);
@@ -99,12 +99,12 @@ int main()
     }
     else if (planetToFlyby == "Saturn"){
         // Define bounds, by using values defined in the json TODO: set reasonable values in json
-        Bounds[0][0] = gen::year2MJDDays(GAConfigs["SaturnConfigs"]["Bounds"]["StartYearLower"]);
-        Bounds[1][0] = gen::year2MJDDays(GAConfigs["SaturnConfigs"]["Bounds"]["StartYearUpper"]);
-        Bounds[0][1] = gen::years2Days(GAConfigs["SaturnConfigs"]["Bounds"]["FlightDurationYearsLower"]);
-        Bounds[1][1] = gen::years2Days(GAConfigs["SaturnConfigs"]["Bounds"]["FlightDurationYearsUpper"]);
-        DVBounds[0] = gen::km2m(GAConfigs["SaturnConfigs"]["Bounds"]["DeltaVKmsLower"]);
-        DVBounds[1] = gen::km2m(GAConfigs["SaturnConfigs"]["Bounds"]["DeltaVKmsUpper"]);
+        Bounds[0][0] = gen::year2MJDYears(GAConfigs["SaturnConfigs"]["Bounds"]["StartYearLower"]);
+        Bounds[1][0] = gen::year2MJDYears(GAConfigs["SaturnConfigs"]["Bounds"]["StartYearUpper"]);
+        Bounds[0][1] = GAConfigs["SaturnConfigs"]["Bounds"]["FlightDurationYearsLower"];
+        Bounds[1][1] = GAConfigs["SaturnConfigs"]["Bounds"]["FlightDurationYearsUpper"];
+        DVBounds[0] = GAConfigs["SaturnConfigs"]["Bounds"]["DeltaVKmsLower"];
+        DVBounds[1] = GAConfigs["SaturnConfigs"]["Bounds"]["DeltaVKmsUpper"];
 
         // Define flyby sequence
         FlybySequence.push_back(3);
@@ -143,8 +143,8 @@ int main()
     }
 //    algorithm algo = getMultiObjectiveAlgorithm(algorithmIndex);
     pagmo::algorithm algo{pagmo::moead(1u,
-                                   "random",
-                                   "weighted",
+                                   "grid",
+                                   "tchebycheff",
                                    20u,
                                    1.0,
                                    0.5,
@@ -231,13 +231,18 @@ int main()
 
     // Grab an example trajectory from the previous lambert stuff TODO: make this optimised, currently just example case for testing purposes
     island exampleIsland = islandsList[islandsList.size()-1];
-    std::vector< vector_double > variableVectorsDays = exampleIsland.get_population().get_x();
-    std::vector< double > variableVectorDays = variableVectorsDays[variableVectorsDays.size() - 1 ];
+    std::vector< vector_double > variableVectorsYears = exampleIsland.get_population().get_x(); // TODO: convert to vector_double with years?
+    std::vector< double > variableVectorYears = variableVectorsYears[variableVectorsYears.size() - 1 ];
+//    std::vector< double > variableVectorYears = gen::vectorScalingNormalisation(variableVectorNormalised, Bounds[0][1], Bounds[1][1], true);
 //    variableVector *= physical_constants::JULIAN_DAY; // Converts transfer times to seconds, since given in days from first stage
 //    std::transform(variableVector.begin(), variableVector.end(), variableVector.begin(),
 //                   std::bind(std::multiplies<T>(), std::placeholders::_1, 3));
 //    auto v2 = 3.0 * variableVector ; // this bastard doesnt want to work :(
-    std::vector<double> variableVector = gen::vectorScaling(variableVectorDays, physical_constants::JULIAN_DAY); // TODO: maybe rename to secs?
+    std::cout << "VAriable vector, years: " << std::endl;
+    for (std::vector<double>::const_iterator i = variableVectorYears.begin(); i != variableVectorYears.end(); ++i)
+        std::cout << *i << ' ';
+
+    std::vector<double> variableVector = gen::vectorScaling(variableVectorYears, physical_constants::JULIAN_YEAR); // TODO: maybe rename to secs?
     variableVector.push_back(1); // Add dummy variable for TOF of capture leg
 
     // Define integrator settings. TODO: possibly make integrator setting specific to this, currently just uses same as main sim
@@ -339,6 +344,7 @@ int main()
             // Get departure epoch and state vector
             rawDepartureEpoch = patchedConicsTrajectory[ itr.first ].begin( )->first;
             rawDepartureStateVector = patchedConicsTrajectory[ itr.first ].begin( )->second;
+            std::cout<<"Raw departure epoch, years: " << rawDepartureEpoch /60 /60 /24 /365.25 << std::endl;
 
             // Implement to delay to starting initial simulation
             bool departureEpochFound = false;
@@ -351,6 +357,7 @@ int main()
                     departureEpoch = itr2.first;
                     departureStateVector = itr2.second;
                     departureEpochFound = true;
+                    std::cout<<"Raw departure epoch, years: " << rawDepartureEpoch /60 /60 /24 /365.25 << std::endl;
                 }
             }
 
@@ -407,6 +414,8 @@ int main()
     double maxCPUTimeSecs = simulationVariables["GuidanceConfigs"]["maxCPUTimeSecs"];
     nlohmann::json integratorSettingsJsonPerturbed;
 
+
+
     univ::propSettings GAPropSettings = univ::propSettings(GAPropBodies,
                                                            departurePosition,
                                                            departureVelocity,
@@ -423,6 +432,8 @@ int main()
 //    GAGuidance.updateAllEnviro();
 
     std::cout<< "====================Propagating Perturbed Case==========================" << std::endl;
+    std::cout << "Departure epoch (years): " << departureEpoch /60 /60 /24 /365.25 << std::endl;
+    std::cout << "Sim time upper limit: " << simulationTimeUpperLimit << std::endl;
     // Create simulation object and propagate dynamics.
     SingleArcDynamicsSimulator< > dynamicsSimulator(
             GAPropBodies.bodyMap, GAPropSettings.integratorSettings, GAPropSettings.propagatorSettings);

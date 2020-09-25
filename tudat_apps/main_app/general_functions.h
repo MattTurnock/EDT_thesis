@@ -153,9 +153,31 @@ namespace gen {
         return years2Days(year - 2000);
     }
 
+    // Function to convert year (eg 2020) to year, in MJD format (eg 20)
+    double year2MJDYears(double year){
+        return year-2000;
+    }
+
     // Function to convert km/s to m/s
     double km2m(double kms){
         return kms*1000;
+    }
+
+    // Function to normalise or denormlaise deltaV or TOF, based on given bounds
+    double normaliseValue(double initialValue, double lowerBound, double upperBound, bool denormalise = false) {
+        double newValue;
+        // if statement true, then denormalised
+        if (denormalise) {
+            double denormalisedValue = initialValue * (upperBound - lowerBound) + lowerBound;
+            newValue = denormalisedValue;
+        }
+            // otherwise normalised
+        else {
+            double normalisedValue = (initialValue - lowerBound) / (upperBound - lowerBound);
+            newValue = normalisedValue;
+        }
+
+        return newValue;
     }
 
     // Function to multiply all values of a (double) vector by a constant (double)
@@ -163,6 +185,14 @@ namespace gen {
         std::vector<double> outputVector;
         for( int i=0 ; i<inputVector.size() ; i++){
             outputVector.push_back( scaleFactor * inputVector[i] );
+        }
+        return outputVector;
+    }
+    // Function to normalise or denormalise all values in a vector for DV or TOF
+    std::vector< double > vectorScalingNormalisation(std::vector<double> inputVector, double lowerBound, double upperBound, bool denormalise=false){
+        std::vector<double> outputVector;
+        for( int i=0 ; i<inputVector.size() ; i++){
+            outputVector.push_back( gen::normaliseValue(inputVector[i], lowerBound, upperBound, denormalise) );
         }
         return outputVector;
     }
@@ -246,7 +276,7 @@ namespace gen {
         return coefficientSetOutput;
     }
 
-    // Function to multiply all values of std::vector by a constant
+
 
 
 

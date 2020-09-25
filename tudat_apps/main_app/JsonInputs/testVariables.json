@@ -130,7 +130,7 @@
     "islandSize": 1000,
     "noGenerations": 100,
     "saveDataInfo":{
-      "outputSubFolder": "GA_calculator/"
+      "outputSubFolder": "GA_calculator_2020-2050/"
     }
   },
   "constants": {

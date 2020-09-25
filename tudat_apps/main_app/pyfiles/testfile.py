@@ -10,6 +10,20 @@ pyfiles_dir = os.path.dirname(os.path.realpath(__file__))
 main_app_dir = os.path.abspath(os.path.join(pyfiles_dir, os.pardir))
 simulation_output_dir = os.path.abspath(os.path.join(main_app_dir, "SimulationOutput"))
 
+def normaliseValue(initialValue, lowerBound, upperBound, denormalise = False):
+    if denormalise:
+        denormalisedValue = initialValue * (upperBound - lowerBound) + lowerBound
+        newValue = denormalisedValue
+    else:
+        normalisedValue = (initialValue - lowerBound) / (upperBound - lowerBound)
+        newValue = normalisedValue
+
+    return newValue
+
+
+
+
+
 ################### TESTING OUTPUT FROM SSO-CHB TEST 1 #####################
 
 "SSO-CHB-Test/SSO-CH-Test-in-0-000325.dat"
@@ -428,10 +442,15 @@ baseDirectE6 = "SSO-CHB-Test-custom-2/SSO-CH-Test-out-E6-%s.dat"
 # testPlot(baseDirectE6 %"thrustData", "Thrust magnitude plot", "subheading", plotType="thrustPlot")
 # testPlot(baseDirectE6 %"bodyData", "States plot", "subheading", plotType="statePlot", filename2=baseDirectE6 %"propData")
 # testPlot(baseDirectE6 %"magData", "Magfield B0 over time", "subheading", plotType="magField3")
+GA_Subfolder = "GA_calculator_2020-2050/"
+plotFolder = "pyplots/" + GA_Subfolder
+if not os.path.exists(plotFolder):
+    print("Creating new folder")
+    os.mkdir(plotFolder)
 
-GA_calculatorTest = "GA_calculator/unperturbed_fullProblem_leg_0.dat"
-GA_calculatorTestPerturbed = "GA_calculator/perturbed_fullProblem_leg_0.dat"
-GA_calculatorTestDepVars = "GA_calculator/unperturbed_depVars_leg_0.dat"
+GA_calculatorTest = GA_Subfolder + "unperturbed_fullProblem_leg_0.dat"
+GA_calculatorTestPerturbed = GA_Subfolder + "perturbed_fullProblem_leg_0.dat"
+GA_calculatorTestDepVars = GA_Subfolder + "unperturbed_depVars_leg_0.dat"
 # GA_calculatorDepVars = "GA_calculator/fullProblemInterplanetaryTrajectoryDepVars_0_leg_0.dat"
 
 # SOme new testplots
@@ -440,8 +459,8 @@ testPlot(GA_calculatorTest, "", "", plotType="propDataGA", savefig=True, savenam
          filename2=GA_calculatorTestPerturbed, filename3=GA_calculatorTestDepVars, scale=6)
 # testPlot(GA_calculatorTestPerturbed, "", "", plotType="propDataGA", savefig=True, savename="GA_test")
 
-
-fitnessFile0Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/fitness_GA_EJ_0.dat"))
+normalising = True
+fitnessFile0Dir = os.path.abspath(os.path.join(simulation_output_dir, GA_Subfolder + "fitness_GA_EJ_0.dat"))
 fitnessFile0Array = np.genfromtxt(fitnessFile0Dir, delimiter=",")[:,1:3]
 fitnessFile0ArrayTOFs = fitnessFile0Array[:,1]
 minTOF0 = min(fitnessFile0ArrayTOFs)
@@ -449,7 +468,7 @@ avgTOF0 = np.mean(fitnessFile0ArrayTOFs)
 
 theIs = [10,20,30,40,50,60,70,80,90]
 for i in theIs:
-    fitnessFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/fitness_GA_EJ_%s.dat" %i))
+    fitnessFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, GA_Subfolder + "fitness_GA_EJ_%s.dat" %i))
     fitnessFile9Array = np.genfromtxt(fitnessFile9Dir, delimiter=",")[:,1:3]
     fitnessFile9ArrayTOFs = fitnessFile9Array[:,1]
     fitnessFile9ArrayDVs = fitnessFile9Array[:,0]
@@ -462,9 +481,9 @@ for i in theIs:
     # print("Fitness 9 mean: %s" %(avgTOF9/year))
     # print("Fitness 9 mean DV: %s" %(avgDV9))
 
-    popFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, "GA_calculator/population_GA_EJ_%s.dat" %i))
+    popFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, GA_Subfolder + "population_GA_EJ_%s.dat" %i))
     popFile9Array = np.genfromtxt(popFile9Dir, delimiter=",")[:,1:3]
-    launchYears = popFile9Array[:,0]/year
+    launchYears = popFile9Array[:,0]
     dummyList = np.ones(np.size(launchYears))
 
 
@@ -473,12 +492,19 @@ for i in theIs:
     fitnessFile9TOFSListFINAL = []
     launchYearsListFINAL = []
     arrivalYearsListFINAL = []
-    for i in range(len(fitnessFile9ArrayDVs)):
-        if fitnessFile9ArrayDVs[i] < 10000:
-            fitnessFile9DVsListFINAL.append(fitnessFile9ArrayDVs[i]/1000)
-            TOF = fitnessFile9ArrayTOFs[i]/365.25
+    for j in range(len(fitnessFile9ArrayDVs)):
+        if fitnessFile9ArrayDVs[j] < 10000:
+            DV = fitnessFile9ArrayDVs[j]
+            TOF = fitnessFile9ArrayTOFs[j]
+
+            if normalising: #TODO: Modularise me!
+                DV = normaliseValue(DV, 8.5, 9.68, denormalise=True)
+                TOF = normaliseValue(TOF, 2.5, 10, denormalise=True)
+
+
+            fitnessFile9DVsListFINAL.append(DV)
             fitnessFile9TOFSListFINAL.append(TOF)
-            launchYear = launchYears[i] + 2000
+            launchYear = launchYears[j] + 2000
             launchYearsListFINAL.append(launchYear)
             arrivalYearsListFINAL.append(launchYear + TOF)
 
@@ -487,14 +513,14 @@ for i in theIs:
     JupiterAps = np.arange(2005.267, 2060, 11.9)
 
 
-    # plt.figure()
-    # plt.scatter(launchYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
-    # plt.xlabel("Launch year")
-    # plt.ylabel("Time of flight (years)")
-    # # plt.ylim([0,5])
-    # plt.xlim([2010, 2060])
-    # plt.grid()
-    # plt.savefig("pyplots/TOF_launch_10k.png")
+    plt.figure()
+    plt.scatter(launchYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
+    plt.xlabel("Launch year")
+    plt.ylabel("Time of flight (years)")
+    # plt.ylim([0,5])
+    plt.xlim([2010, 2060])
+    plt.grid()
+    plt.savefig(plotFolder + "TOF_launch_10k_%s.png" %i)
 
     plt.figure()
     plt.scatter(fitnessFile9DVsListFINAL, fitnessFile9TOFSListFINAL, 1)
@@ -502,7 +528,7 @@ for i in theIs:
     plt.ylabel("Time of flight (years)")
     # plt.ylim([0,5])
     plt.grid()
-    plt.savefig("pyplots/TOF_DV_10k.png")
+    plt.savefig(plotFolder + "TOF_DV_10k_%s.png" %i)
 
     # plt.figure()
     # plt.scatter(arrivalYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
