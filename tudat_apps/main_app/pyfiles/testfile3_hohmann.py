@@ -8,7 +8,7 @@ def getTOF(a, mu, unitsOut=u.s):
 
     T = T.to(unitsOut)
 
-    return T
+    return 0.5*T
 
 def getV(mu, r, a, unitsOut=u.m/u.s):
     V = np.sqrt( mu* (2/r - 1/a) )
@@ -30,20 +30,31 @@ def getDVHohmann(a1, a2, mu, unitsOut=u.m/u.s):
 
 R_E = 1*u.AU
 muE = 3.986E14 * u.m**3*u.s**-2
+
 R_J = 5.2*u.AU
 mu_J = 1.267E17 * u.m**3*u.s**-2
-R_S = 9.54 * u.AU
+
+R_Sat = 9.54 * u.AU
 mu_Sat = 3.793E16 * u.m**3*u.s**-2
+
+R_M = 1.524 * u.AU
+mu_M = 0.107 * muE
+
 mu_S = 1.327E20 * u.m**3*u.s**-2
 
 a_EJ = (R_E + R_J)*0.5
-a_ES = (R_E + R_S)*0.5
+a_ES = (R_E + R_Sat) * 0.5
+a_EM = (R_E + R_M) * 0.5
 TOFJ = getTOF(a_EJ, mu_S, unitsOut=u.year)
 TOFS = getTOF(a_ES, mu_S, unitsOut=u.year)
+TOFM = getTOF(a_EM, mu_S, unitsOut=u.year)
 DV1J = getDVHohmann(R_E, R_J, mu_S, unitsOut=u.km/u.s)
-DV1S = getDVHohmann(R_E, R_S, mu_S, unitsOut=u.km/u.s)
+DV1S = getDVHohmann(R_E, R_Sat, mu_S, unitsOut=u.km / u.s)
+DV1M = getDVHohmann(R_E, R_M, mu_S, unitsOut=u.km/u.s)
 
 print("Hohmann TOF to Jupiter: ", TOFJ)
 print("Hohmann TOF to Saturn: ", TOFS)
+print("Hohmann TOF to Mars: ", TOFM)
 print("Hohmann DV to Jupiter: ", DV1J[0])
 print("Hohmann DV to Saturn: ", DV1S[0])
+print("Hohmann DV to Mars: ", DV1M[0])

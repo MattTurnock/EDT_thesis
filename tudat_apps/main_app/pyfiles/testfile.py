@@ -1,14 +1,14 @@
 import numpy as np
 import os
+from utils import simulation_output_dir, quickConfigs, startYears, endYears
+
 from matplotlib import pyplot as plt
+import matplotlib
 import matplotlib.animation as animation
 
 AU = 1.496e11 # AU in m
 
-# Set various project directories
-pyfiles_dir = os.path.dirname(os.path.realpath(__file__))
-main_app_dir = os.path.abspath(os.path.join(pyfiles_dir, os.pardir))
-simulation_output_dir = os.path.abspath(os.path.join(main_app_dir, "SimulationOutput"))
+
 
 def normaliseValue(initialValue, lowerBound, upperBound, denormalise = False):
     if denormalise:
@@ -455,55 +455,144 @@ GA_calculatorTestDepVars = GA_Subfolder + "unperturbed_depVars_leg_0.dat"
 
 # SOme new testplots
 # testPlot(GA_calculatorTest, "", "", plotType="AnimatedPC", filename2=GA_calculatorDepVars)
-testPlot(GA_calculatorTest, "", "", plotType="propDataGA", savefig=True, savename="GA_test",
-         filename2=GA_calculatorTestPerturbed, filename3=GA_calculatorTestDepVars, scale=6)
+# testPlot(GA_calculatorTest, "", "", plotType="propDataGA", savefig=True, savename="GA_test",
+#          filename2=GA_calculatorTestPerturbed, filename3=GA_calculatorTestDepVars, scale=6)
 # testPlot(GA_calculatorTestPerturbed, "", "", plotType="propDataGA", savefig=True, savename="GA_test")
 
-normalising = True
-fitnessFile0Dir = os.path.abspath(os.path.join(simulation_output_dir, GA_Subfolder + "fitness_GA_EJ_0.dat"))
-fitnessFile0Array = np.genfromtxt(fitnessFile0Dir, delimiter=",")[:,1:3]
-fitnessFile0ArrayTOFs = fitnessFile0Array[:,1]
-minTOF0 = min(fitnessFile0ArrayTOFs)
-avgTOF0 = np.mean(fitnessFile0ArrayTOFs)
 
-theIs = [10,20,30,40,50,60,70,80,90]
-for i in theIs:
-    fitnessFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, GA_Subfolder + "fitness_GA_EJ_%s.dat" %i))
-    fitnessFile9Array = np.genfromtxt(fitnessFile9Dir, delimiter=",")[:,1:3]
-    fitnessFile9ArrayTOFs = fitnessFile9Array[:,1]
-    fitnessFile9ArrayDVs = fitnessFile9Array[:,0]
-    minTOF9 = min(fitnessFile9ArrayTOFs)
-    avgTOF9 = np.mean(fitnessFile9ArrayTOFs)
-    avgDV9 = np.mean(fitnessFile9ArrayDVs)
-    # print("Fitness 0 min: %s" %(minTOF0/year))
-    # print("Fitness 0 mean: %s" %(avgTOF0/year))
-    # print("Fitness 9 min: %s" %(minTOF9/year))
-    # print("Fitness 9 mean: %s" %(avgTOF9/year))
-    # print("Fitness 9 mean DV: %s" %(avgDV9))
 
-    popFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, GA_Subfolder + "population_GA_EJ_%s.dat" %i))
-    popFile9Array = np.genfromtxt(popFile9Dir, delimiter=",")[:,1:3]
-    launchYears = popFile9Array[:,0]
+normalising = False
+
+doingOldPlots = False
+if doingOldPlots:
+    fitnessFile0Dir = os.path.abspath(os.path.join(simulation_output_dir, GA_Subfolder + "fitness_GA_EJ_0.dat"))
+    fitnessFile0Array = np.genfromtxt(fitnessFile0Dir, delimiter=",")[:,1:3]
+    fitnessFile0ArrayTOFs = fitnessFile0Array[:,1]
+    minTOF0 = min(fitnessFile0ArrayTOFs)
+    avgTOF0 = np.mean(fitnessFile0ArrayTOFs)
+
+    theIs = [90]
+    for i in theIs:
+        fitnessFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, GA_Subfolder + "fitness_GA_EJ_%s.dat" %i))
+        fitnessFile9Array = np.genfromtxt(fitnessFile9Dir, delimiter=",")[:,1:3]
+        fitnessFile9ArrayTOFs = fitnessFile9Array[:,1]
+        fitnessFile9ArrayDVs = fitnessFile9Array[:,0]
+        minTOF9 = min(fitnessFile9ArrayTOFs)
+        avgTOF9 = np.mean(fitnessFile9ArrayTOFs)
+        avgDV9 = np.mean(fitnessFile9ArrayDVs)
+        # print("Fitness 0 min: %s" %(minTOF0/year))
+        # print("Fitness 0 mean: %s" %(avgTOF0/year))
+        # print("Fitness 9 min: %s" %(minTOF9/year))
+        # print("Fitness 9 mean: %s" %(avgTOF9/year))
+        # print("Fitness 9 mean DV: %s" %(avgDV9))
+
+        popFile9Dir = os.path.abspath(os.path.join(simulation_output_dir, GA_Subfolder + "population_GA_EJ_%s.dat" %i))
+        popFile9Array = np.genfromtxt(popFile9Dir, delimiter=",")[:,1:3]
+        launchYears = popFile9Array[:,0]
+        dummyList = np.ones(np.size(launchYears))
+
+
+        # Get rid of bad DV cases, and combine into full array:
+        fitnessFile9DVsListFINAL = []
+        fitnessFile9TOFSListFINAL = []
+        launchYearsListFINAL = []
+        arrivalYearsListFINAL = []
+        for j in range(len(fitnessFile9ArrayDVs)):
+            if fitnessFile9ArrayDVs[j] < 10000:
+                DV = fitnessFile9ArrayDVs[j]
+                TOF = fitnessFile9ArrayTOFs[j]
+
+                if normalising: #TODO: Modularise me!
+                    DV = normaliseValue(DV, 8.5, 9.68, denormalise=True)
+                    TOF = normaliseValue(TOF, 2.5, 10, denormalise=True)
+
+                fitnessFile9DVsListFINAL.append(DV)
+                fitnessFile9TOFSListFINAL.append(TOF)
+                launchYear = launchYears[j] + 2000
+                launchYearsListFINAL.append(launchYear)
+                arrivalYearsListFINAL.append(launchYear + TOF)
+
+
+
+        JupiterAps = np.arange(2005.267, 2060, 11.9)
+
+
+        plt.figure()
+        plt.scatter(launchYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
+        plt.xlabel("Launch year")
+        plt.ylabel("Time of flight (years)")
+        # plt.ylim([0,5])
+        plt.xlim([2010, 2060])
+        plt.grid()
+        plt.savefig(plotFolder + "TOF_launch_10k_%s.png" %i)
+
+        plt.figure()
+        plt.scatter(fitnessFile9DVsListFINAL, fitnessFile9TOFSListFINAL, 1)
+        plt.xlabel("DVs (km/s)")
+        plt.ylabel("Time of flight (years)")
+        # plt.ylim([0,5])
+        plt.grid()
+        plt.savefig(plotFolder + "TOF_DV_10k_%s.png" %i)
+
+
+
+
+combinedPlotFolder = "pyplots/combinedPlots_%s-%s" %(startYears[0], endYears[-1])
+if not os.path.exists(plotFolder):
+    print("Creating new folder")
+    os.mkdir(plotFolder)
+
+matplotlib.rcParams.update({'font.size': 22})
+generation = 90
+figsize = [16,9]
+plt.figure(1, figsize=figsize)
+plt.figure(2, figsize=figsize)
+figLabels=[]
+yearSpacing = 1
+# startYearsToPlot = np.arange(2020, 2051, yearSpacing)
+startYearsToPlot = startYears[::yearSpacing]
+for i in range(len(startYears)):
+    startYear = startYears[i]
+    endYear = endYears[i]
+
+    GA_SubfolderTemp = "GAJupiter/GACalculatorNominal_%s_%s-%s/" %(quickConfigs[0], "%.2f" %startYear, "%.2f" %endYear) #TODO: make decimal places modularly assigned
+
+    GA_calculatorTestTemp = GA_Subfolder + "unperturbed_fullProblem_leg_0.dat"
+    GA_calculatorTestPerturbedTemp = GA_Subfolder + "perturbed_fullProblem_leg_0.dat"
+    GA_calculatorTestDepVarsTemp = GA_Subfolder + "unperturbed_depVars_leg_0.dat"
+
+
+    fitnessFileDir = os.path.abspath(os.path.join(simulation_output_dir, GA_SubfolderTemp + "fitness_GA_EJ_%s.dat" %generation))
+    fitnessFileArray = np.genfromtxt(fitnessFileDir, delimiter=",")[:,1:3]
+    fitnessFileArrayTOFs = fitnessFileArray[:,1]
+    fitnessFileArrayDVs = fitnessFileArray[:,0]
+    minTOF = min(fitnessFileArrayTOFs)
+    avgTOF = np.mean(fitnessFileArrayTOFs)
+    avgDV = np.mean(fitnessFileArrayDVs)
+
+
+    popFileDir = os.path.abspath(os.path.join(simulation_output_dir, GA_SubfolderTemp + "population_GA_EJ_%s.dat" %generation))
+    popFileArray = np.genfromtxt(popFileDir, delimiter=",")[:,1:3]
+    launchYears = popFileArray[:,0]
     dummyList = np.ones(np.size(launchYears))
 
 
     # Get rid of bad DV cases, and combine into full array:
-    fitnessFile9DVsListFINAL = []
-    fitnessFile9TOFSListFINAL = []
+    fitnessFileDVsListFINAL = []
+    fitnessFileTOFSListFINAL = []
     launchYearsListFINAL = []
     arrivalYearsListFINAL = []
-    for j in range(len(fitnessFile9ArrayDVs)):
-        if fitnessFile9ArrayDVs[j] < 10000:
-            DV = fitnessFile9ArrayDVs[j]
-            TOF = fitnessFile9ArrayTOFs[j]
+    for j in range(len(fitnessFileArrayDVs)):
+        if fitnessFileArrayDVs[j] < 10000:
+            DV = fitnessFileArrayDVs[j]
+            TOF = fitnessFileArrayTOFs[j]
 
             if normalising: #TODO: Modularise me!
                 DV = normaliseValue(DV, 8.5, 9.68, denormalise=True)
                 TOF = normaliseValue(TOF, 2.5, 10, denormalise=True)
 
-
-            fitnessFile9DVsListFINAL.append(DV)
-            fitnessFile9TOFSListFINAL.append(TOF)
+            fitnessFileDVsListFINAL.append(DV)
+            fitnessFileTOFSListFINAL.append(TOF)
             launchYear = launchYears[j] + 2000
             launchYearsListFINAL.append(launchYear)
             arrivalYearsListFINAL.append(launchYear + TOF)
@@ -512,34 +601,119 @@ for i in theIs:
 
     JupiterAps = np.arange(2005.267, 2060, 11.9)
 
+    if startYear in startYearsToPlot:
+        plt.figure(1)
+        plt.scatter(launchYearsListFINAL, fitnessFileTOFSListFINAL, 1)
+        plt.figure(2)
+        plt.scatter(fitnessFileDVsListFINAL, fitnessFileTOFSListFINAL, 1)
+        figLabels.append("%s-%s" %(startYear, endYear))
 
-    plt.figure()
-    plt.scatter(launchYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
-    plt.xlabel("Launch year")
-    plt.ylabel("Time of flight (years)")
-    # plt.ylim([0,5])
-    plt.xlim([2010, 2060])
-    plt.grid()
-    plt.savefig(plotFolder + "TOF_launch_10k_%s.png" %i)
+legendSize = 11
+markerscale=10
+plt.figure(1)
+plt.xlabel("Launch year")
+plt.ylabel("Time of flight (years)")
+plt.legend(figLabels, markerscale=markerscale, prop={'size':legendSize})
+# plt.ylim([0,5])
+# plt.xlim([2010, 2060])
+plt.grid()
+plt.savefig(combinedPlotFolder + "TOF_launch_gen%s_space%s.png" %(generation, yearSpacing))
 
-    plt.figure()
-    plt.scatter(fitnessFile9DVsListFINAL, fitnessFile9TOFSListFINAL, 1)
-    plt.xlabel("DVs (km/s)")
-    plt.ylabel("Time of flight (years)")
-    # plt.ylim([0,5])
-    plt.grid()
-    plt.savefig(plotFolder + "TOF_DV_10k_%s.png" %i)
 
-    # plt.figure()
-    # plt.scatter(arrivalYearsListFINAL, fitnessFile9TOFSListFINAL, 1)
-    # plt.xlabel("Arrival year")
-    # plt.ylabel("Time of flight (years)")
-    # for i in JupiterAps:
-    #     plt.axvline(x=i)
-    # # plt.ylim([0,5])
-    # plt.xlim([2010, 2060])
-    # plt.grid()
-    # plt.savefig("pyplots/TOF_arrival_10k.png")
+plt.figure(2)
+plt.xlabel("DVs (km/s)")
+plt.ylabel("Time of flight (years)")
+plt.legend(figLabels, markerscale=markerscale, prop={'size':legendSize})
+# plt.ylim([0,5])
+plt.grid()
+plt.savefig(combinedPlotFolder + "TOF_DV_gen%s_space%s.png" %(generation, yearSpacing))
+
+
+# Function to load and normalise the GA stuff, using bounds for normalisation
+# Outputs a tuple of variables:
+def loadAndNormaliseGA(GAFolder, simulation_output_dir, DVBounds, TOFBounds, generation=90, fileSuffix="GA_EJ"):
+
+    GA_calculatorTestTemp = os.path.join(GAFolder, "unperturbed_fullProblem_leg_0.dat")
+    GA_calculatorTestPerturbedTemp = os.path.join(GAFolder, "perturbed_fullProblem_leg_0.dat")
+    GA_calculatorTestDepVarsTemp = os.path.join(GAFolder, "unperturbed_depVars_leg_0.dat")
+
+
+    fitnessFileDir = os.path.abspath(os.path.join(simulation_output_dir, GAFolder, "fitness_%s_%s.dat" %(fileSuffix, generation)))
+    fitnessFileArray = np.genfromtxt(fitnessFileDir, delimiter=",")[:,1:3]
+    fitnessFileArrayTOFs = fitnessFileArray[:,1]
+    fitnessFileArrayDVs = fitnessFileArray[:,0]
+
+    popFileDir = os.path.abspath(os.path.join(simulation_output_dir, GAFolder, "population_%s_%s.dat" %(fileSuffix, generation)))
+    popFileArray = np.genfromtxt(popFileDir, delimiter=",")[:,1:3]
+    launchYears = popFileArray[:,0]
+    dummyList = np.ones(np.size(launchYears))
+
+
+    # Get rid of bad DV cases, and combine into full array:
+    fitnessFileDVsListFINAL = []
+    fitnessFileTOFSListFINAL = []
+    launchYearsListFINAL = []
+    arrivalYearsListFINAL = []
+    for j in range(len(fitnessFileArrayDVs)):
+        if fitnessFileArrayDVs[j] < 10000:
+            DV = fitnessFileArrayDVs[j]
+            TOF = fitnessFileArrayTOFs[j]
+
+            if normalising: #TODO: Modularise me!
+                DV = normaliseValue(DV, DVBounds[0], DVBounds[1], denormalise=True)
+                TOF = normaliseValue(TOF, TOFBounds[0], TOFBounds[1], denormalise=True)
+
+            fitnessFileDVsListFINAL.append(DV)
+            fitnessFileTOFSListFINAL.append(TOF)
+            launchYear = launchYears[j] + 2000
+            launchYearsListFINAL.append(launchYear)
+            arrivalYearsListFINAL.append(launchYear + TOF)
+
+    return (fitnessFileDVsListFINAL, fitnessFileTOFSListFINAL, launchYearsListFINAL, arrivalYearsListFINAL)
+
+DVBoundsMars = [2,4]
+TOFBoundsMars = [0.54757, 2.7379]
+EM_loaded = loadAndNormaliseGA("GACalculatorNominal_Mars_2020-2025", simulation_output_dir, DVBoundsMars, TOFBoundsMars, generation=91, fileSuffix="GA_EM")
+fitnessDVsM = EM_loaded[0]
+fitnessTOFsM = EM_loaded[1]
+launchYearsM = EM_loaded[2]
+
+# testPlot("/home/matt/LinkToEDT_thesis/tudat_apps/main_app/SimulationOutput/GAJupiter/GACalculatorNominal_Jupiter_2040.23-2041.33/perturbed_fullProblem_leg_0.dat",
+#          "", "",
+#          filename3="/home/matt/LinkToEDT_thesis/tudat_apps/main_app/SimulationOutput/GAJupiter/GACalculatorNominal_Jupiter_2040.23-2041.33/unperturbed_depVars_leg_0.dat",
+#          plotType="propDataGA", savefig=True, savename="GA_test")
+ylim = 1000
+xlim=10
+plt.figure(3, figsize=figsize)
+plt.scatter(launchYearsM, np.array(fitnessTOFsM)*365.25, 1)
+plt.xlabel("Launch year")
+plt.ylabel("Time of flight (days)")
+plt.ylim([0,ylim])
+plt.grid()
+
+plt.figure(4, figsize=figsize)
+plt.scatter(fitnessDVsM, np.array(fitnessTOFsM)*365.25, 1)
+plt.xlabel("DVs (km/s)")
+plt.ylabel("Time of flight (days)")
+plt.ylim([0,ylim])
+plt.xlim([0,xlim])
+plt.grid()
+
+fitnessFileDirExample = "/home/matt/tudatBundle/tudatExampleApplications/libraryExamples/PaGMOEx/SimulationOutput/fitness_mo_EarthMars_91_1.dat"
+popFileDirExample = "/home/matt/tudatBundle/tudatExampleApplications/libraryExamples/PaGMOEx/SimulationOutput/population_mo_EarthMars_91_1.dat"
+fitnessFileArrayExample = np.genfromtxt(fitnessFileDirExample )
+popFileArrayExample = np.genfromtxt(popFileDirExample )
+print(fitnessFileArrayExample)
+print(popFileArrayExample)
+
+plt.figure(5, figsize=figsize)
+plt.scatter(fitnessFileArrayExample[:,0]/1000, fitnessFileArrayExample[:,1])
+plt.scatter(np.array(fitnessDVsM), np.array(fitnessTOFsM)*365.25, 1)
+plt.legend(["Tudat", "Mine"])
+plt.xlabel("Delta V (km/s)")
+plt.ylabel("TOF (days)")
+plt.savefig("HERE1.png")
+
 
 
 # theIs = [10,20,30,40,50,60,70,80,90]

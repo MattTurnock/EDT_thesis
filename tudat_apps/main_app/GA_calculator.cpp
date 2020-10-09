@@ -32,8 +32,9 @@
 #include "../../../../tudatExampleApplications/libraryExamples/PaGMOEx/Problems/getAlgorithm.h"
 #include "../../../../tudatExampleApplications/libraryExamples/PaGMOEx/Problems/saveOptimizationResults.h"
 
-int main()
+int main(int argc, char *argv[])
 {
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////            USING STATEMENTS              //////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,13 +46,32 @@ int main()
 
 
 
-    // Read json file for general use
-    nlohmann::json simulationVariables = gen::readJson("testVariables.json");
-    nlohmann::json GAConfigs = simulationVariables["GAConfigs"];
-    std::string planetToFlyby = GAConfigs["planetToFlyby"];
+    // Read json file for general use (name of json is passed as first argument, or default set here)
+    std::string jsonName;
+    if (argc != 1){
+        jsonName = argv[1];
+    }
+    else{
+        jsonName = "GAConfigsNominal.json";
+    }
+    std::cout<< "Loading Configs from: " << jsonName << std::endl;
+    // Set the subjson folders to file
+    nlohmann::json dummyVariablesJson = gen::readJson("testVariables.json");
+    nlohmann::json simulationVariables = gen::readJson(jsonName);
+    nlohmann::json PlanetConfigs = simulationVariables["PlanetConfigs"];
+    nlohmann::json AlgorithmConfigs = simulationVariables["AlgorithmConfigs"];
+    std::string planetToFlyby = PlanetConfigs["planetToFlyby"];
+    nlohmann::json GAPlanetSpecificConfigs = PlanetConfigs[planetToFlyby + "Configs"];
+    std::cout << "Planet specific config: " << GAPlanetSpecificConfigs << std::endl;
 
-    // Load standard spice kernels for fun
-//    spice_interface::loadStandardSpiceKernels( );
+    // Load some variables directly from json that are needed throughout
+    double startYearLower = GAPlanetSpecificConfigs["Bounds"]["StartYearLower"];
+    double startYearUpper = GAPlanetSpecificConfigs["Bounds"]["StartYearUpper"];
+    std::string outputSubFolderBase = simulationVariables["saveDataConfigs"]["outputSubFolderBase"];
+    std::string outputSubFolder = outputSubFolderBase + "_"
+                                  + planetToFlyby + "_"
+                                  + gen::floatToString(startYearLower) + "-" + gen::floatToString(startYearUpper);
+    // Load custom spice kernels
     std::string customKernelName = simulationVariables["Spice"]["customKernelName"];
     std::string customSpiceKernelPath = gen::tudatKernelsRootPath + customKernelName;
     const std::vector<std::string> spicePathVector = {customSpiceKernelPath};
@@ -82,14 +102,6 @@ int main()
     std::string fileSuffix;
 
     if (planetToFlyby == "Jupiter") {
-        // Define bounds, by using values defined in the json TODO: set reasonable values in json
-        Bounds[0][0] = gen::year2MJDYears(GAConfigs["JupiterConfigs"]["Bounds"]["StartYearLower"]);
-        Bounds[1][0] = gen::year2MJDYears(GAConfigs["JupiterConfigs"]["Bounds"]["StartYearUpper"]);
-        Bounds[0][1] = GAConfigs["JupiterConfigs"]["Bounds"]["FlightDurationYearsLower"];
-        Bounds[1][1] = GAConfigs["JupiterConfigs"]["Bounds"]["FlightDurationYearsUpper"];
-        DVBounds[0] = GAConfigs["JupiterConfigs"]["Bounds"]["DeltaVKmsLower"];
-        DVBounds[1] = GAConfigs["JupiterConfigs"]["Bounds"]["DeltaVKmsUpper"];
-
         // Define flyby sequence
         FlybySequence.push_back(3);
         FlybySequence.push_back(5);
@@ -98,14 +110,6 @@ int main()
         fileSuffix = "GA_EJ_";
     }
     else if (planetToFlyby == "Saturn"){
-        // Define bounds, by using values defined in the json TODO: set reasonable values in json
-        Bounds[0][0] = gen::year2MJDYears(GAConfigs["SaturnConfigs"]["Bounds"]["StartYearLower"]);
-        Bounds[1][0] = gen::year2MJDYears(GAConfigs["SaturnConfigs"]["Bounds"]["StartYearUpper"]);
-        Bounds[0][1] = GAConfigs["SaturnConfigs"]["Bounds"]["FlightDurationYearsLower"];
-        Bounds[1][1] = GAConfigs["SaturnConfigs"]["Bounds"]["FlightDurationYearsUpper"];
-        DVBounds[0] = GAConfigs["SaturnConfigs"]["Bounds"]["DeltaVKmsLower"];
-        DVBounds[1] = GAConfigs["SaturnConfigs"]["Bounds"]["DeltaVKmsUpper"];
-
         // Define flyby sequence
         FlybySequence.push_back(3);
         FlybySequence.push_back(6);
@@ -113,20 +117,48 @@ int main()
         // Define file suffix
         fileSuffix = "GA_ES_";
     }
+    else if (planetToFlyby == "Mars"){
+        // Define flyby sequence
+        FlybySequence.push_back(3);
+        FlybySequence.push_back(4);
+
+        // Define file suffix
+        fileSuffix = "GA_EM_";
+    }
     else{
         std::cout << "PLANET NOT SUPPORTED: terminating simulation" << std::endl;
         return 1;
     }
 
+    // Define bounds, by using values defined in the json
+    Bounds[0][0] = gen::year2MJDYears(startYearLower);
+    Bounds[1][0] = gen::year2MJDYears(startYearUpper);
+    Bounds[0][1] = GAPlanetSpecificConfigs["Bounds"]["FlightDurationYearsLower"];
+    Bounds[1][1] = GAPlanetSpecificConfigs["Bounds"]["FlightDurationYearsUpper"];
+    DVBounds[0] = GAPlanetSpecificConfigs["Bounds"]["DeltaVKmsLower"];
+    DVBounds[1] = GAPlanetSpecificConfigs["Bounds"]["DeltaVKmsUpper"];
+
+
     // Create problem object for problem fitness
-    EarthPlanetTransfer earthPlanetProbStruct = EarthPlanetTransfer(Bounds, DVBounds, FlybySequence);
+    bool normaliseValues = AlgorithmConfigs["normaliseValues"];
+    EarthPlanetTransfer earthPlanetProbStruct = EarthPlanetTransfer(Bounds, DVBounds, FlybySequence, normaliseValues);
     pagmo::problem Prob{ earthPlanetProbStruct };
 
-//    tudat_pagmo_applications::createGridSearch(Prob, Bounds, { 10000, 10000 }, "THIS_IS_A_TEST");
+    // Do a cheeky grid search if specified in json
+    bool doGridSearch = AlgorithmConfigs["doGridSearch"];
+    int gridSearchSize = AlgorithmConfigs["gridSearchSize"];
+    if (doGridSearch) {
+        std::cout << "Doing grid search for porkchop" << std::endl;
+        std::string gridSearchFilename = "porkchop_" + fileSuffix;
+        gridSearchFilename = gridSearchFilename.substr(0, gridSearchFilename.length() -1 ); // Remove _ from end of suffix
+
+        gen::createGridSearch(Prob, Bounds,
+                              {gridSearchSize, gridSearchSize}, gridSearchFilename, outputSubFolder);
+    }
 
     // Select algorithm for problem, based on the one in the json TODO: expand possibilites of algorithsm that can be uesed with a custom function
     // NOTE: indices are: [0,1,2] = [nsga2, moead, ihs]. Can add more with custom get algorithm function if desired
-    std::string algorithmName = GAConfigs["algorithmName"];
+    std::string algorithmName = AlgorithmConfigs["algorithmName"];
     int algorithmIndex;
     if (algorithmName == "nsga2"){
         algorithmIndex = 0;
@@ -141,29 +173,30 @@ int main()
         std::cout << "ALGORITHM NOT RECOGNISED: terminating simulation" << std::endl;
         return 1;
     }
-//    algorithm algo = getMultiObjectiveAlgorithm(algorithmIndex);
-    pagmo::algorithm algo{pagmo::moead(1u,
-                                   "grid",
-                                   "tchebycheff",
-                                   20u,
-                                   1.0,
-                                   0.5,
-                                   20,
-                                   0.9,
-                                   2u,
-                                   true,
-                                   seed)};
+    algorithm algo = getMultiObjectiveAlgorithm(algorithmIndex);
+    // TODO: Set algorithm configs in json, or simply use default values (^^) again
+//    pagmo::algorithm algo{pagmo::moead(1u,
+//                                   "grid",
+//                                   "tchebycheff",
+//                                   20u,
+//                                   1.0,
+//                                   0.5,
+//                                   20,
+//                                   0.9,
+//                                   2u,
+//                                   true,
+//                                   seed)};
     std::string info = algo.get_extra_info();
     std::cout << "extra info: " << info << std::endl;
 //    moead::moead(unsigned gen, std::string weight_generation, std::string decomposition, population::size_type neighbours,
 //            double CR, double F, double eta_m, double realb, unsigned limit, bool preserve_diversity, unsigned seed)
 
     // Create islands with individuals defined by json TODO: make json numbers reasonable. Also create a vector to dump all the islands into for reference in second stage of optimisation
-    island Isl{algo, Prob, GAConfigs["islandSize"]};
+    island Isl{algo, Prob, AlgorithmConfigs["islandSize"]};
     std::vector< island > islandsList;
 
     // Evolve for number of generations defined by json TODO: make json numbers reasonable
-    int noGenerations = GAConfigs["noGenerations"];
+    int noGenerations = AlgorithmConfigs["noGenerations"];
     for( int i=0 ; i<noGenerations ; i++){
 
         // Evolve
@@ -174,7 +207,7 @@ int main()
         }
         Isl.wait_check( ); // Raises errors
 
-        std::string outputSubFolder = GAConfigs["saveDataInfo"]["outputSubFolder"];
+
         std::string filePrefix = ""; //TODO: decide if an actual prefix needed
         // Write current iteration results to file for Jupiter NOTE: outputs as "filePrefix populatin_/fitness_ fileSuffix .dat
         gen::printPopulationToFile(Isl.get_population( ).get_x( ),filePrefix, fileSuffix + std::to_string( i ), outputSubFolder, false );
@@ -275,7 +308,7 @@ int main()
             std::make_shared< SingleDependentVariableSaveSettings >(relative_position_dependent_variable, "Earth", "Sun")
             );
     dependentVariablesList.push_back(
-            std::make_shared< SingleDependentVariableSaveSettings >(relative_position_dependent_variable, "Jupiter", "Sun")
+            std::make_shared< SingleDependentVariableSaveSettings >(relative_position_dependent_variable, planetToFlyby, "Sun")
     );
 //    dependentVariablesList.push_back(
 //            std::make_shared< SingleDependentVariableSaveSettings >(relative_position_dependent_variable, "Saturn", "Sun")
@@ -370,10 +403,10 @@ int main()
 
     // Create EDTConfig for GA
     std::cout<< " -- Creating Config class -- " << std::endl;
-    nlohmann::json configVariables = simulationVariables["EDTConfigs"];
-    std::string configType = simulationVariables["EDTConfigs"]["configType"];
-    nlohmann::json SRPVariables = simulationVariables["scConfigs"]["SRP"];
-    nlohmann::json materialProperties = simulationVariables["materialProperties"];
+    nlohmann::json configVariables = dummyVariablesJson["EDTConfigs"];
+    std::string configType = dummyVariablesJson["EDTConfigs"]["configType"];
+    nlohmann::json SRPVariables = dummyVariablesJson["scConfigs"]["SRP"];
+    nlohmann::json materialProperties = dummyVariablesJson["materialProperties"];
     EDTs::EDTConfig GAConfig = EDTs::EDTConfig(configVariables, configType, SRPVariables, materialProperties);
 
     // Create EDTEnvironment for GA, using some dummy variables
@@ -382,13 +415,13 @@ int main()
     double dummyphi0;
     double dummyR0;
     std::vector<double> dummytwoSinePars;
-    nlohmann::json dummyISMFVariables = simulationVariables["InterstellarMagField"];
+    nlohmann::json dummyISMFVariables = dummyVariablesJson["InterstellarMagField"];
     EDTEnvironment GAEnvironment = EDTEnvironment(dummytwoSinePars, dummyphi0, dummyR0, GABodyMap, dummyISMFVariables);
 
     // Create EDTGuidance for GA
     std::cout<< " -- Creating Guidance class -- " << std::endl;
-    std::string placeholderThrustMagnitudeConfig = simulationVariables["GuidanceConfigs"]["thrustMagnitudeConfig"];
-    std::string placeholderThrustDirectionConfig = simulationVariables["GuidanceConfigs"]["thrustDirectionConfig"];
+    std::string placeholderThrustMagnitudeConfig = dummyVariablesJson["GuidanceConfigs"]["thrustMagnitudeConfig"];
+    std::string placeholderThrustDirectionConfig = dummyVariablesJson["GuidanceConfigs"]["thrustDirectionConfig"];
     EDTGuidance GAGuidance = EDTGuidance(
             placeholderThrustMagnitudeConfig,
             placeholderThrustDirectionConfig,
@@ -449,8 +482,8 @@ int main()
 //    std::map< double, Eigen::VectorXd > dependentVariableResultPerturbed = dependentVariablesPerturbedCase[0]; TODO: uncomment me
 
     // Save stuff to file
-    std::string outputSubFolder = GAConfigs["saveDataInfo"]["outputSubFolder"]; //TODO: combine / differentiate this from the one in the first stage
-    // TODO: make file naming convention work for jupite / saturn
+//    std::string outputSubFolder = PlanetConfigs["saveDataInfo"]["outputSubFolder"]; //TODO: combine / differentiate this from the one in the first stage
+    // TODO: make file naming convention work for jupiter / saturn
     for( std::map< int, std::map< double, Eigen::Vector6d > >::iterator itr = patchedConicsTrajectory.begin( );
          itr != patchedConicsTrajectory.end( ); itr++ ) {
 
@@ -494,39 +527,6 @@ int main()
                                               std::numeric_limits< double >::digits10,
                                               std::numeric_limits< double >::digits10,
                                               "," );
-
-
-        //////// OLD ///////////////
-
-
-
-//        // Saving for the perturbed case TODO: uncomment me
-//        input_output::writeDataMapToTextFile( patchedConicsTrajectoryPerturbedCase[itr->first],
-//                                              "perturbed_patchedConic_leg_" + std::to_string(itr->first) + ".dat",
-//                                              tudat_applications::getOutputPath( ) + outputSubFolder,
-//                                              "",
-//                                              std::numeric_limits< double >::digits10,
-//                                              std::numeric_limits< double >::digits10,
-//                                              "," );
-//
-//        input_output::writeDataMapToTextFile( fullProblemTrajectoryPerturbedCase[itr->first],
-//                                              "perturbed_fullProblem_leg_" + std::to_string(itr->first) + ".dat",
-//                                              tudat_applications::getOutputPath( ) + outputSubFolder,
-//                                              "",
-//                                              std::numeric_limits< double >::digits10,
-//                                              std::numeric_limits< double >::digits10,
-//                                              "," );
-//
-//        input_output::writeDataMapToTextFile( dependentVariableResultPerturbed,
-//                                              "perturbed_depVars_leg_" + std::to_string(itr->first) + ".dat",
-//                                              tudat_applications::getOutputPath( ) + outputSubFolder,
-//                                              "",
-//                                              std::numeric_limits< double >::digits10,
-//                                              std::numeric_limits< double >::digits10,
-//                                              "," );
-
-
-
     }
 
 

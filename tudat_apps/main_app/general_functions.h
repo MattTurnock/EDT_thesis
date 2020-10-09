@@ -163,6 +163,15 @@ namespace gen {
         return kms*1000;
     }
 
+    // Function to convert double to string, with decimal precision
+    std::string floatToString(double number, int decimalPlaces=2){
+        std::stringstream stream;
+        stream << std::fixed << std::setprecision(decimalPlaces) << number;
+        std::string s = stream.str();
+
+        return s;
+    }
+
     // Function to normalise or denormlaise deltaV or TOF, based on given bounds
     double normaliseValue(double initialValue, double lowerBound, double upperBound, bool denormalise = false) {
         double newValue;
@@ -226,6 +235,58 @@ namespace gen {
                                                     tudat_applications::getOutputPath( ) + outputSubFolder,
                                                     ",");
         }
+    }
+
+    // Function to create (and run and save) a grid search for a problem. Based on applicationOutput.h in tudat examples
+    void createGridSearch(
+            pagmo::problem& problem,
+            const std::vector< std::vector< double > >& bounds,
+            const std::vector< int > numberOfPoints,
+            const std::string& fileName,
+            std::string outputFolder)
+    {
+        if( bounds.at( 0 ).size( ) != 2 )
+        {
+            std::cerr<<"Warning when plotting grid search, size of problem does not equal 2"<<std::endl;
+        }
+        Eigen::MatrixXd gridSearch = Eigen::MatrixXd( numberOfPoints.at( 0 ), numberOfPoints.at( 1 ) );
+
+        double xSpacing = ( bounds[ 1 ][ 0 ] - bounds[ 0 ][ 0 ] ) / static_cast< double >( numberOfPoints.at( 0 ) - 1 );
+        double ySpacing = ( bounds[ 1 ][ 1 ] - bounds[ 0 ][ 1 ] ) / static_cast< double >( numberOfPoints.at( 1 ) - 1 );
+
+        std::vector< double > decisionVector;
+        decisionVector.resize( 2 );
+
+        std::vector< double > xDataPoints;
+        for( int i = 0; i < numberOfPoints.at( 0 ); i++ )
+        {
+            xDataPoints.push_back( bounds[ 0 ][ 0 ] + static_cast< double >( i ) * xSpacing );
+        }
+
+        std::vector< double > yDataPoints;
+        for( int j = 0; j < numberOfPoints.at( 1 ); j++ )
+        {
+            yDataPoints.push_back( bounds[ 0 ][ 1 ] + static_cast< double >( j ) * ySpacing );
+        }
+
+        for( int i = 0; i < numberOfPoints.at( 0 ); i++ )
+        {
+            std::cout<<"Grid search "<<i<<std::endl;
+            for( int j = 0; j < numberOfPoints.at( 1 ); j++ )
+            {
+                decisionVector[ 0 ] = xDataPoints[ i ];
+                decisionVector[ 1 ] = yDataPoints[ j ];
+
+                gridSearch( i, j ) = problem.fitness( decisionVector ).at( 0 );
+            }
+        }
+        std::cout << "outputDirectory" << tudat_applications::getOutputPath( ) << std::endl;
+        tudat::input_output::writeMatrixToFile( gridSearch, fileName + ".dat" , 16, tudat_applications::getOutputPath() + outputFolder );
+        tudat::input_output::writeMatrixToFile( tudat::utilities::convertStlVectorToEigenVector(
+                xDataPoints ), fileName + "_x_data.dat", 16, tudat_applications::getOutputPath() + outputFolder );
+        tudat::input_output::writeMatrixToFile( tudat::utilities::convertStlVectorToEigenVector(
+                yDataPoints ), fileName + "_y_data.dat", 16, tudat_applications::getOutputPath() + outputFolder );
+
     }
 
     // Function to convert from numerical <int> vector for flyby trajectory to named bodies

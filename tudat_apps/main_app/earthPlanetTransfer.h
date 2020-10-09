@@ -32,9 +32,6 @@
 #include "pagmo/problem.hpp"
 #include <pagmo/rng.hpp>
 
-//#include "general_functions.h"
-
-
 #include <Eigen/Core>
 
 using namespace tudat::ephemerides;
@@ -65,7 +62,8 @@ struct EarthPlanetTransfer
 
     EarthPlanetTransfer( std::vector< std::vector< double > > &bounds,
                            std::vector< double > &deltaVBounds,
-                           std::vector< int > flybySequence );
+                           std::vector< int > flybySequence,
+                           bool normaliseValues);
 
     // Calculates the fitness
     std::vector< double > fitness( const std::vector< double > &x ) const;
@@ -110,8 +108,9 @@ private:
     Eigen::VectorXd eccentricities_;
     Eigen::VectorXd minimumPericenterRadii_;
 
-    // CUSTOM ADD-IN FOR SV BOUNDS
+    // CUSTOM ADD-IN FOR DV BOUNDS (and normalisation bool)
     std::vector< double > deltaVBounds_;
+    bool normaliseValues_;
 };
 
 

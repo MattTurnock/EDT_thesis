@@ -37,9 +37,11 @@ namespace gen2 {
 
 EarthPlanetTransfer::EarthPlanetTransfer(std::vector< std::vector< double > > &bounds,
                                          std::vector< double > &deltaVBounds,
-                                         std::vector< int > flybySequence):
+                                         std::vector< int > flybySequence,
+                                         bool normaliseValues):
                                          problemBounds_(bounds),
-                                         deltaVBounds_(deltaVBounds){
+                                         deltaVBounds_(deltaVBounds),
+                                         normaliseValues_(normaliseValues){
 
     // Specify number of legs and type of legs
     numberOfLegs_ = flybySequence.size();
@@ -185,9 +187,14 @@ std::vector<double> EarthPlanetTransfer::fitness( const std::vector<double> &xv 
     double normalisedDV = gen2::normaliseValue(resultingDeltaV, deltaVBounds_[0], deltaVBounds_[1], false);
     double normalisedTOF = gen2::normaliseValue(TOF, problemBounds_[0][1], problemBounds_[1][1], false);
 
-    return {normalisedDV, normalisedTOF};
-//    return {resultingDeltaV, TOF};
-//    return {resultingDeltaV};
+    // If statement for including normalised values
+    if (normaliseValues_) {
+        return {normalisedDV, normalisedTOF};
+    }
+    else{
+        return {resultingDeltaV, TOF};
+    }
+
 }
 
 
