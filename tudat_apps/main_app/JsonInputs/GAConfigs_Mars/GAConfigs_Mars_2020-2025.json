@@ -37,7 +37,8 @@
         "maxCPUTimeSecs": 60
     },
     "saveDataConfigs": {
-        "outputSubFolderBase": "GAJupiter/GACalculatorNominal"
+        "outputSubFolderBase": "GAMarsGlobal/GACalculatorNominal",
+        "outputSubFolder": "GAMarsGlobal/GACalculatorNominal_Mars_2020-2025"
     },
     "PlanetConfigs": {
         "JupiterConfigs": {
@@ -70,14 +71,14 @@
                 "DeltaVKmsUpper": 4.0
             }
         },
-        "planetToFlyby": "Jupiter"
+        "planetToFlyby": "Mars"
     },
     "AlgorithmConfigs": {
         "algorithmName": "moead",
         "islandSize": 1000,
         "noGenerations": 100,
         "normaliseValues": false,
-        "doGridSearch":  true,
+        "doGridSearch": true,
         "gridSearchSize": 1000
     },
     "constants": {

@@ -1,52 +1,80 @@
 import os
 import numpy as np
 import json
-from utils import cppApplications_dir, jsonInputs_dir, startYears, endYears, quickConfigs, runBashCommand # This can come up redlined sometimes, but still works
+from tudatApplications.EDT_thesis.tudat_apps.main_app.pyfiles import utils
+import copy
 
-jsonName = "GAConfigsNominal.json"
-jsonPath = os.path.join(jsonInputs_dir, jsonName)
-GAApplicationName = "application_GA_calculator"
+########################### General info #############################################
 
-baseGACommand = os.path.join(cppApplications_dir, GAApplicationName)
-GAArgumentsList = [baseGACommand, jsonName]
-printing=0
+GACalculatorRunPath = os.path.join(utils.cppApplications_dir, "application_GA_calculator")
+algorithmConfigsSynodic = ["moead", 1000, 100, False, False, 1000]
+algorithmConfigsGlobal = ["moead", 1000, 100, False, True, 1000]
+jsonFilenameBase = "GAConfigs_%s_%s-%s.json"
+templateJsonPath = os.path.join(utils.jsonInputs_dir, "GAConfigsNominal.json")
 
-if quickConfigs[0] == "Jupiter":
-    planetConfigString = "JupiterConfigs"
-    planetName = "Jupiter"
-elif quickConfigs[0] == "Saturn":
-    planetConfigString = "SaturnConfigs"
-    planetName = "Saturn"
-elif quickConfigs[0] == "Mars":
-    planetConfigString = "MarsConfigs"
-    planetName = "Mars"
-else:
-    print("WARNING: Planet not recognised")
+################### Create the json files and run sims for Jupiter  #####################################
 
-with open(jsonPath, 'r+') as f:
-    # Load json data into a variable
-    GAVariables = json.load(f)
+#Values to put into function
+outputSubFolderBaseJupiterSynodic = "GAJupiterSynodic/GACalculatorNominal"
+outputSubFolderBaseJupiterGlobal = "GAJupiterGlobal/GACalculatorNominal"
+jsonSaveSubDirJupiter = "GAConfigs_Jupiter"
+inputStartYearsRangeJupiter = [2020, 2050]
 
-    for i in range(len(startYears)):
-
-        # Set and change start / end year and other variables in the GA variables
-        startYear = startYears[i]
-        endYear = endYears[i]
-        # outputSubFolderBase = "GA_calculator_%s" %(planetName)
-
-        GAVariables["PlanetConfigs"][planetConfigString]["Bounds"]["StartYearLower"] = startYear
-        GAVariables["PlanetConfigs"][planetConfigString]["Bounds"]["StartYearUpper"] = endYear
-        GAVariables["PlanetConfigs"]["planetToFlyby"] = planetName
-        # GAVariables["saveDataConfigs"]["outputSubFolder"] = outputSubFolder
+# Create jsons for the case of running synodic period optimisations
+utils.createGARunnerJsons(utils.quickConfigsJupiter, outputSubFolderBaseJupiterSynodic, jsonSaveSubDirJupiter, jsonFilenameBase, inputStartYearsRangeJupiter,
+                          utils.JupiterInfoList, templateJsonPath=templateJsonPath, createSynodicJsons=True,
+                          algorithmConfigs=algorithmConfigsSynodic)
+# Create jsons for the case of running glboal optimisations and grid search
+utils.createGARunnerJsons(utils.quickConfigsJupiter, outputSubFolderBaseJupiterGlobal, jsonSaveSubDirJupiter, jsonFilenameBase, inputStartYearsRangeJupiter,
+                          utils.JupiterInfoList, templateJsonPath=templateJsonPath, createSynodicJsons=False,
+                          algorithmConfigs=algorithmConfigsGlobal)
 
 
-        # Dump new data into a json file TODO: make a bunch of new json files in a separate directory, to track changes?
-        f.seek(0)
-        json.dump(GAVariables, f, indent=4)
-        f.truncate()
 
-        # Run simulations using relevant json file
-        print("Running %s simulations for %s - %s" %(planetName, startYear, endYear))
-        runBashCommand( GAArgumentsList, printSetting=printing)
+################### Create the json files and run sims for Saturn #####################################
+
+#Values to put into function
+outputSubFolderBaseSaturnSynodic = "GASaturnSynodic/GACalculatorNominal"
+outputSubFolderBaseSaturnGlobal = "GASaturnGlobal/GACalculatorNominal"
+jsonSaveSubDirSaturn = "GAConfigs_Saturn"
+inputStartYearsRangeSaturn = inputStartYearsRangeJupiter
+
+# Create jsons for the case of running synodic period optimisations
+utils.createGARunnerJsons(utils.quickConfigsSaturn, outputSubFolderBaseSaturnSynodic, jsonSaveSubDirSaturn, jsonFilenameBase, inputStartYearsRangeSaturn,
+                          utils.SaturnInfoList, templateJsonPath=templateJsonPath, createSynodicJsons=True,
+                          algorithmConfigs=algorithmConfigsSynodic)
+# Create jsons for the case of running glboal optimisations and grid search
+utils.createGARunnerJsons(utils.quickConfigsSaturn, outputSubFolderBaseSaturnGlobal, jsonSaveSubDirSaturn, jsonFilenameBase, inputStartYearsRangeSaturn,
+                          utils.SaturnInfoList, templateJsonPath=templateJsonPath, createSynodicJsons=False,
+                          algorithmConfigs=algorithmConfigsGlobal)
 
 
+
+################### Create the json files and run sims for Mars #####################################
+
+#Values to put into function
+outputSubFolderBaseMarsSynodic = "GAMarsSynodic/GACalculatorNominal"
+outputSubFolderBaseMarsGlobal = "GAMarsGlobal/GACalculatorNominal"
+jsonSaveSubDirMars = "GAConfigs_Mars"
+inputStartYearsRangeMars = [2020, 2025]
+
+# Create jsons for the case of running synodic period optimisations
+utils.createGARunnerJsons(utils.quickConfigsMars, outputSubFolderBaseMarsSynodic, jsonSaveSubDirMars, jsonFilenameBase, inputStartYearsRangeMars,
+                          utils.MarsInfoList, templateJsonPath=templateJsonPath, createSynodicJsons=True,
+                          algorithmConfigs=algorithmConfigsSynodic)
+# Create jsons for the case of running glboal optimisations and grid search
+utils.createGARunnerJsons(utils.quickConfigsMars, outputSubFolderBaseMarsGlobal, jsonSaveSubDirMars, jsonFilenameBase, inputStartYearsRangeMars,
+                          utils.MarsInfoList, templateJsonPath=templateJsonPath, createSynodicJsons=False,
+                          algorithmConfigs=algorithmConfigsGlobal)
+
+
+############################################ Run simulations ########################################################
+
+runSims = True
+printSetting=0
+if runSims:
+    utils.runAllSimulations(jsonSaveSubDirJupiter, printSetting=printSetting)
+
+    utils.runAllSimulations(jsonSaveSubDirSaturn, printSetting=printSetting)
+
+    utils.runAllSimulations(jsonSaveSubDirMars, printSetting=printSetting)

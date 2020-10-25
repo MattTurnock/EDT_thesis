@@ -37,7 +37,8 @@
         "maxCPUTimeSecs": 60
     },
     "saveDataConfigs": {
-        "outputSubFolderBase": "GAJupiter/GACalculatorNominal"
+        "outputSubFolderBase": "GASaturnGlobal/GACalculatorNominal",
+        "outputSubFolder": "GASaturnGlobal/GACalculatorNominal_Saturn_2020-2050"
     },
     "PlanetConfigs": {
         "JupiterConfigs": {
@@ -70,14 +71,14 @@
                 "DeltaVKmsUpper": 4.0
             }
         },
-        "planetToFlyby": "Jupiter"
+        "planetToFlyby": "Saturn"
     },
     "AlgorithmConfigs": {
         "algorithmName": "moead",
         "islandSize": 1000,
         "noGenerations": 100,
         "normaliseValues": false,
-        "doGridSearch":  true,
+        "doGridSearch": true,
         "gridSearchSize": 1000
     },
     "constants": {

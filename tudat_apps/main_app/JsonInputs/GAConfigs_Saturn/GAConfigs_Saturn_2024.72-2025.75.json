@@ -37,7 +37,8 @@
         "maxCPUTimeSecs": 60
     },
     "saveDataConfigs": {
-        "outputSubFolderBase": "GAJupiter/GACalculatorNominal"
+        "outputSubFolderBase": "GASaturnSynodic/GACalculatorNominal",
+        "outputSubFolder": "GASaturnSynodic/GACalculatorNominal_Saturn_2024.72-2025.75"
     },
     "PlanetConfigs": {
         "JupiterConfigs": {
@@ -52,8 +53,8 @@
         },
         "SaturnConfigs": {
             "Bounds": {
-                "StartYearLower": 2020,
-                "StartYearUpper": 2050,
+                "StartYearLower": 2024.72,
+                "StartYearUpper": 2025.75,
                 "FlightDurationYearsLower": 2,
                 "FlightDurationYearsUpper": 15,
                 "DeltaVKmsLower": 10,
@@ -70,14 +71,14 @@
                 "DeltaVKmsUpper": 4.0
             }
         },
-        "planetToFlyby": "Jupiter"
+        "planetToFlyby": "Saturn"
     },
     "AlgorithmConfigs": {
         "algorithmName": "moead",
         "islandSize": 1000,
         "noGenerations": 100,
         "normaliseValues": false,
-        "doGridSearch":  true,
+        "doGridSearch": false,
         "gridSearchSize": 1000
     },
     "constants": {

@@ -37,7 +37,8 @@
         "maxCPUTimeSecs": 60
     },
     "saveDataConfigs": {
-        "outputSubFolderBase": "GAJupiter/GACalculatorNominal"
+        "outputSubFolderBase": "GAMarsSynodic/GACalculatorNominal",
+        "outputSubFolder": "GAMarsSynodic/GACalculatorNominal_Mars_2020.79-2022.93"
     },
     "PlanetConfigs": {
         "JupiterConfigs": {
@@ -62,22 +63,22 @@
         },
         "MarsConfigs": {
             "Bounds": {
-                "StartYearLower": 2020,
-                "StartYearUpper": 2025,
+                "StartYearLower": 2020.79,
+                "StartYearUpper": 2022.93,
                 "FlightDurationYearsLower": 0.54757,
                 "FlightDurationYearsUpper": 2.7379,
                 "DeltaVKmsLower": 2.0,
                 "DeltaVKmsUpper": 4.0
             }
         },
-        "planetToFlyby": "Jupiter"
+        "planetToFlyby": "Mars"
     },
     "AlgorithmConfigs": {
         "algorithmName": "moead",
         "islandSize": 1000,
         "noGenerations": 100,
         "normaliseValues": false,
-        "doGridSearch":  true,
+        "doGridSearch": false,
         "gridSearchSize": 1000
     },
     "constants": {

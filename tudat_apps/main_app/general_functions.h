@@ -46,36 +46,42 @@ namespace gen {
     double AU = 1.496e11;
 
 
-    /////////////////////////// Some useful functions //////////////////////
+    ////////////////////////// Functions for time-cnversions ///////////////////////////////////////
 
-    // Function to read json file (from JsonInputs directory)
-    nlohmann::json readJson(std::string filename, std::string fileDirectory=gen::jsonInputsRootPath){
+    // Convert tudat time (seconds since j2000) to the (decimal) year
+    double tudatTime2DecimalYear(double tudatTime){
+        // convert by starting at year 2000, and adding seconds as years
+        double decimalYear = 2000 + tudatTime/60/60/24/365.25;
+        return decimalYear;
+    }
 
-        std::string pathToJson = fileDirectory + filename;
-        std::ifstream jsonFile(pathToJson);
-        nlohmann::json jsonObject = nlohmann::json::parse(jsonFile);
+    // Function to convert year to seconds
+    double years2Seconds(double years){
+        return years * 365.25*24*60*60;
+    }
 
-        return jsonObject;
+    // FUnction to convert year to days
+    double years2Days(double years){
+        return years * 365.25;
+    }
+
+    // Function to convert year (eg 2020) to MJD, in seconds
+    double year2MJDSeconds(double year){
+        return years2Seconds(year - 2000);
+    }
+
+    // Function to convert year (eg 2020) to MJD, in days
+    double year2MJDDays(double year){
+        return years2Days(year - 2000);
+    }
+
+    // Function to convert year (eg 2020) to year, in MJD format (eg 20)
+    double year2MJDYears(double year){
+        return year-2000;
     }
 
 
-
-    // Calculate circle area
-    double getCircleArea(double diameter){
-        double radius = 0.5*diameter;
-        double area =  PI * std::pow(radius, 2);
-
-        return area;
-    }
-
-    // Calculate donut area (of 2 circles)
-    double getDonutArea(double diameterInner, double diameterOuter){
-        double areaInner = gen::getCircleArea(diameterInner);
-        double areaOuter = gen::getCircleArea(diameterOuter);
-        double donutArea = areaOuter - areaInner;
-
-        return donutArea;
-    }
+    ////////////////////////// Functions for frame conversions ///////////////////////////////////////
 
     // Functions to convert between LVLH and Inertial reference frames given the rotation angle between them (ie theta_)
     Eigen::Vector3d LvlhToInertial(Eigen::Vector3d LvlhVector, double rotationAngle){
@@ -112,65 +118,8 @@ namespace gen {
         return maglocalVector;
     }
 
-    // Convert tudat time (seconds since j2000) to the (decimal) year
-    double tudatTime2DecimalYear(double tudatTime){
-        // convert by starting at year 2000, and adding seconds as years
-        double decimalYear = 2000 + tudatTime/60/60/24/365.25;
-        return decimalYear;
-    }
 
-    // Function to return 2 sines superimposed
-    double twoSines(double x, std::vector<double> sinParameters ){
-        double a1 = sinParameters[0];
-        double b1 = sinParameters[1];
-        double c1 = sinParameters[2];
-        double a2 = sinParameters[3];
-        double b2 = sinParameters[4];
-        double c2 = sinParameters[5];
-        double d = sinParameters[6];
-
-        double y = a1*sin(b1*x + c1) + a2*sin(b2*x + c2) + d;
-        return y;
-    }
-
-    // Function to convert year to seconds
-    double years2Seconds(double years){
-        return years * 365.25*24*60*60;
-    }
-
-    // FUnction to convert year to days
-    double years2Days(double years){
-        return years * 365.25;
-    }
-
-    // Function to convert year (eg 2020) to MJD, in seconds
-    double year2MJDSeconds(double year){
-        return years2Seconds(year - 2000);
-    }
-
-    // Function to convert year (eg 2020) to MJD, in days
-    double year2MJDDays(double year){
-        return years2Days(year - 2000);
-    }
-
-    // Function to convert year (eg 2020) to year, in MJD format (eg 20)
-    double year2MJDYears(double year){
-        return year-2000;
-    }
-
-    // Function to convert km/s to m/s
-    double km2m(double kms){
-        return kms*1000;
-    }
-
-    // Function to convert double to string, with decimal precision
-    std::string floatToString(double number, int decimalPlaces=2){
-        std::stringstream stream;
-        stream << std::fixed << std::setprecision(decimalPlaces) << number;
-        std::string s = stream.str();
-
-        return s;
-    }
+    ////////////////////////// Functions for GA related things ///////////////////////////////////////
 
     // Function to normalise or denormlaise deltaV or TOF, based on given bounds
     double normaliseValue(double initialValue, double lowerBound, double upperBound, bool denormalise = false) {
@@ -189,53 +138,32 @@ namespace gen {
         return newValue;
     }
 
-    // Function to multiply all values of a (double) vector by a constant (double)
-    std::vector< double > vectorScaling(std::vector<double> inputVector, double scaleFactor){
-        std::vector<double> outputVector;
-        for( int i=0 ; i<inputVector.size() ; i++){
-            outputVector.push_back( scaleFactor * inputVector[i] );
-        }
-        return outputVector;
-    }
-    // Function to normalise or denormalise all values in a vector for DV or TOF
-    std::vector< double > vectorScalingNormalisation(std::vector<double> inputVector, double lowerBound, double upperBound, bool denormalise=false){
-        std::vector<double> outputVector;
-        for( int i=0 ; i<inputVector.size() ; i++){
-            outputVector.push_back( gen::normaliseValue(inputVector[i], lowerBound, upperBound, denormalise) );
-        }
-        return outputVector;
-    }
+    // Function to convert from numerical <int> vector for flyby trajectory to named bodies
+    std::vector< std::string > FlybySequence2TransferBodyTrajectory(std::vector< int > flybySequence){
 
-    // Function to print pagmo population to file (based on one in saveOptimizationResults.h)
-    void printPopulationToFile( const std::vector< std::vector< double > >& population,
-                                const std::string filePrefix,
-                                const std::string fileSuffix,
-                                const std::string outputSubFolder,
-                                const bool isFitness )
-    {
+        // Create list of transfer bodies, and list to put the transfer trajectory into. Note, sun is a dummy
+        std::vector< std::string > transferBodies = {"Sun",
+                                                     "Mercury",
+                                                     "Venus",
+                                                     "Earth",
+                                                     "Mars",
+                                                     "Jupiter",
+                                                     "Saturn",
+                                                     "Uranus",
+                                                     "Neptune"};
+        std::vector< std::string > transferBodyTrajectory;
 
-        Eigen::MatrixXd matrixToPrint( population.size( ), population.at( 0 ).size( ) );
-        for( unsigned int i = 0; i < population.size( ); i++ )
-        {
-            for( unsigned int j = 0; j < population.at( 0 ).size( ); j++ )
-            {
-                matrixToPrint( i, j ) = population.at( i ).at( j );
-            }
+        // For each entry in the sequence, add to the new transferBodyTrajectoryVector
+        int noFlybys = flybySequence.size();
+        for(int i = 0; i < noFlybys; i++){
+            transferBodyTrajectory.push_back( transferBodies[ flybySequence[i] ] );
         }
 
-        if( !isFitness )
-        {
-            tudat::input_output::writeMatrixToFile( matrixToPrint, filePrefix + "population_" + fileSuffix + ".dat", 16,
-                                                    tudat_applications::getOutputPath( ) + outputSubFolder,
-                                                    ",");
-        }
-        else
-        {
-            tudat::input_output::writeMatrixToFile( matrixToPrint, filePrefix + "fitness_" + fileSuffix + ".dat", 16,
-                                                    tudat_applications::getOutputPath( ) + outputSubFolder,
-                                                    ",");
-        }
+        return transferBodyTrajectory;
     }
+
+
+    ////////////////////////// Functions for Optimisation things ///////////////////////////////////////
 
     // Function to create (and run and save) a grid search for a problem. Based on applicationOutput.h in tudat examples
     void createGridSearch(
@@ -289,38 +217,8 @@ namespace gen {
 
     }
 
-    // Function to convert from numerical <int> vector for flyby trajectory to named bodies
-    std::vector< std::string > FlybySequence2TransferBodyTrajectory(std::vector< int > flybySequence){
 
-        // Create list of transfer bodies, and list to put the transfer trajectory into. Note, sun is a dummy
-        std::vector< std::string > transferBodies = {"Sun",
-                                                     "Mercury",
-                                                     "Venus",
-                                                     "Earth",
-                                                     "Mars",
-                                                     "Jupiter",
-                                                     "Saturn",
-                                                     "Uranus",
-                                                     "Neptune"};
-        std::vector< std::string > transferBodyTrajectory;
-
-        // For each entry in the sequence, add to the new transferBodyTrajectoryVector
-        int noFlybys = flybySequence.size();
-        for(int i = 0; i < noFlybys; i++){
-            transferBodyTrajectory.push_back( transferBodies[ flybySequence[i] ] );
-        }
-
-        return transferBodyTrajectory;
-    }
-
-    // COnvert an eigen::vector to std::vector (for doubles)
-    std::vector< double > EigenVectorXd2StdVectorDoubles(Eigen::VectorXd inputVector){
-        std::vector< double > outputVector;
-        outputVector.resize(inputVector.size());
-        Eigen::VectorXd::Map(&outputVector[0], inputVector.size()) = inputVector;
-
-        return outputVector;
-    }
+    ////////////////////////// Functions for Simulation related things (eg integrators etc) ////////////////////////////
 
     // Return the integrator coefficient set from string input
     RungeKuttaCoefficients::CoefficientSets getIntegratorCoefficientSet(std::string integratorString){
@@ -337,8 +235,76 @@ namespace gen {
         return coefficientSetOutput;
     }
 
+    // Function to print pagmo population to file (based on one in saveOptimizationResults.h)
+    void printPopulationToFile( const std::vector< std::vector< double > >& population,
+                                const std::string filePrefix,
+                                const std::string fileSuffix,
+                                const std::string outputSubFolder,
+                                const bool isFitness )
+    {
+
+        Eigen::MatrixXd matrixToPrint( population.size( ), population.at( 0 ).size( ) );
+        for( unsigned int i = 0; i < population.size( ); i++ )
+        {
+            for( unsigned int j = 0; j < population.at( 0 ).size( ); j++ )
+            {
+                matrixToPrint( i, j ) = population.at( i ).at( j );
+            }
+        }
+
+        if( !isFitness )
+        {
+            tudat::input_output::writeMatrixToFile( matrixToPrint, filePrefix + "population_" + fileSuffix + ".dat", 16,
+                                                    tudat_applications::getOutputPath( ) + outputSubFolder,
+                                                    ",");
+        }
+        else
+        {
+            tudat::input_output::writeMatrixToFile( matrixToPrint, filePrefix + "fitness_" + fileSuffix + ".dat", 16,
+                                                    tudat_applications::getOutputPath( ) + outputSubFolder,
+                                                    ",");
+        }
+    }
 
 
+    ////////////////////////// Cpp utility functions (eg json loading, vector type conversion...) /////////////////////
+
+    // Function to read json file (from JsonInputs directory)
+    nlohmann::json readJson(std::string filename, std::string fileDirectory=gen::jsonInputsRootPath){
+
+        std::string pathToJson = fileDirectory + filename;
+        std::ifstream jsonFile(pathToJson);
+        nlohmann::json jsonObject = nlohmann::json::parse(jsonFile);
+
+        return jsonObject;
+    }
+
+    // Function to convert double to string, with decimal precision
+    std::string floatToString(double number, int decimalPlaces=2){
+        std::stringstream stream;
+        stream << std::fixed << std::setprecision(decimalPlaces) << number;
+        std::string s = stream.str();
+
+        return s;
+    }
+
+    // Function to multiply all values of a (double) vector by a constant (double)
+    std::vector< double > vectorScaling(std::vector<double> inputVector, double scaleFactor){
+        std::vector<double> outputVector;
+        for( int i=0 ; i<inputVector.size() ; i++){
+            outputVector.push_back( scaleFactor * inputVector[i] );
+        }
+        return outputVector;
+    }
+
+    // COnvert an eigen::vector to std::vector (for doubles)
+    std::vector< double > EigenVectorXd2StdVectorDoubles(Eigen::VectorXd inputVector){
+        std::vector< double > outputVector;
+        outputVector.resize(inputVector.size());
+        Eigen::VectorXd::Map(&outputVector[0], inputVector.size()) = inputVector;
+
+        return outputVector;
+    }
 
 
     ////////////////////////// Some Equations and formulae for bare tethers ///////////////////////
@@ -369,9 +335,47 @@ namespace gen {
         return pow( (2*ic - pow(ic, 2)), 2/3 );
     }
 
+    /// FOllowing for general tethers ///
+
+    // Calculate circle area
+    double getCircleArea(double diameter){
+        double radius = 0.5*diameter;
+        double area =  PI * std::pow(radius, 2);
+
+        return area;
+    }
+
+    // Calculate donut area (of 2 circles)
+    double getDonutArea(double diameterInner, double diameterOuter){
+        double areaInner = gen::getCircleArea(diameterInner);
+        double areaOuter = gen::getCircleArea(diameterOuter);
+        double donutArea = areaOuter - areaInner;
+
+        return donutArea;
+    }
 
 
 
+    ////////////////////////// Misc Functions  /////////////////////
+
+    // Function to return 2 sines superimposed
+    double twoSines(double x, std::vector<double> sinParameters ){
+        double a1 = sinParameters[0];
+        double b1 = sinParameters[1];
+        double c1 = sinParameters[2];
+        double a2 = sinParameters[3];
+        double b2 = sinParameters[4];
+        double c2 = sinParameters[5];
+        double d = sinParameters[6];
+
+        double y = a1*sin(b1*x + c1) + a2*sin(b2*x + c2) + d;
+        return y;
+    }
+
+    // Function to convert km/s to m/s
+    double km2m(double kms){
+        return kms*1000;
+    }
 
 
 
