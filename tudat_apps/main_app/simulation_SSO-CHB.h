@@ -45,6 +45,15 @@
 #include "Tudat/SimulationSetup/PropagationSetup/createMassRateModels.h"
 
 #include "Tudat/JsonInterface/Support/errorHandling.h"
+
+// Add pagmo files
+#include "pagmo/algorithms/de1220.hpp"
+#include "pagmo/algorithms/sade.hpp"
+#include "pagmo/algorithms/simulated_annealing.hpp"
+#include "pagmo/algorithms/cmaes.hpp"
+#include "pagmo/algorithms/de.hpp"
+#include "pagmo/algorithms/nsga2.hpp"
+
 #include <fstream>
 
 #endif //TUDATBUNDLE_SIMULATION_SSO_CHB_H

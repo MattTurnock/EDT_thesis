@@ -1,0 +1,111 @@
+File: VY1MAG_1H_FMT.txt                 Version: NSSDC 11/15/2001 JFC
+---------------------------------------------------------------------
+
+Voyager 1 Hourly Average Interplanetary Magnetic Field Data, ASCII
+
+Date Coverage: 1977-09-05 to 1989-12-31
+
+Version Date: 1995-02-09
+
+NSSDC Data Set ID: 77-084A-05O 
+
+Spacecraft Source: Voyager 1
+
+Experiment Source: Voyager 1 Triaxial Fluxgate Magnetometer
+
+Principal Investigator: 
+
+   Dr. Norman F. Ness
+   Bartol Research Institute
+   University of Delaware
+   Newark, DE 19716-4793
+   Ph: 302-831-8116
+   Fx: 302-831-1843
+   E-mail: bartol::nfness
+
+Data Set Contact: 
+
+   Sandy Kramer 
+   Laboratory for Extraterrestrial Physics
+   Code 692, NASA Goddard Space Flight Center
+   Greenbelt, MD 20771
+   Ph: 301-286-4957
+   E-mail: z1sbk@lepvgr.gsfc.nasa.gov
+
+Data Set Description:
+
+This data set contains hour averages of the interplanetary magnetic field 
+(IMF) measurements obtained by the triaxial fluxgate magnetometer (MAG)
+experiment on Voyager 1. Identical instruments on Voyager 1 and 2 were 
+designed to measure the IMF between  Earth and Saturn (10 AU) during the 
+primary Voyager mission. The  design and performance yielded absolute 
+accuracies to better than < 0.1 nT. In general, each component of the IMF 
+hourly average has an uncertainty of up  to (+/- 0.05 nT) in the region 
+beyond 10 AU. More accurate measurements can be  obtained by special 
+processing of the data, but it was not feasible to do this for the entire 
+data set included here. The magnetic field magnitude in nT is provided 
+along with angles of the field vector in the spacecraft-centered 
+Heliographic (HG) coordinate system, also known as RTN. The X-HG axis is 
+directed from the Sun to the spacecraft, Y-HG is the cross product of the 
+solar rotation axis and X-HG, and Z-HG completes the orthogonal axis system. 
+The accompanying format description file defines the transformation of the 
+HG angles to vector components. Cartesian coordinates are given for the 
+spacecraft in the sun-centered Inertial Heliographic (IHG) system, where 
+the Z-IHG axis is parallel to the solar rotation axis, X-IHG points towards 
+the ascending node direction of the solar equator's intersection with the
+Ecliptic, and Y-IHG is parallel to the solar equator and completes the
+orthogonal system. The MAG instruments are described by K. W. Behannon et 
+al., Space Science Reviews, 21, 235, 1977. The data and coordinates are 
+described by L. F. Burlaga, Space Science Reviews, 39, 255, 1984.
+
+Data Set Files:
+
+   VY1MAG_1H_FMT.txt - format description file (ASCII), volume = 6 MB 
+
+   VY1MAG_1H.asc - hourly average data file (ASCII)
+
+Data File Parameter Format: VY1MAG_1H.asc
+
+   s/c id (1 = Voyager-1, 2 = Voyager-2)
+   year (0-99)
+   day  (1 = Jan. 1)
+   hour (0-23)
+   x position component (A.U. - IHG coordinates)
+   y "                "
+   z "                "
+   r = sqrt(x*x+y*y+z*z)
+   F1 - field magnitude (nT)  ( avg(F2(48sec)) )
+   F2 - field modulus (nT)  ( norm (B1,B2,B3) )
+   delta - latitudinal angle (degrees - HG coordinates)
+   lambda - longitudinal angle (degrees - HG coordinates)
+
+   Fill data = 0.0
+
+   Data is provided in ASCII format with each field separated by a space 
+   to allow a Fortran list directed read.
+
+   MAG field components may be recovered using F2, delta and lambda.
+
+      BR = F2*COS(lambda)*COS(delta)      * Fortran users need to convert
+      BT = F2*SIN(lambda)*COS(delta)        degrees to radians before 
+      BN = F2*SIN(delta)                    using trig fcns.
+
+
+Related Information and Data:
+
+Further details on the spacecraft, experiment, data sets at NSSDC, and 
+related WWW sites can be found on the Voyager 1/2 flight project page under
+
+http://nssdc.gsfc.nasa.gov/space/
+
+Hour averages of the interplanetary solar wind data from, and hourly 
+heliocentric coordinates of, Voyager 1/2 and other interplanetary spacecraft 
+may be also be accessed and plotted on-line through the COHOWeb service 
+based at the same WWW site as above.
+
+Acknowledgement:
+
+Use of these data in publications should be accompanied at minimum by
+acknowledgements of the National Space Science Data Center and the 
+responsible Principal Investigator defined in the experiment documentation 
+provided here.

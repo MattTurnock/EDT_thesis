@@ -38,16 +38,21 @@ namespace gen2 {
 EarthPlanetTransfer::EarthPlanetTransfer(std::vector< std::vector< double > > &bounds,
                                          std::vector< double > &deltaVBounds,
                                          std::vector< int > flybySequence,
-                                         bool normaliseValues):
+                                         bool normaliseValues,
+                                         bool includeDepartureDV,
+                                         bool includeArrivalDV):
                                          problemBounds_(bounds),
                                          deltaVBounds_(deltaVBounds),
-                                         normaliseValues_(normaliseValues){
+                                         normaliseValues_(normaliseValues),
+                                         includeDepartureDV_(includeDepartureDV),
+                                         includeArrivalDV_(includeArrivalDV){
 
     // Specify number of legs and type of legs
     numberOfLegs_ = flybySequence.size();
     legTypeVector_.resize( numberOfLegs_ );
     legTypeVector_[ 0 ] = mga_Departure;
     legTypeVector_[ numberOfLegs_ - 1 ] = capture;
+    int targetPlanetIndex = flybySequence[numberOfLegs_ - 1];
 
     // For loop sets intermediate legs (if any) to swingbys
     for(int i = 1; i < numberOfLegs_ - 1; i++){
@@ -123,11 +128,23 @@ EarthPlanetTransfer::EarthPlanetTransfer(std::vector< std::vector< double > > &b
         }
     }
 
-    // Create departure and capture variables. Uses default values - parabolic escape and (basically) parabolic entry
-    semiMajorAxes_.resize( 2 );
-    eccentricities_.resize( 2 );
-    semiMajorAxes_ << std::numeric_limits< double >::infinity( ), 1.0895e8 / 0.02;
-    eccentricities_ << 0., 0.98;
+    // Does nominal case for all values except mars, which has a parabolic arrival orbit
+    if (targetPlanetIndex == 4){
+        // Create Mars departure and capture variables. Parabolic-parabolic
+        semiMajorAxes_.resize( 2 );
+        eccentricities_.resize( 2 );
+        semiMajorAxes_ << std::numeric_limits< double >::infinity( ), std::numeric_limits< double >::infinity( );
+        eccentricities_ << 0., 0.;
+    }
+    // Nominal values
+    else{
+        // Create departure and capture variables. Uses default values - parabolic escape and (basically) parabolic entry
+        semiMajorAxes_.resize( 2 );
+        eccentricities_.resize( 2 );
+        semiMajorAxes_ << std::numeric_limits< double >::infinity( ), 1.0895e8 / 0.02;
+        eccentricities_ << 0., 0.98;
+    }
+
 }
 
 //! Descriptive name of the problem
@@ -172,8 +189,8 @@ std::vector<double> EarthPlanetTransfer::fitness( const std::vector<double> &xv 
                                 minimumPericenterRadii_,
                                 semiMajorAxes_,
                                 eccentricities_,
-                                true,
-                                false); // TODO: make sure arrival DV is not included!! ================ <---
+                                includeDepartureDV_,
+                                includeArrivalDV_);
 
     // Create the DV vector and calculate trajectory
     double resultingDeltaV;

@@ -17,7 +17,7 @@ figNumberCount=1
 doingJupiter=False
 doingSaturn=False
 doingMars=True
-showing=False
+showing=True
 
 scatterMarkerPorkchops = "x"
 scatterLinewidthsPorkchops = 1
@@ -195,9 +195,13 @@ if doingMars:
     allYearsMarsDataGlobal = utils.getAllYearsGA(utils.quickConfigsMars, MarsSubfolderGlobal)
     fitnessFileDVsMarsGlobal, fitnessFileTOFSMarsGlobal, launchYearsMarsGlobal, arrivalYearsMarsGlobal, startYearsMarsGlobal, endYearsMarsGlobal = allYearsMarsDataGlobal[0:6]
 
-    utils.plotManyDataGA(allYearsMarsDataGlobal, figNumberCount, utils.quickConfigsMars, plotType="DV-TOFS", saveFolder=plotFolderMars, savenameSuffix="_Global", removeDominated=False)
+    utils.plotManyDataGA(allYearsMarsDataGlobal, figNumberCount, utils.quickConfigsMars,
+                         plotType="DV-TOFS", saveFolder=plotFolderMars, savenameSuffix="_Global", removeDominated=False,
+                          TOFUnits="Days", ylims=[200,1000], xlims=[5.5, 10], printMinDV=True)
     figNumberCount += 1
-    utils.plotManyDataGA(allYearsMarsDataGlobal, figNumberCount, utils.quickConfigsMars, plotType="launchYears-TOFS", saveFolder=plotFolderMars, savenameSuffix="_Global", removeDominated=False)
+    utils.plotManyDataGA(allYearsMarsDataGlobal, figNumberCount, utils.quickConfigsMars,
+                         plotType="launchYears-TOFS", saveFolder=plotFolderMars, savenameSuffix="_Global", removeDominated=False,
+                          TOFUnits="Days", ylims=[200,1000], printMinDV=True)
     figNumberCount += 1
 
     MarsPorkchopPathList = os.listdir(os.path.join(utils.simulation_output_dir, MarsSubfolderGlobal))
@@ -217,6 +221,8 @@ if doingMars:
                          saveFolder=MarsPorkchopSaveDirectory, savenameOverride=MarsPorkchopSavenameGlobal, plotLegend=False, TOFUnits="Days",
                          scatterMarker=None, scatterLinewidths=None, scatterColour=scatterColorPorkchops, removeDominated=False)
     figNumberCount += 1
+
+
 
     # # Full porkchop synodic opt
     # MarsPorkchopSavenameSynodic = "porkchopMarsSynodic_2020-2050"

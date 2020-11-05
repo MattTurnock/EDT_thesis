@@ -141,7 +141,10 @@ int main(int argc, char *argv[])
 
     // Create problem object for problem fitness
     bool normaliseValues = AlgorithmConfigs["normaliseValues"];
-    EarthPlanetTransfer earthPlanetProbStruct = EarthPlanetTransfer(Bounds, DVBounds, FlybySequence, normaliseValues);
+    bool includeDepartureDV = AlgorithmConfigs["includeDepartureDV"];
+    bool includeArrivalDV = AlgorithmConfigs["includeArrivalDV"];
+    EarthPlanetTransfer earthPlanetProbStruct = EarthPlanetTransfer(Bounds, DVBounds, FlybySequence,
+                                                                    normaliseValues, includeDepartureDV, includeArrivalDV);
     pagmo::problem Prob{ earthPlanetProbStruct };
 
     // Do a cheeky grid search if specified in json
@@ -441,25 +444,18 @@ int main(int argc, char *argv[])
     Eigen::Vector3d departureVelocity;
     departureVelocity << departureStateVector[3], departureStateVector[4], departureStateVector[5];
 
-    std::string terminationType = simulationVariables["GuidanceConfigs"]["terminationType"]; //TODO: check me for where to take from json
-    double proximityTerminationCutoffAU = simulationVariables["GuidanceConfigs"]["proximityTerminationCutoffAU"]; //TODO: make value in json reasonable
-    double simulationTimeUpperLimit = simulationVariables["GuidanceConfigs"]["simulationTimeYears"];
-    double maxCPUTimeSecs = simulationVariables["GuidanceConfigs"]["maxCPUTimeSecs"];
+    // Set json info
+    nlohmann::json terminationSettingsJson = simulationVariables["GuidanceConfigs"]["terminationSettings"];
     nlohmann::json integratorSettingsJsonPerturbed;
-
-
+    double simulationTimeUpperLimit = terminationSettingsJson["timeTerminationYears"];
 
     univ::propSettings GAPropSettings = univ::propSettings(GAPropBodies,
                                                            departurePosition,
                                                            departureVelocity,
                                                             integratorSettingsJson,
-                                                            departureEpoch,
-                                                            terminationType,
-                                                            simulationTimeUpperLimit,
-                                                            "Vehicle",
-                                                            "Jupiter",
-                                                            proximityTerminationCutoffAU,
-                                                            maxCPUTimeSecs);
+                                                            terminationSettingsJson,
+                                                            departureEpoch);
+
     std::cout << "Done creating GAPropSettings" << std::endl;
     // Ensure environment is properly updated
 //    GAGuidance.updateAllEnviro();

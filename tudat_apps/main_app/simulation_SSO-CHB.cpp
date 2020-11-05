@@ -29,18 +29,12 @@ int main( )
     using namespace gen;
 
 
-
-//    std::cout << "TudatBundleRootPathBoost:  " << gen::tudatBundleRootPathBoost << std::endl;
-//    std::cout << "TudatBundleRootPathTemp:  " << gen::tudatBundleRootPathTemp << std::endl;
-//    std::cout << "TudatBundleRootPath:  " << gen::tudatBundleRootPath << std::endl;
-//    std::cout << "TudatRootPath:  " << gen::tudatRootPath << std::endl;
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////             SIMULATION PREP            ////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     std::cout<< "===============Loading Variables From File==================" << std::endl;
 
-    nlohmann::json simulationVariables = gen::readJson("testVariables.json");
+    nlohmann::json simulationVariables = gen::readJson("VnV/testVariablesParkerVnV.json"); // TODO: change me back to nominal testVariables
 
 
     std::cout<< "===============Prepping Sim==================" << std::endl;
@@ -129,25 +123,19 @@ int main( )
     vehicleInitialPosition << vehicleInitialCartesian[0], vehicleInitialCartesian[1], vehicleInitialCartesian[2];
     Eigen::Vector3d vehicleInitialVelocity;
     vehicleInitialVelocity << vehicleInitialCartesian[3], vehicleInitialCartesian[4], vehicleInitialCartesian[5];
-    
-//    std::cout << "Solar gravitational parameter: " << solarGravPar << std::endl;
-//    std::cout << "Vehicle initial state Keplerian: " << vehicleInitialKeplerian << std::endl;
-//    std::cout << "Vehicle initial state Cartesian: " << vehicleInitialCartesian << std::endl;
-//    std::cout << "Vehicle initial position: " << vehicleInitialPosition << std::endl;
-//    std::cout << "Vehicle initial velocity: " << vehicleInitialVelocity << std::endl;
+
+    // Set various json variables
+    double initialEphemerisYear = simulationVariables["GuidanceConfigs"]["initialEphemerisYear"];
+    nlohmann::json  terminationSettingsJson = simulationVariables["GuidanceConfigs"]["terminationSettings"];
+    nlohmann::json integratorSettingsJson = simulationVariables["GuidanceConfigs"]["integratorSettings"];
 
     // Actually create the propSettings class
-    double initialEphemerisTime = simulationVariables["GuidanceConfigs"]["initialEphemerisTime"];
-    std::string terminationType = simulationVariables["GuidanceConfigs"]["terminationType"];
-    double simulationTimeYears = simulationVariables["GuidanceConfigs"]["simulationTimeYears"];
-    nlohmann::json integratorSettingsJson = simulationVariables["GuidanceConfigs"]["integratorSettings"];
     univ::propSettings SSOPropSettings = univ::propSettings(SSOPropBodies,
                                                             vehicleInitialPosition,
                                                             vehicleInitialVelocity,
                                                             integratorSettingsJson,
-                                                            initialEphemerisTime,
-                                                            terminationType,
-                                                            simulationTimeYears);
+                                                            terminationSettingsJson,
+                                                            initialEphemerisYear);
 
 
 
@@ -240,11 +228,11 @@ int main( )
                                           "," );
 //
 
-    std::cout<< "============= TESTING ===============" << std::endl;
-
-
-    double tehTime = gen::tudatTime2DecimalYear(1E7);
-    std::cout << "teh time is: " << tehTime << std::endl;
+//    std::cout<< "============= TESTING ===============" << std::endl;
+//
+//
+//    double tehTime = gen::tudatTime2DecimalYear(1E7);
+//    std::cout << "teh time is: " << tehTime << std::endl;
 
 //    std::string pathToJson = gen::jsonInputsRootPath + "test1.json";
 //    std::ifstream people_file(pathToJson);

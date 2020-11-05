@@ -1,0 +1,126 @@
+{
+  "Spice": {
+    "customKernelName": "tudat_EDT_spk_kernel.bsp",
+    "bodiesToInclude": {
+      "Sun": 1,
+      "Mercury": 0,
+      "Venus": 0,
+      "Earth": 0,
+      "Mars": 0,
+      "Jupiter": 0,
+      "Saturn": 0,
+      "Uranus": 0,
+      "Neptune": 0
+    }
+  },
+  "ParkerMagField": {
+    "B0_tesla": 12.0E-9,
+    "phi0_deg": 42.748,
+    "R0_au": 1,
+    "twoSinePars": {
+      "a1": 1,
+      "b1": 0.1,
+      "c1": 4,
+      "a2": 1.5,
+      "b2": 0.5,
+      "c2": -0.9,
+      "d": 6.2
+    }
+  },
+  "InterstellarMagField": {
+    "BInf_tesla": 0.293E-9,
+    "longitudeInf_deg": 227.28,
+    "latitudeInf_deg": 34.62
+  },
+  "GuidanceConfigs": {
+    "thrustMagnitudeConfig": "nominal",
+    "thrustDirectionConfig": "nominalPrograde",
+    "initialEphemerisYear": 2000,
+    "integratorSettings": {
+      "initialTimeStep": 1.0,
+      "integrator": "RK87DP",
+      "minimumStepSize": 1E-20,
+      "maximumStepSize": 86400,
+      "relativeErrorTolerance": 1E-10,
+      "absoluteErrorTolerance": 1E-10
+    },
+    "integratorSettingsPerturbed": {
+      "initialTimeStep": 1.0,
+      "integrator": "RK87DP",
+      "minimumStepSize": 1E-20,
+      "maximumStepSize": 31536000,
+      "relativeErrorTolerance": 1E-6,
+      "absoluteErrorTolerance":1E-6
+    },
+    "terminationSettings": {
+      "terminationType": "distanceTermination",
+      "timeTerminationYears": 500,
+      "absoluteTimeTerminationYear": 2099,
+      "proximityTerminationBody1": "Vehicle",
+      "proximityTerminationBody2": "Sun",
+      "proximityTerminationCutoffAU": 1,
+      "distanceTerminationAU": 200,
+      "maxCPUTimeTerminationSecs": 60
+    },
+    "vehicleInitialKeplerian": {
+      "a_au": 1000,
+      "e": 0.999999999,
+      "i_deg": 0,
+      "aop_deg": 180,
+      "raan_deg": 0,
+      "ta_deg": 0
+    }
+  },
+  "EDTConfigs": {
+    "configType": "CHB",
+    "tetherLength": 100,
+    "tetherDiameterInner": 0.01,
+    "tetherDiameterOuter": 0.01,
+    "emitterCurrent": 1,
+    "hoytether": {
+      "tetherDiameterInnerSecondary": 0.01,
+      "tetherDiameterOuterSecondary": 0.01,
+      "noPrimaryLines": 6,
+      "primaryLineSegmentLength": 0.2,
+      "slackCoefficient": 1.005,
+      "primaryLineSeparation": 0.5,
+      "occultationCoefficient": 0.7
+    }
+  },
+  "saveDataConfigs": {
+    "outputSubFolder": "ParkerVnV/",
+    "baseFilename": "ParkerVnV"
+  },
+  "scConfigs": {
+    "SRP": {
+      "endmassArea1": 1.2,
+      "endmassArea2": 1.2,
+      "endmassRadiationCoefficient": 0.5,
+      "tetherRadiationCoefficient": 0.5,
+      "rotationFactor": 0.7
+    }
+  },
+  "materialProperties": {
+    "resistivity": {
+      "Al": 2.65E-8,
+      "Cu": 1.68E-8
+    },
+    "tempCoefficient": {
+      "Al": 0.00429,
+      "Cu": 0.0068
+    }
+  },
+  "constants": {
+    "gravitationalParameters": {
+      "Sun": 1.32712428e20,
+      "Mercury": 2.2032E13,
+      "Venus": 3.24859E14,
+      "EarthMoon": 3.986004418E14,
+      "Mars": 4.282837E13,
+      "Jupiter": 1.26686534E17,
+      "Saturn": 3.7931187E16,
+      "Uranus": 5.793939E15,
+      "Neptune": 6.836529E15
+    }
+  }
+}

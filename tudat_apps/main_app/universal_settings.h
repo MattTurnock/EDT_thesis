@@ -179,38 +179,39 @@ namespace univ {
         // Define list of dependent variables to save.
         std::vector< std::shared_ptr< SingleDependentVariableSaveSettings > > dependentVariablesList;
 
-        // Constructor
+        // Constructor.
         propSettings(
                 propBodies& simulationPropBodies,
                 Eigen::Vector3d vehicleInitialPosition,
                 Eigen::Vector3d vehicleInitialVelocity,
                 nlohmann::json integratorSettingsJson,
-                double initialEphemerisTime = 1.0E7,
-                std::string terminationMethod = "nominalTimeTermination",
-                double simulationLength = 10,
-                std::string proximityTerminationBody1 = "Vehicle",
-                std::string proximityTerminationBody2 = "Jupiter",
-                double proximityCutoffAU = 1,
-                double maxCPUTimeSecs = 60) :
+                nlohmann::json terminationSettingsJson,
+                double initialEphemerisYear = 2000):
                 simulationPropBodies_(simulationPropBodies),
                 vehicleInitialPosition_(vehicleInitialPosition),
                 vehicleInitialVelocity_(vehicleInitialVelocity),
                 integratorSettingsJson_(integratorSettingsJson),
-                initialEphemerisTime_(initialEphemerisTime),
-                terminationMethod_(terminationMethod),
-                simulationLength_(simulationLength),
-                proximityTerminationBody1_(proximityTerminationBody1),
-                proximityTerminationBody2_(proximityTerminationBody2),
-                proximityCutoffAU_(proximityCutoffAU),
-                maxCPUTimeSecs_(maxCPUTimeSecs){
-            std::cout << "beginning constructor" << std::endl;
+                terminationSettingsJson_(terminationSettingsJson),
+                initialEphemerisYear_(initialEphemerisYear){
+
             /////////////// Propagation Settings ///////////////////////
-            // Create vehicle initial state from position and velocities
+            // Set termination Parameters from json data
+            std::string terminationType = terminationSettingsJson_["terminationType"];
+            double timeTerminationYears = terminationSettingsJson_["timeTerminationYears"];
+            std::string proximityTerminationBody1 = terminationSettingsJson_["proximityTerminationBody1"];
+            std::string proximityTerminationBody2 = terminationSettingsJson_["proximityTerminationBody2"];
+            double proximityTerminationCutoffAU = terminationSettingsJson_["proximityTerminationCutoffAU"];
+            double distanceTerminationAU = terminationSettingsJson_["distanceTerminationAU"];
+            double maxCPUTimeTerminationSecs = terminationSettingsJson_["maxCPUTimeTerminationSecs"];
+            double absoluteTerminationTimeYear = terminationSettingsJson_["absoluteTimeTerminationYear"];
+
+            // Create vehicle initial state from position and velocities (also time)
+            initialEphemerisTime_ = gen::year2MJDSeconds(initialEphemerisYear_);
             vehicleInitialState_ << vehicleInitialPosition_, vehicleInitialVelocity_;
 
             // Set maximum CPU termination time for all cases
             terminationSettingsList.push_back( std::make_shared< PropagationCPUTimeTerminationSettings >(
-                    maxCPUTimeSecs_ ) );
+                    maxCPUTimeTerminationSecs ) );
 
             // Set maximum simulation date to Jan 01 2100, since this is when ephemerides run out
             terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
@@ -218,36 +219,54 @@ namespace univ {
 
             // Define propagation termination conditions
             // Time termination - ends after a certain number of years defined from simulationLength
-            if (terminationMethod_ == "nominalTimeTermination"){
+            if (terminationType == "nominalTimeTermination"){
                 // Add default time termination to termination settings list
-                double defaultFinalEphemTime = initialEphemerisTime_ + simulationLength_*365*24*60*60;
+                double defaultFinalEphemTime = initialEphemerisTime_ + timeTerminationYears * 365 * 24 * 60 * 60;
                 terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
                         defaultFinalEphemTime ) );
             }
             // Proximity termination - define a body and the proximity to it when termination happens. Also uses simulationTime as an upper limit of simulation
-            else if (terminationMethod_ == "proximityTermination"){
+            // Distance termination - like proximity termination, but for when vehicle is further than distance x
+            else if (terminationType == "proximityTermination" or terminationType=="distanceTermination") {
+
+                // Set variables for differences between proximity termination (when vehicle is closer than x) vs distance termination (when vehicle is further than x)
+                bool useAsLowerLimit;
+                double distanceToUse;
+                if (terminationType == "proximityTermination") {
+                    useAsLowerLimit = true;
+                    distanceToUse = proximityTerminationCutoffAU;
+                } else if (terminationType == "distanceTermination") {
+                    useAsLowerLimit = false;
+                    distanceToUse = distanceTerminationAU;
+                }
+
                 // Add time termination
-                double maximumEphemTime = initialEphemerisTime_ + simulationLength_*365*24*60*60;
-                terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
-                        maximumEphemTime ) );
+                double maximumEphemTime = initialEphemerisTime_ + timeTerminationYears * 365 * 24 * 60 * 60;
+                terminationSettingsList.push_back(std::make_shared<PropagationTimeTerminationSettings>(
+                        maximumEphemTime));
 
                 // Add proximity termination
                 proximityTerminationDepVar_ =
-                        std::make_shared< SingleDependentVariableSaveSettings >(
+                        std::make_shared<SingleDependentVariableSaveSettings>(
                                 relative_distance_dependent_variable,
-                                proximityTerminationBody1_,
-                                proximityTerminationBody2_);
+                                proximityTerminationBody1,
+                                proximityTerminationBody2);
 
-                terminationSettingsList.push_back(std::make_shared< PropagationDependentVariableTerminationSettings >(
+                terminationSettingsList.push_back(std::make_shared<PropagationDependentVariableTerminationSettings>(
                         proximityTerminationDepVar_,
-                        proximityCutoffAU_*gen::AU,
-                        true,
+                        distanceToUse * gen::AU,
+                        useAsLowerLimit,
                         false));
             }
             else{
                 std::cout << "ERROR: invalid termination setting" << std::endl;
                 exit(1);
             }
+
+            // Add in absolute time terminator regardless of setting (avoids epehemeris errors)
+            terminationSettingsList.push_back(std::make_shared<PropagationCustomTerminationSettings>(
+                    std::bind(&gen::absoluteTimeTermination, std::placeholders::_1, absoluteTerminationTimeYear)
+                    ));
 
             // Using above if-else really make the termination settings
             terminationSettings = std::make_shared< PropagationHybridTerminationSettings >( terminationSettingsList, true );
@@ -303,22 +322,21 @@ namespace univ {
         Eigen::Vector3d vehicleInitialPosition_;
         Eigen::Vector3d vehicleInitialVelocity_;
         nlohmann::json integratorSettingsJson_;
+        nlohmann::json terminationSettingsJson_;
 
 
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
-        double initialEphemerisTime_;
-        std::string terminationMethod_;
-        double simulationLength_;
-        std::string proximityTerminationBody1_;
-        std::string proximityTerminationBody2_;
-        double proximityCutoffAU_;
-        double maxCPUTimeSecs_;
+        double initialEphemerisYear_;
 
 
         /////////////////////////// Other set parameters ///////////////////////////////
         Eigen::Vector6d vehicleInitialState_;
         std::shared_ptr< DependentVariableSaveSettings > dependentVariablesToSave_;
         std::shared_ptr< SingleDependentVariableSaveSettings > proximityTerminationDepVar_;
+        double initialEphemerisTime_;
+
+
+
 
     };
 

@@ -43,9 +43,9 @@
         "JupiterConfigs": {
             "Bounds": {
                 "StartYearLower": 2020,
-                "StartYearUpper": 2050,
-                "FlightDurationYearsLower": 2.5,
-                "FlightDurationYearsUpper": 10,
+                "StartYearUpper": 2030,
+                "FlightDurationYearsLower": 1.0,
+                "FlightDurationYearsUpper": 5,
                 "DeltaVKmsLower": 8.5,
                 "DeltaVKmsUpper": 9.68
             }
@@ -54,7 +54,7 @@
             "Bounds": {
                 "StartYearLower": 2020,
                 "StartYearUpper": 2050,
-                "FlightDurationYearsLower": 6,
+                "FlightDurationYearsLower": 2,
                 "FlightDurationYearsUpper": 15,
                 "DeltaVKmsLower": 10,
                 "DeltaVKmsUpper": 11.33
@@ -66,8 +66,8 @@
                 "StartYearUpper": 2025,
                 "FlightDurationYearsLower": 0.54757,
                 "FlightDurationYearsUpper": 2.7379,
-                "DeltaVKmsLower": 2.0,
-                "DeltaVKmsUpper": 4.0
+                "DeltaVKmsLower": 0.1,
+                "DeltaVKmsUpper": 100.0
             }
         },
         "planetToFlyby": "Jupiter"
@@ -76,7 +76,11 @@
         "algorithmName": "moead",
         "islandSize": 1000,
         "noGenerations": 100,
-        "normaliseValues": false
+        "normaliseValues": false,
+        "doGridSearch":  true,
+        "gridSearchSize": 1000,
+        "includeDepartureDV": true,
+        "includeArrivalDV": false
     },
     "constants": {
         "gravitationalParameters": {

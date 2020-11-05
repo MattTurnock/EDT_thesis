@@ -44,6 +44,7 @@ namespace gen {
     double pi = 3.14159;
     double deg2rad = pi / 180;
     double AU = 1.496e11;
+//    double absoluteTerminationTimeYears = 2099;
 
 
     ////////////////////////// Functions for time-cnversions ///////////////////////////////////////
@@ -266,6 +267,37 @@ namespace gen {
         }
     }
 
+//    // Function used to facilitate end of simulation based on a year
+//    bool absoluteTimeTermination(double time){
+//        double absoluteTerminationTime = year2MJDSeconds(absoluteTerminationTimeYears);
+//        bool terminateSim ;
+//
+//        if (time > absoluteTerminationTime){
+//            terminateSim = true;
+//        }
+//        else{
+//            terminateSim = false;
+//        }
+//
+//        return terminateSim;
+//    }
+
+    // Function used to facilitate end of simulation based on a year
+    bool absoluteTimeTermination(double time, double absoluteTerminationTimeYear){
+        double absoluteTerminationTime = year2MJDSeconds(absoluteTerminationTimeYear);
+        bool terminateSim ;
+
+        if (time > absoluteTerminationTime){
+            terminateSim = true;
+        }
+        else{
+            terminateSim = false;
+        }
+
+        return terminateSim;
+    }
+
+//    std::function< bool(const double ) > absoluteTimeTerminationFunction = &absoluteTimeTermination;
 
     ////////////////////////// Cpp utility functions (eg json loading, vector type conversion...) /////////////////////
 

@@ -35,7 +35,7 @@
   "GuidanceConfigs": {
     "thrustMagnitudeConfig": "nominal",
     "thrustDirectionConfig": "nominalPrograde",
-    "initialEphemerisTime": 1.0E7,
+    "initialEphemerisYear": 2000,
     "integratorSettings": {
       "initialTimeStep": 1.0,
       "integrator": "RK87DP",
@@ -52,10 +52,16 @@
       "relativeErrorTolerance": 1E-6,
       "absoluteErrorTolerance":1E-6
     },
-    "terminationType": "nominalTimeTermination",
-    "simulationTimeYears": 2.3,
-    "proximityTerminationCutoffAU": 1,
-    "maxCPUTimeSecs": 60,
+    "terminationSettings": {
+      "terminationType": "nominalTimeTermination",
+      "timeTerminationYears": 2.3,
+      "absoluteTimeTerminationYear": 2099,
+      "proximityTerminationBody1": "Vehicle",
+      "proximityTerminationBody2": "Jupiter",
+      "proximityTerminationCutoffAU": 1,
+      "distanceTerminationAU": 10,
+      "maxCPUTimeTerminationSecs": 60
+    },
     "vehicleInitialKeplerian": {
       "a_au": 1,
       "e": 0,
@@ -102,35 +108,6 @@
     "tempCoefficient": {
       "Al": 0.00429,
       "Cu": 0.0068
-    }
-  },
-  "GAConfigs": {
-    "JupiterConfigs": {
-      "Bounds": {
-        "StartYearLower": 2020,
-        "StartYearUpper": 2050,
-        "FlightDurationYearsLower": 2.5,
-        "FlightDurationYearsUpper": 10,
-        "DeltaVKmsLower": 8.5,
-        "DeltaVKmsUpper": 9.68
-      }
-    },
-    "SaturnConfigs": {
-      "Bounds": {
-        "StartYearLower": 2020,
-        "StartYearUpper": 2050,
-        "FlightDurationYearsLower": 6,
-        "FlightDurationYearsUpper": 15,
-        "DeltaVKmsLower": 10,
-        "DeltaVKmsUpper": 11.33
-      }
-    },
-    "planetToFlyby": "Jupiter",
-    "algorithmName": "moead",
-    "islandSize": 1000,
-    "noGenerations": 100,
-    "saveDataInfo":{
-      "outputSubFolder": "GA_calculator_2020-2050/"
     }
   },
   "constants": {

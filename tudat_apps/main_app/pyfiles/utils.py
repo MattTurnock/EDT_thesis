@@ -33,6 +33,11 @@ SaturnInfoList = [2020.58, 378/365.25] # Info list contains [initial same side t
 quickConfigsMars = ["Mars", 2020.789, 2050, 10, 780/365.25, False] #[planetName, start year optimal, end year, generation, synodic period, ??]
 MarsInfoList = [2020.789, 780/365.25] # Info list contains [initial same side time, synodic period]
 
+#######################################################################################################################
+############################## Set constant values for VnV stuff ######################
+#######################################################################################################################
+AU = 1.496e11
+
 
 #######################################################################################################################
 ############################# Some useful functions ####################################################
@@ -268,7 +273,8 @@ def getAllYearsGA(quickConfigs, GASubfolder):
 
 def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", yearSpacing=1, markerScale=10, legendSize=11,
                    figsize=[16,9], saveFolder=None, savenameSuffix=None, scatterPointSize=1, scatterColour=None, scatterMarker=".", scatterLinewidths=None,
-                   savenameOverride=None, plotLegend=True, TOFUnits="Years", removeDominated=True, plotParetoFront=False):
+                   savenameOverride=None, plotLegend=True, TOFUnits="Years", removeDominated=True, plotParetoFront=False,
+                   xlims=None, ylims=None, printMinDV=False):
     """
     Function to plot multiple data sets to the same plot, using all data and the spacing
     :param allYearsGAData:
@@ -289,10 +295,17 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
         startYear = startYears[i]
         endYear = endYears[i]
 
+
+
         if TOFUnits == "Days":
             TOFsToPlot = fitnessFileTOFSAll[i] * 365.25
         else:
             TOFsToPlot = fitnessFileTOFSAll[i]
+
+        if printMinDV:
+            print(min(fitnessFileDVsAll[i]))
+            print(fitnessFileDVsAll[i])
+            print(TOFsToPlot)
 
         if startYear in startYearsToPlot:
             plt.figure(fignumber)
@@ -334,17 +347,22 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
 
             plt.scatter(xToPlot, yToPlot, scatterPointSize, c=scatterColour, marker=scatterMarker, linewidth=scatterLinewidths)
 
+            if xlims is not None:
+                plt.xlim(xlims)
+            if ylims is not None:
+                plt.ylim(ylims)
+
             figLabels.append("%s-%s" %(startYear, endYear))
 
     savenameBase = "%s_%s_gen%s_space%s"
     if plotType=="DV-TOFS":
         plt.xlabel("DVs [km/s]")
-        plt.ylabel("Time of flight [years]")
+        plt.ylabel("Time of flight [%s]" %TOFUnits)
         savename = savenameBase %("DV", "TOF", generation, yearSpacing)
 
     elif plotType=="launchYears-TOFS":
         plt.xlabel("Launch year")
-        plt.ylabel("Time of flight [years]")
+        plt.ylabel("Time of flight [%s]" %TOFUnits)
         savename = savenameBase %("LaunchYears", "TOF", generation, yearSpacing)
 
     elif plotType=="launchYears-DV":
@@ -366,6 +384,8 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
     if saveFolder is not None:
         checkFolderExist(saveFolder)
         plt.savefig(os.path.join(saveFolder, savename ))
+
+
 
 def porkchopPlot(directoryPath, baseFilename,
                  fignumber=None, figsize=[16,9],
@@ -536,6 +556,8 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
             jsonInfoTemp["AlgorithmConfigs"]["normaliseValues"] = algorithmConfigs[3]
             jsonInfoTemp["AlgorithmConfigs"]["doGridSearch"] = algorithmConfigs[4]
             jsonInfoTemp["AlgorithmConfigs"]["gridSearchSize"] = algorithmConfigs[5]
+            jsonInfoTemp["AlgorithmConfigs"]["includeDepartureDV"] = algorithmConfigs[6]
+            jsonInfoTemp["AlgorithmConfigs"]["includeArrivalDV"] = algorithmConfigs[7]
 
         jsonPathTemp = jsonPathBase %(planetName, startYear, endYear)
 
@@ -549,6 +571,14 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
 def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
                       runPath=os.path.join(cppApplications_dir, "application_GA_calculator"),
                       printSetting=0):
+    """
+    Runs all simulations within a json directory
+    :param jsonSubDirectory:
+    :param jsonInputsDir:
+    :param runPath:
+    :param printSetting:
+    :return:
+    """
 
     jsonsToRunFilenames = os.listdir(os.path.join(jsonInputsDir, jsonSubDirectory))
     jsonsToRunFilenames.sort()
@@ -563,3 +593,152 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
         print("Running application %s, with json %s" %(applicationName, jsonsToRunFilenames[i]))
         argumentsList = [runPath, jsonsToRunPaths[i]]
         runBashCommand( argumentsList, printSetting=printSetting)
+
+
+#######################################################################################################################
+####################################### VNV Related functions #########################################################
+#######################################################################################################################
+
+def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation_output_dir, dataFilenamePortions=[]):
+
+    fullDataFilesDirectoryPath = os.path.join(simulation_output_dir, dataSubdirectory)
+    dataToLoadFilenames = os.listdir(fullDataFilesDirectoryPath)
+
+    for i in range(len(dataToLoadFilenames)):
+        filename = dataToLoadFilenames[i]
+
+        if "bodyData" in filename:
+            bodyDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
+            bodyDataArray = np.genfromtxt(bodyDataFilename, delimiter=",")
+
+        elif "currentData" in filename:
+            currentDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
+            currentDataArray = np.genfromtxt(currentDataFilename, delimiter=",")
+
+        elif "depVarData" in filename:
+            depVarDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
+            depVarDataArray = np.genfromtxt(depVarDataFilename, delimiter=",")
+
+        elif "ionoData" in filename:
+            ionoDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
+            ionoDataArray = np.genfromtxt(ionoDataFilename, delimiter=",")
+
+        elif "magData" in filename:
+            magDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
+            magDataArray = np.genfromtxt(magDataFilename, delimiter=",")
+
+        elif "propData" in filename:
+            propDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
+            propDataArray = np.genfromtxt(propDataFilename, delimiter=",")
+
+        elif "thrustData" in filename:
+            thrustDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
+            thrustDataArray = np.genfromtxt(thrustDataFilename, delimiter=",")
+
+        else:
+            print("Data file does not have recognised type, ignoring: %s" %filename)
+
+
+    return (bodyDataArray, currentDataArray, depVarDataArray, ionoDataArray, magDataArray, propDataArray, thrustDataArray)
+
+
+def plotMagData(magDataArray, bodyDataArray=None, fignumber=None, plotType="time-magnitude", logScaleY=True, logScaleX=True,
+figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None):
+
+    times = magDataArray[:,0]
+    timesYears = (times / (365.25 * 24 * 60 * 60)) + 2000
+    magnitudes = magDataArray[:, 1]
+    magfieldLocal = magDataArray[:, 2:5]
+    magfieldInertial = magDataArray[:, 5:8]
+    theta = magDataArray[:, 8]
+    B0 = magDataArray[:, 9]
+
+    if bodyDataArray is not None:
+        bodyDataTimes = bodyDataArray[:, 0]
+        print(len(times))
+        print(len(bodyDataTimes))
+        radii = bodyDataArray[:, 1]
+        radiiAU = radii / AU
+        stateVector = bodyDataArray[:, 2:8]
+        stateVectorAU = stateVector / AU
+
+        if len(bodyDataTimes) != len(times):
+            print("WARNING: Body data times not equal to magdata times, terminating plot")
+            return 1
+
+
+
+    plt.figure(fignumber, figsize=figsize)
+
+    if plotType == "time-magnitude":
+        xToPlot = timesYears
+        yToPlot = magnitudes
+        xLabel = "Year"
+        yLabel = "Magnetic field magnitude [T]"
+
+    elif plotType == "radius-magnitude":
+        if bodyDataArray is None:
+            print("ERROR: Body data array input required, terminating plot")
+            return 1
+        xToPlot = radiiAU
+        yToPlot = magnitudes
+        xLabel = "Radius from Sun [AU]"
+        yLabel = "Magnetic field magnitude [T]"
+
+    else:
+        print("ERROR: Plot type not recgonised, ending program")
+        sys.exit()
+
+    plt.plot(xToPlot, yToPlot)
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.grid()
+    if logScaleY: plt.yscale("log")
+    if logScaleX:
+        plt.xscale("log")
+        plt.xticks([10E-6, 10E-5, 10E-4, 10E-3, 10E-2, 10E-1, 10E0, 10E1, 10E2])
+    if xlims is not None: plt.xlim(xlims)
+    if ylims is not None: plt.ylim(ylims)
+
+    if saveFolder is not None:
+        checkFolderExist(saveFolder)
+        plt.savefig(os.path.join(saveFolder, savename ))
+
+def plotTrajectoryData(bodyDataArray, fignumber=None, plotType="x-y", legendSize=11, plotSun=False,
+                       figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, sameScale=False):
+
+    times = bodyDataArray[:,0]
+    timesYears = times / (365.25 * 24 * 60 * 60)
+    radii = bodyDataArray[:, 1]
+    stateVector = bodyDataArray[:, 2:8]
+    stateVectorAU = stateVector / AU
+    legendLabels=[]
+
+    plt.figure(fignumber, figsize=figsize)
+
+    if plotType == "x-y":
+        xToPlot = stateVectorAU[:, 0]
+        yToPlot = stateVectorAU[:, 1]
+        xLabel = "X coordinate [AU]"
+        yLabel = "Y coordinate [AU]"
+        legendLabels.append("Spacecraft trajectory")
+    else:
+        print("ERROR: Plot type not recognised, ending program")
+        sys.exit()
+
+    if plotSun:
+        plt.scatter([0], [0], c="orange")
+        legendLabels.append("Sun")
+
+    plt.plot(xToPlot, yToPlot)
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.grid()
+    if sameScale: plt.axis('scaled')
+    plt.legend(legendLabels)
+    if xlims is not None: plt.xlim(xlims)
+    if ylims is not None: plt.ylim(ylims)
+
+    if saveFolder is not None:
+        checkFolderExist(saveFolder)
+        plt.savefig(os.path.join(saveFolder, savename ))

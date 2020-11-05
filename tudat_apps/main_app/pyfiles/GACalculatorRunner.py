@@ -7,8 +7,8 @@ import copy
 ########################### General info #############################################
 
 GACalculatorRunPath = os.path.join(utils.cppApplications_dir, "application_GA_calculator")
-algorithmConfigsSynodic = ["moead", 1000, 100, False, False, 1000]
-algorithmConfigsGlobal = ["moead", 1000, 100, False, True, 1000]
+algorithmConfigsSynodic = ["moead", 1000, 100, False, False, 1000, True, False]
+algorithmConfigsGlobal = ["moead", 1000, 100, False, True, 1000, True, False]
 jsonFilenameBase = "GAConfigs_%s_%s-%s.json"
 templateJsonPath = os.path.join(utils.jsonInputs_dir, "GAConfigsNominal.json")
 
@@ -57,24 +57,30 @@ outputSubFolderBaseMarsSynodic = "GAMarsSynodic/GACalculatorNominal"
 outputSubFolderBaseMarsGlobal = "GAMarsGlobal/GACalculatorNominal"
 jsonSaveSubDirMars = "GAConfigs_Mars"
 inputStartYearsRangeMars = [2020, 2025]
+algorithmConfigsSynodicMars = ["moead", 1024, 100, False, False, 1000, True, True]
+algorithmConfigsGlobalMars = ["moead", 1024, 100, False, True, 1000, True, True]
+
 
 # Create jsons for the case of running synodic period optimisations
 utils.createGARunnerJsons(utils.quickConfigsMars, outputSubFolderBaseMarsSynodic, jsonSaveSubDirMars, jsonFilenameBase, inputStartYearsRangeMars,
                           utils.MarsInfoList, templateJsonPath=templateJsonPath, createSynodicJsons=True,
-                          algorithmConfigs=algorithmConfigsSynodic)
+                          algorithmConfigs=algorithmConfigsSynodicMars)
 # Create jsons for the case of running glboal optimisations and grid search
 utils.createGARunnerJsons(utils.quickConfigsMars, outputSubFolderBaseMarsGlobal, jsonSaveSubDirMars, jsonFilenameBase, inputStartYearsRangeMars,
                           utils.MarsInfoList, templateJsonPath=templateJsonPath, createSynodicJsons=False,
-                          algorithmConfigs=algorithmConfigsGlobal)
+                          algorithmConfigs=algorithmConfigsGlobalMars)
 
 
 ############################################ Run simulations ########################################################
 
 runSims = True
+runJupiter = False
+runSaturn = False
+runMars = True
 printSetting=0
 if runSims:
-    utils.runAllSimulations(jsonSaveSubDirJupiter, printSetting=printSetting)
+    if runJupiter: utils.runAllSimulations(jsonSaveSubDirJupiter, printSetting=printSetting)
 
-    utils.runAllSimulations(jsonSaveSubDirSaturn, printSetting=printSetting)
+    if runSaturn: utils.runAllSimulations(jsonSaveSubDirSaturn, printSetting=printSetting)
 
-    utils.runAllSimulations(jsonSaveSubDirMars, printSetting=printSetting)
+    if runMars: utils.runAllSimulations(jsonSaveSubDirMars, printSetting=printSetting)

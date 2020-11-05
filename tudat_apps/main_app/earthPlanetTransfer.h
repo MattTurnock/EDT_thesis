@@ -63,7 +63,9 @@ struct EarthPlanetTransfer
     EarthPlanetTransfer( std::vector< std::vector< double > > &bounds,
                            std::vector< double > &deltaVBounds,
                            std::vector< int > flybySequence,
-                           bool normaliseValues);
+                           bool normaliseValues,
+                           bool includeDeaprtureDV,
+                           bool includeArrivalDV);
 
     // Calculates the fitness
     std::vector< double > fitness( const std::vector< double > &x ) const;
@@ -111,6 +113,8 @@ private:
     // CUSTOM ADD-IN FOR DV BOUNDS (and normalisation bool)
     std::vector< double > deltaVBounds_;
     bool normaliseValues_;
+    bool includeDepartureDV_;
+    bool includeArrivalDV_;
 };
 
 
