@@ -1,0 +1,71 @@
+ File: VY2TRJ_SSC_FMT.txt                   Version: NSSDC 11/15/2001 JFC
+ ------------------------------------------------------------------------
+
+ Voyager 2 Interplanetary Cruise Trajectory Data from the NSSDC Satellite
+ Situation Center (SSC) - Daily Values for 1977 to 2005
+
+ Date Coverage: 1977-08-25 to 2005-01-09
+
+ Data Contact: R. P. (Sardi) Parthasarathy
+               Hughes STX Corporation / Space Physics Data Facility
+               Code 632
+               NASA Goddard Space Flight Center
+               Greenbelt, Maryland
+               sardi@nssdca.gsfc.nasa.gov
+               Phone: (301) 286-8105
+
+ Data File: VY2TRJ_SSC_1D.asc 
+
+ Parameter Format:
+
+ YY DDD  RAD.AU  SECLAT  SECLON  HELLAT  HELLON  HILLON
+
+ YY = YEAR
+ DDD= INTEGER DAY OF YEAR (1= JAN. 1)
+ RAD.AU= HELIOSPHERIC RADIAL DISTANCE IN AU
+ SECLAT= SOLAR ECLIPTIC LATITUDE IN DEGREES
+ SECLON= SOLAR ECLIPTIC LONGITUDE IN DEGREES
+ HELLAT= SOLAR HELIOGRAPHIC LATITUDE IN DEGREES
+ HELLON= SOLAR HELIOGRAPHIC LONGITUDE IN DEGREES
+ HILLON= SOLAR HELIOGRAPHIC INERTIAL LONGITUDE IN DEGREES WITH RESPECT TO
+         ASCENDING NODE OF SOLAR EQUATOR ON THE ECLIPTIC
+
+
+ Data Source:
+
+ These data were obtained from running the program HELICOOR in the public
+ directory NSSDCA::ANON_DIR:[ACTIVE.HELIO]. These data are based on 
+ predicted trajectories calculated with the GTDS code by the NSSDC 
+ Satellite Situation Center and converted to solar ecliptic and 
+ heliographic coordinates by the HELIOCOOR program. The HELICOOR code was 
+ written by R. Parthasarathy. The program GENTRJCON added the HILLON 
+ longitude.
+
+ Note that the solar ecliptic coordinates are given with respect to true
+ equinox and ecliptic of date. The solar ascending node was located at
+ ecliptic longitude +74.367 degrees as of 1 Jan. 1900 at 1200 UT; this
+ longitude increases by 1.4 degrees/century.
+
+ Warning: earlier verions of this data set had errors after 1989 and 
+ should be deleted.  2/7/95 JFC
+
+
+ Related Information and Data:
+
+ Further details on the spacecraft, experiment, data sets at NSSDC, and 
+ related WWW sites can be found on the Voyager 1/2 flight project page 
+ under
+
+ http://nssdc.gsfc.nasa.gov/space/
+
+ Hour averages of the interplanetary solar wind data from, and hourly 
+ heliocentric coordinates of, Voyager 1/2 and other interplanetary 
+ spacecraft may be also be accessed and plotted on-line through the 
+ COHOWeb service based at the same WWW site as above.
+
+ Acknowledgement:
+
+ Use of these data in publications should be accompanied at minimum by
+ acknowledgements of the National Space Science Data Center and the 
+ responsible Principal Investigator defined in the experiment 
+ documentation provided here.

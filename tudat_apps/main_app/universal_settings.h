@@ -57,7 +57,7 @@ namespace univ {
 
 
             /////////// Define body settings for simulation and create bodymap./////////////////////////
-            // Creat bodies list from json data
+            // Create bodies list from json data
             for(std::size_t i=0; i<allBodiesList_.size(); ++i){
                 intPlaceholder_ = jsonBodiesToInclude_[allBodiesList_[i]];
                 if (jsonBodiesToInclude_[allBodiesList_[i]] == 1){
@@ -207,6 +207,8 @@ namespace univ {
 
             // Create vehicle initial state from position and velocities (also time)
             initialEphemerisTime_ = gen::year2MJDSeconds(initialEphemerisYear_);
+            std::cout << "INITIAL EPHEMERIS YEAR: " << initialEphemerisYear_ << std::endl;
+            std::cout << "INITIAL EPHEMERIS TIME: " << initialEphemerisTime_ << std::endl;
             vehicleInitialState_ << vehicleInitialPosition_, vehicleInitialVelocity_;
 
             // Set maximum CPU termination time for all cases

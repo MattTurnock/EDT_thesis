@@ -1,6 +1,6 @@
 {
   "Spice": {
-    "customKernelName": "tudat_EDT_spk_kernel.bsp",
+    "customKernelName": "de430.bsp",
     "bodiesToInclude": {
       "Sun": 1,
       "Mercury": 1,

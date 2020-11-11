@@ -64,6 +64,7 @@ public:
             // Convert local magfield to inertial and calculate magnitude
             magField_ = gen::LvlhToInertial(magFieldLvlh_, theta_);
             magFieldMagnitude_ = magFieldMaglocal_.norm();
+            std::cout << "Magfield  B0 - phi0 - magnitude - R - R0: " << B0_ << " - " << phi0_ << " - " << magFieldMagnitude_ << " - " << R_ << " - " << R0_ << std::endl;
         }
 
         else if (magFieldRegion_ == "Transitional"){
@@ -95,9 +96,9 @@ public:
             theta_ += 2*PI;
         }
 
-        // Update B0 using approximate sin relationship (need to convert to proper time, and convert to nanotesla
+        // Update B0 using approximate sin relationship (need to convert to proper time, and convert to nanotesla)
         simulationTimeYears_ = gen::tudatTime2DecimalYear(simulationTime);
-        B0_ = 1E-9 * gen::twoSines(simulationTimeYears_, B0EstimationParameters_);
+        B0_ = gen::twoSines(simulationTimeYears_, B0EstimationParameters_);
     }
 
 

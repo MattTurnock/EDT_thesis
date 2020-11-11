@@ -110,7 +110,9 @@ popt, pcov = scipy.optimize.curve_fit(twosines, timesMonthly, magfieldStrengthsM
 # popt, pcov = scipy.optimize.curve_fit(twosines, timesHourly, magfieldStrengthsHourly, bounds=bounds)
 a1, a2, b1, b2, c1, c2, d = popt
 print(" popt: ", popt)
-
+print(a1, a2, b1, b2, c1, c2, d)
+testYear = 2001.3
+print("B0 for year %s: %s" %(testYear, twosines(testYear, a1, a2, b1, b2, c1, c2, d)))
 # print(fittedData)
 
 # a1 = 1
@@ -140,6 +142,7 @@ plt.ylabel("$B_0$ (nT)")
 legend1 = []
 # Plot magfield strength
 plt.plot(longtimes, twosines(longtimes, a1, a2, b1, b2, c1, c2, d))
+# print("LONGTIMES: %s" %longtimes)
 legend1.append("Least-squares approximation")
 # plt.plot(times, sinFitFunction(times))
 plt.plot(omni2DataYearly[:,0], omni2DataYearly[:,1])

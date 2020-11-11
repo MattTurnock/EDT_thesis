@@ -7,6 +7,8 @@ import scipy.interpolate as si
 import json
 import copy
 import re
+from scipy.interpolate import interp1d
+import pandas as pd
 
 #######################################################################################################################
 ############################## Set various project directories ############################################
@@ -14,11 +16,22 @@ import re
 
 pyfiles_dir = os.path.dirname(os.path.realpath(__file__))
 main_app_dir = os.path.abspath(os.path.join(pyfiles_dir, os.pardir))
+tudat_apps_dir = os.path.abspath(os.path.join(main_app_dir, os.pardir))
+pyplots_dir = os.path.join(pyfiles_dir, "pyplots")
+
 simulation_output_dir = os.path.abspath(os.path.join(main_app_dir, "SimulationOutput"))
 tudatBundle_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(main_app_dir))))
 cppApplications_dir = os.path.abspath(os.path.join(tudatBundle_dir, "tudatApplications", "EDT_thesis", "tudat_apps", "bin", "applications"))
 jsonInputs_dir = os.path.join(main_app_dir, "JsonInputs")
-pyplots_dir = os.path.join(pyfiles_dir, "pyplots")
+
+deepSpaceMagfieldDataDir = os.path.join(tudat_apps_dir, "deepSpaceMagfieldData")
+voyagerMagDataSubDirBase = "Voyagers/pub/data/voyager/voyager%s/magnetic_fields/ip_1hour_ascii"
+voyagerTrajDataSubDirBase = "Voyagers/pub/data/voyager/voyager%s/traj/ssc"
+voyager1MagDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerMagDataSubDirBase % "1")
+voyager2MagDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerMagDataSubDirBase % "2")
+voyager1TrajDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerTrajDataSubDirBase % "1")
+voyager2TrajDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerTrajDataSubDirBase % "2")
+
 
 #######################################################################################################################
 ############################## Set constant values for use in GACalculatorRunner.py and others ######################
@@ -37,6 +50,7 @@ MarsInfoList = [2020.789, 780/365.25] # Info list contains [initial same side ti
 ############################## Set constant values for VnV stuff ######################
 #######################################################################################################################
 AU = 1.496e11
+indicatorString_9004 = "SN      DecimalYear     F1Mag   ElevAng AzimAng F2Mag"
 
 
 #######################################################################################################################
@@ -93,6 +107,67 @@ def findNearestInArray(array, value):
     idx = np.abs(array - value).argmin()
     return (array.flat[idx], idx)
 
+# Lists all files in a directory, with a specific extension
+def list_files(directory, extension=None, sort=True, exceptions=None):
+
+    fileListFull = os.listdir(directory)
+
+    if extension is None:
+        fileList = fileListFull
+
+    else:
+        fileList = []
+        for file in fileListFull:
+            if file.endswith(".%s" %extension):
+                fileList.append(file)
+
+    if sort:
+        fileList.sort()
+
+    if exceptions is not None:
+        newFileList = []
+        for file in fileList:
+            addFile = True
+            for exception in exceptions:
+                if exception in file:
+                    addFile = False
+
+            if addFile:
+                newFileList.append(file)
+
+        fileList = newFileList
+
+    return fileList
+
+def print_full(x):
+    pd.set_option('display.max_rows', len(x))
+    print(x)
+    pd.reset_option('display.max_rows')
+
+    # Function to reshape arrays by interpolation. inputArray is the base data, reframeArray is the array of indices to reshape along. Must be on 0 column!
+def interpolateArrays(inputArray, reframeArray):
+
+    inputDataFrame = pd.DataFrame(inputArray[:,1:], index=inputArray[:,0])
+    outputDataFrame = inputDataFrame[~inputDataFrame.index.duplicated(keep='first')]
+
+    # for i in reframeArray:
+    # #     print(pd.Series(0, name=i))
+    # #     outputDataFrame.append(pd.Series(name=i))
+    outputDataFrame = outputDataFrame.reindex(outputDataFrame.index.values.tolist()+list(reframeArray))
+    outputDataFrame.sort_index(inplace=True)
+    outputDataFrame.interpolate(inplace=True)
+
+    outputDataFrame = outputDataFrame.reindex(reframeArray)
+
+    outputIndices = outputDataFrame.index.to_numpy()
+    outputData = outputDataFrame.to_numpy()
+
+    outputArray = np.zeros(( len(outputIndices), np.shape(outputData)[1]+1 ))
+
+    outputArray[:,0] = outputIndices
+    outputArray[:,1:] = outputData
+
+    return outputArray
 
 
 #######################################################################################################################
@@ -642,29 +717,38 @@ def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation
     return (bodyDataArray, currentDataArray, depVarDataArray, ionoDataArray, magDataArray, propDataArray, thrustDataArray)
 
 
-def plotMagData(magDataArray, bodyDataArray=None, fignumber=None, plotType="time-magnitude", logScaleY=True, logScaleX=True,
-figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None):
+def plotMagData(magDataArray, arrayType="simulation", bodyDataArray=None, fignumber=None, plotType="time-magnitude", logScaleY=True, logScaleX=True,
+figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, scatter=False, scatterPointSize=1, legend=None):
 
-    times = magDataArray[:,0]
-    timesYears = (times / (365.25 * 24 * 60 * 60)) + 2000
-    magnitudes = magDataArray[:, 1]
-    magfieldLocal = magDataArray[:, 2:5]
-    magfieldInertial = magDataArray[:, 5:8]
-    theta = magDataArray[:, 8]
-    B0 = magDataArray[:, 9]
+    if arrayType == "simulation":
+        times = magDataArray[:,0]
+        timesYears = (times / (365.25 * 24 * 60 * 60)) + 2000
+        magnitudes = magDataArray[:, 1]
+        magfieldLocal = magDataArray[:, 2:5]
+        magfieldInertial = magDataArray[:, 5:8]
+        theta = magDataArray[:, 8]
+        B0 = magDataArray[:, 9]
 
-    if bodyDataArray is not None:
-        bodyDataTimes = bodyDataArray[:, 0]
-        print(len(times))
-        print(len(bodyDataTimes))
-        radii = bodyDataArray[:, 1]
-        radiiAU = radii / AU
-        stateVector = bodyDataArray[:, 2:8]
-        stateVectorAU = stateVector / AU
 
-        if len(bodyDataTimes) != len(times):
-            print("WARNING: Body data times not equal to magdata times, terminating plot")
-            return 1
+        if bodyDataArray is not None:
+            bodyDataTimes = bodyDataArray[:, 0]
+            radii = bodyDataArray[:, 1]
+            radiiAU = radii / AU
+            stateVector = bodyDataArray[:, 2:8]
+            stateVectorAU = stateVector / AU
+
+            if len(bodyDataTimes) != len(times):
+                print("WARNING: Body data times not equal to magdata times, terminating plot")
+                return 1
+
+    elif arrayType == "voyager":
+        timesYears = magDataArray[:,0]
+        radiiAU = magDataArray[:, 1]
+        magnitudes = magDataArray[:,2]
+        deltasDeg = magDataArray[:,3]
+        lambdasDeg = magDataArray[:,4]
+
+
 
 
 
@@ -674,22 +758,22 @@ figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None):
         xToPlot = timesYears
         yToPlot = magnitudes
         xLabel = "Year"
-        yLabel = "Magnetic field magnitude [T]"
+        yLabel = "Magnetic field magnitude [nT]"
 
     elif plotType == "radius-magnitude":
-        if bodyDataArray is None:
-            print("ERROR: Body data array input required, terminating plot")
-            return 1
         xToPlot = radiiAU
         yToPlot = magnitudes
         xLabel = "Radius from Sun [AU]"
-        yLabel = "Magnetic field magnitude [T]"
+        yLabel = "Magnetic field magnitude [nT]"
 
     else:
         print("ERROR: Plot type not recgonised, ending program")
         sys.exit()
 
-    plt.plot(xToPlot, yToPlot)
+    if scatter:
+        plt.scatter(xToPlot, yToPlot, scatterPointSize)
+    else:
+        plt.plot(xToPlot, yToPlot)
     plt.xlabel(xLabel)
     plt.ylabel(yLabel)
     plt.grid()
@@ -699,6 +783,7 @@ figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None):
         plt.xticks([10E-6, 10E-5, 10E-4, 10E-3, 10E-2, 10E-1, 10E0, 10E1, 10E2])
     if xlims is not None: plt.xlim(xlims)
     if ylims is not None: plt.ylim(ylims)
+    if legend is not None: plt.legend(legend)
 
     if saveFolder is not None:
         checkFolderExist(saveFolder)
@@ -742,3 +827,152 @@ def plotTrajectoryData(bodyDataArray, fignumber=None, plotType="x-y", legendSize
     if saveFolder is not None:
         checkFolderExist(saveFolder)
         plt.savefig(os.path.join(saveFolder, savename ))
+
+# Function to load magfield data from voyager datafiles. load type is based on year coverage: can be "7789" or "9004"
+def loadVoyagerMagfieldData(dirPath, loadType="7789"):
+
+    if (loadType == "7789") or (loadType=="traj"):
+        fileList = list_files(dirPath, extension="asc", sort=True, exceptions=None)
+        outputArray = np.genfromtxt(os.path.join(dirPath, fileList[0]))
+        outputArray = np.delete(outputArray, np.where (outputArray==0) [0], 0)
+
+    elif loadType == "9004":
+        fileList = list_files(dirPath, extension="txt", sort=True, exceptions=["00readme", "format"])
+        fileDataList = []
+        for file in fileList:
+            filePath = os.path.join(dirPath, file)
+
+            with open(filePath) as search:
+                for num, line in enumerate(search, 1):
+                    # line = search[lineNo]
+                    line = line.rstrip()  # remove '\n' at end of line
+                    if line == indicatorString_9004:
+                        skipHeaderNum = num
+
+
+            fileData = np.genfromtxt( filePath, skip_header=skipHeaderNum )
+            fileData = np.delete(fileData, np.where (fileData==999) [0], 0)
+
+            # If statement checks for odd files without SN col
+            if (fileData[0,0] != 1.0) and (fileData[0,0] != 2.0):
+                ReplacementSNCol = np.ones((np.shape(fileData)[0], 1))
+                fileData = np.concatenate(( ReplacementSNCol, fileData ), axis=1)
+
+
+            fileDataList.append(fileData)
+
+        for i in range(len(fileDataList)):
+            if i==0:
+                fullDataArray = fileDataList[i]
+            else:
+                fullDataArray = np.concatenate((fullDataArray, fileDataList[i]), axis=0)
+
+
+        outputArray = fullDataArray
+
+    return outputArray
+
+# Function to average data by year
+def averageMagDataArray(inputArray, interval=1):
+
+    startTime = inputArray[0,0]
+    endTime = inputArray[-2,0]
+    newTimes = np.arange(startTime, endTime, interval)
+    # outputArray = np.zeros( ( len(newTimes), np.shape(inputArray)[1] ) )
+    # outputArray[:,0] = newTimes
+
+    intervalMeans = []
+    for i in range(len(newTimes)-1):
+        intervalSubData = inputArray[ np.where(np.logical_and(inputArray[:,0] >= newTimes[i], inputArray[:,0] < newTimes[i+1])) ]
+        intervalMean = np.mean(intervalSubData, axis=0)
+        intervalMeans.append(intervalMean)
+
+    outputArray= np.array(intervalMeans)
+    return outputArray
+
+
+# Function converts decimal year to regular year (eg 99.2 --> 1999.2). FOr one-dimensional arrays
+def decimalYearArray2YearArray(inputYear, limit=50):
+    # np.delete(fileData, np.where (fileData==999) [0], 0)
+    pre20s = 1900 + inputYear[ np.where(inputYear >= limit)]
+    post20s = 2000 + inputYear[ np.where(inputYear <= limit)]
+    outputArray = np.concatenate(( pre20s, post20s ))
+    return outputArray
+
+
+# Function to convert array of format [year, day, hour] to simple years. Day type has Jan1 or Jan0, depending if Jan 1st is counted as 1 or 0
+def yearDayHour2Years(inputArray, yearType="19", dayType="Jan1", hoursType="nominal"):
+
+    if yearType == "19":
+        years = 1900 + inputArray[:,0]
+    elif yearType == "20":
+        years = 2000 + inputArray[:,0]
+    elif yearType == "YYYY":
+        years = inputArray[:,0]
+
+
+    if dayType == "Jan1":
+        days = (inputArray[:,1] - 1) / 365.25
+    elif dayType == "Jan0":
+        days = inputArray[:,1] / 365.25
+    elif dayType is None:
+        days = np.zeros(len(inputArray))
+
+    if hoursType == "nominal":
+        hours = inputArray[:,2] / (365.25 * 24)
+    elif hoursType is None:
+        hours = np.zeros(len(inputArray))
+
+    return years + days + hours
+
+
+
+# FUnction to convert regfular trajectory array to anew one of format [Year, Radius]
+def voyagerTrajArrayToRefined(inputArray):
+
+    outputArray = np.zeros( ( np.shape(inputArray)[0], 2 ) )
+
+    times = yearDayHour2Years(inputArray[:,0:2], yearType="YYYY", dayType="Jan1", hoursType=None)
+
+    outputArray[:, 0] = times
+    outputArray[:, 1] = inputArray[:,2]
+
+    return outputArray
+
+def voyagerArrayToPlotArray(inputArray, inputType="7789", trajectoryDataArray=None):
+
+    outputArray = np.zeros( (np.shape(inputArray)[0], 5)   )
+
+
+    if inputType == "7789":
+
+        times = yearDayHour2Years(inputArray[:, 1:4], yearType="19", dayType="Jan1")
+
+        outputArray[:,0] = times
+        outputArray[:,1:3] = inputArray[:, 7:9]
+        outputArray[:,3:] = inputArray[:, 10:]
+
+    elif inputType == "9004":
+        if trajectoryDataArray is None:
+            print("ERROR: trajectory data array required for 1990-2004 data, ending plotting")
+            return 1
+
+
+
+        times = decimalYearArray2YearArray(inputArray[:, 1])
+
+        trajectoryDataArrayRefined = voyagerTrajArrayToRefined(trajectoryDataArray)
+        trajectoryDataArrayRefinedInterpolated = interpolateArrays(trajectoryDataArrayRefined, times)
+
+        outputArray[:, 0] = times
+        outputArray[:, 1] = trajectoryDataArrayRefinedInterpolated[:,1]
+        outputArray[:, 2:5] = inputArray[:, 2:5]
+
+    return outputArray
+
+
+
+
+
+
+

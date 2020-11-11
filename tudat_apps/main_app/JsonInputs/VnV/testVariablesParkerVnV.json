@@ -1,6 +1,6 @@
 {
   "Spice": {
-    "customKernelName": "tudat_EDT_spk_kernel.bsp",
+    "customKernelName": "de430.bsp",
     "bodiesToInclude": {
       "Sun": 1,
       "Mercury": 0,
@@ -18,6 +18,15 @@
     "phi0_deg": 42.748,
     "R0_au": 1,
     "twoSinePars": {
+      "a1": 1.33554129,
+      "b1": 0.07853982,
+      "c1": -22.57281224,
+      "a2": -0.98083566,
+      "b2": 0.55305433,
+      "c2": 46.69738187,
+      "d": 5.83456192
+    },
+    "twoSineParsPhi0": {
       "a1": 1,
       "b1": 0.1,
       "c1": 4,
@@ -35,7 +44,7 @@
   "GuidanceConfigs": {
     "thrustMagnitudeConfig": "nominal",
     "thrustDirectionConfig": "nominalPrograde",
-    "initialEphemerisYear": 2000,
+    "initialEphemerisYear": 1977,
     "integratorSettings": {
       "initialTimeStep": 1.0,
       "integrator": "RK87DP",
@@ -53,14 +62,14 @@
       "absoluteErrorTolerance":1E-6
     },
     "terminationSettings": {
-      "terminationType": "distanceTermination",
+      "terminationType": "nominalTimeTermination",
       "timeTerminationYears": 500,
-      "absoluteTimeTerminationYear": 2099,
+      "absoluteTimeTerminationYear": 2500,
       "proximityTerminationBody1": "Vehicle",
       "proximityTerminationBody2": "Sun",
       "proximityTerminationCutoffAU": 1,
-      "distanceTerminationAU": 200,
-      "maxCPUTimeTerminationSecs": 60
+      "distanceTerminationAU": 10E10,
+      "maxCPUTimeTerminationSecs": 10E10
     },
     "vehicleInitialKeplerian": {
       "a_au": 1000,
@@ -68,7 +77,7 @@
       "i_deg": 0,
       "aop_deg": 180,
       "raan_deg": 0,
-      "ta_deg": 0
+      "ta_deg": 179
     }
   },
   "EDTConfigs": {

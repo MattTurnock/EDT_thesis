@@ -1,0 +1,17 @@
+File: VY1TRJ_DIR.txt                          Version: NSSDC 12/30/98 JFC
+-------------------------------------------------------------------------
+
+Voyager 1 Interplanetary Trajectory Data
+
+Directory  Description
+---------  -----------
+
+SSC        Daily heliocentric coordinates calculated by NSSDC's Satellite
+           Situation Center (SSC) for 1977 - 2005. See file 
+           VY1TRJ_SSC_FMT.txt for the data set and format description.
+
+
+Note: ASCII trajectory files produced by the Plasma Science (PLS) 
+experiment team from Voyager 1 Supplementary Experimenter Data Record 
+(SEDR) files can be found at COHO directory VOYAGER_1/PLASMA/SEDR. 
+

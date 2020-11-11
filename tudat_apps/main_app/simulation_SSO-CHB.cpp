@@ -52,7 +52,6 @@ int main( )
     NamedBodyMap baseBodyMap;
 
     // Load parker variables from json then convert to proper units
-    double B0 = simulationVariables["ParkerMagField"]["B0_tesla"]; // Note: B0 not currently used since is calculated using sine relationship
     double phi0_deg = simulationVariables["ParkerMagField"]["phi0_deg"];
     double R0_au = simulationVariables["ParkerMagField"]["R0_au"];
     double phi0 = phi0_deg * deg2rad;
@@ -69,7 +68,8 @@ int main( )
     twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["d"]);
 
     nlohmann::json ISMFVariables = simulationVariables["InterstellarMagField"];
-
+    double testYear = 2001.3;
+    std::cout << "B0 for year " << testYear << " : " << gen::twoSines(testYear, twoSinePars) << std::endl;
     EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, ISMFVariables);
 
     // Create EDT config class and set constant thrust in guidance class
