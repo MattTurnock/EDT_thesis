@@ -434,8 +434,8 @@ int main(int argc, char *argv[])
 
     // Create propBodies class for GA
     std::cout<< " -- Creating Propbodies class -- " << std::endl;
-    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"]; // TODO: Check if these should be used
-    univ::propBodies GAPropBodies = univ::propBodies(GAConfig, GAGuidance, GABodyMap, jsonBodiesToInclude, false);
+//    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"]; // TODO: Check if these should be used
+    univ::propBodies GAPropBodies = univ::propBodies(GAConfig, GAGuidance, GABodyMap, simulationVariables, false);
 
     // Create propSettings class for GA
     std::cout<< " -- Creating Propsettings class -- " << std::endl;

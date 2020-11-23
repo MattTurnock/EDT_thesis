@@ -1,0 +1,33 @@
+VY1PLA_SEDR_FMT.txt                                Version: 12/30/98 MIT
+------------------------------------------------------------------------
+
+The files give the coordinates of the Voyager Space Craft in a column 
+format:
+
+year day hour min sec mil-sec  x y z  xx yy zz  r lat long time
+
+x, y, z are Sun-centered ecliptic coordinates, AU  (B1950.0)
+xx, yy, zz are Solar Equatorial Coordinate,  AU    (Heliographic system)
+r, lat, log are the Solar Equatorial Coordinate in AU and degrees
+time is time in years since 1900
+
+The filename format is as follows:
+
+sc_type_start_end_dis.suff
+
+where any of these may be missing.
+sc        is Space Craft v1 or v2
+type      is type of data, usually the same as the directory name, 
+          (e.g. sedr ha )
+start     start time year.day.hour ( day and hour may be missing)
+end       end   time year.day.hour ( day and hour may be missing)
+dis       descriptor, if any addition processing is needed, (e.g. 
+          filt implies the data has been filtered, see README in that 
+          directory.)
+suff      suffix, Z, gz implies the type of compression etc.
+
+The formats may describe more fields that the data sets contain.
+In that case, the fields in the description should just be ignored.
+In some cases, 00000 is used as a fill, and implies the that data
+is unavailable.  Common sense is required to distinguish missing data
+from true zeros.

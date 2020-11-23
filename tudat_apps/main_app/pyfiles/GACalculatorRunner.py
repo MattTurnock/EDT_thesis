@@ -60,7 +60,7 @@ inputStartYearsRangeMars = [2020, 2025]
 algorithmConfigsSynodicMars = ["moead", 1024, 100, False, False, 1000, True, True]
 algorithmConfigsGlobalMars = ["moead", 1024, 100, False, True, 1000, True, True]
 
-
+print("======= Creating relevant json files ==========")
 # Create jsons for the case of running synodic period optimisations
 utils.createGARunnerJsons(utils.quickConfigsMars, outputSubFolderBaseMarsSynodic, jsonSaveSubDirMars, jsonFilenameBase, inputStartYearsRangeMars,
                           utils.MarsInfoList, templateJsonPath=templateJsonPath, createSynodicJsons=True,
@@ -77,7 +77,7 @@ runSims = True
 runJupiter = False
 runSaturn = False
 runMars = True
-printSetting=0
+printSetting=2
 if runSims:
     if runJupiter: utils.runAllSimulations(jsonSaveSubDirJupiter, printSetting=printSetting)
 

@@ -14,8 +14,8 @@ matplotlib.rcParams.update({'font.size': 20})
 plotFolderBase = "pyplots/GA_%s_%s-%s"
 figNumberCount=1
 
-doingJupiter=False
-doingSaturn=False
+doingJupiter=True
+doingSaturn=True
 doingMars=True
 showing=True
 

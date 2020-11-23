@@ -7,11 +7,15 @@
 
 
 #include <Tudat/Astrodynamics/BasicAstrodynamics/accelerationModelTypes.h>
+#include <Tudat/External/SpiceInterface/spiceEphemeris.h>
 
 using namespace tudat::basic_astrodynamics;
 using namespace tudat::simulation_setup;
 using namespace tudat::propagators;
 using namespace tudat::numerical_integrators;
+using namespace tudat::spice_interface;
+using namespace tudat::ephemerides;
+using namespace tudat::gravitation;
 using namespace EDTs;
 
 
@@ -33,21 +37,25 @@ namespace univ {
                 EDTs::EDTConfig& vehicleConfig,
                 EDTGuidance& guidanceClass,
                 NamedBodyMap& baseBodyMap,
-                nlohmann::json jsonBodiesToInclude,
+                nlohmann::json jsonSimulationVariables,
                 bool useThrust = true) :
                 vehicleConfig_(vehicleConfig),
                 guidanceClass_(guidanceClass),
                 bodyMap(baseBodyMap),
-                jsonBodiesToInclude_(jsonBodiesToInclude),
+                jsonSimulationVariables_(jsonSimulationVariables),
                 useThrust_(useThrust)
                 {
 
             // Constructor
+            // Set various json sets from the simulation variables
+            jsonBodiesToInclude_ = jsonSimulationVariables["Spice"]["bodiesToInclude"];
+            gravitationalParameters_ = jsonSimulationVariables["constants"]["gravitationalParameters"];
+
+
             /////////// Initialise all bodies list with all possible bodies that can be used //////////
             allBodiesList_.push_back("Sun");
             allBodiesList_.push_back("Mercury");
             allBodiesList_.push_back("Venus");
-            allBodiesList_.push_back("Earth");
             allBodiesList_.push_back("Earth");
             allBodiesList_.push_back("Mars");
             allBodiesList_.push_back("Jupiter");
@@ -67,18 +75,68 @@ namespace univ {
 
             std::cout << "Using bodies: " << std::endl;
             for(std::size_t i=0; i<bodiesToCreate_.size(); ++i){
-                std::cout << bodiesToCreate_[i] << std::endl;
+                // Set string for body being used
+                std::string bodyToCreate = bodiesToCreate_[i];
+                std::cout << bodyToCreate << std::endl;
+
+                // Create variable for target body, and set observer body. Also set ref frame name
+                std::string targetBodyName;
+                std::string observerBodyName = "SSB";
+                std::string referenceFrameName = "ECLIPJ2000";
+                double gravitationalParameter = gravitationalParameters_[bodyToCreate];
+
+
+                // Set body parameters - Uses planetary system gravitational data (eg earth) but barycenter coordinates
+                if (bodyToCreate == "Sun") {
+                    targetBodyName = "Sun";
+                }
+                else if (bodyToCreate == "Mercury"){
+                    targetBodyName = "MERCURY_BARYCENTER";
+                }
+                else if (bodyToCreate == "Venus"){
+                    targetBodyName = "VENUS_BARYCENTER";
+                }
+                else if (bodyToCreate == "Earth"){
+                    targetBodyName = "EARTH_BARYCENTER";
+                }
+                else if (bodyToCreate == "Mars"){
+                    targetBodyName = "MARS_BARYCENTER";
+                }
+                else if (bodyToCreate == "Jupiter"){
+                    targetBodyName = "JUPITER_BARYCENTER";
+                }
+                else if (bodyToCreate == "Saturn"){
+                    targetBodyName = "SATURN_BARYCENTER";
+                }
+                else if (bodyToCreate == "Uranus"){
+                    targetBodyName = "URANUS_BARYCENTER";
+                }
+                else if (bodyToCreate == "Neptune"){
+                    targetBodyName = "NEPTUNE_BARYCENTER";
+                }
+
+                // Create body in bodyMap
+                bodyMap[bodyToCreate] = std::make_shared< Body >( );
+
+                // Set ephemeris for new body
+                bodyMap[ bodyToCreate ]->setEphemeris(
+                        std::make_shared< SpiceEphemeris >( targetBodyName, observerBodyName,
+                                                            true, true,
+                                                            false, referenceFrameName ) );
+
+                // Set gravitational parameter for new body
+                bodyMap[ bodyToCreate ]->setGravityFieldModel( std::make_shared< GravityFieldModel >( gravitationalParameter ) );
             }
 
-            // Create body objects.
-            bodySettings_ = getDefaultBodySettings( bodiesToCreate_ );
-            bodyMap = createBodies( bodySettings_ );
+//            // Create body objects. TODO: Remove me if new system works
+//            bodySettings_ = getDefaultBodySettings( bodiesToCreate_ );
+//            bodyMap = createBodies( bodySettings_ );
 
             // Add vehicle to bodyMap
             bodyMap["Vehicle"] = vehicleConfig.EDTBody;
 
             // Finalise body creation
-            setGlobalFrameBodyEphemerides( bodyMap, "Sun", "ECLIPJ2000" );
+            setGlobalFrameBodyEphemerides( bodyMap, "SSB", "ECLIPJ2000" );
 
             ///////////////// Create bodies acceleration map (includes perturbations) ///////////////////////
             // Add acceleration model settings for vehicle - ie thrust guidance settings. Uses boolean for creating acceleration map without vehicle thrust if wanted
@@ -146,10 +204,14 @@ namespace univ {
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
         bool useThrust_;
         /////////////////////////// Other set parameters ///////////////////////////////
+        // simulation variables (from json)
+        nlohmann::json jsonSimulationVariables_;
+
         // Body variables
         std::vector<std::string> bodiesToCreate_;
         std::map< std::string, std::shared_ptr< BodySettings > > bodySettings_;
         std::vector<std::string> allBodiesList_;
+        nlohmann::json gravitationalParameters_;
 
         // Define propagator settings variables.
         SelectedAccelerationMap accelerationMap_;
@@ -161,6 +223,7 @@ namespace univ {
         // misc
         int intPlaceholder_;
         std::shared_ptr< electro_magnetism::RadiationPressureInterface > SRPInterface_;
+
 
 
     };
@@ -215,9 +278,9 @@ namespace univ {
             terminationSettingsList.push_back( std::make_shared< PropagationCPUTimeTerminationSettings >(
                     maxCPUTimeTerminationSecs ) );
 
-            // Set maximum simulation date to Jan 01 2100, since this is when ephemerides run out
-            terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
-                    gen::year2MJDSeconds(2100) ) );
+//            // Set maximum simulation date to Jan 01 2100, since this is when ephemerides run out
+//            terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
+//                    gen::year2MJDSeconds(2100) ) );
 
             // Define propagation termination conditions
             // Time termination - ends after a certain number of years defined from simulationLength
@@ -242,10 +305,10 @@ namespace univ {
                     distanceToUse = distanceTerminationAU;
                 }
 
-                // Add time termination
-                double maximumEphemTime = initialEphemerisTime_ + timeTerminationYears * 365 * 24 * 60 * 60;
-                terminationSettingsList.push_back(std::make_shared<PropagationTimeTerminationSettings>(
-                        maximumEphemTime));
+//                // Add time termination
+//                double maximumEphemTime = initialEphemerisTime_ + timeTerminationYears * 365 * 24 * 60 * 60;
+//                terminationSettingsList.push_back(std::make_shared<PropagationTimeTerminationSettings>(
+//                        maximumEphemTime));
 
                 // Add proximity termination
                 proximityTerminationDepVar_ =

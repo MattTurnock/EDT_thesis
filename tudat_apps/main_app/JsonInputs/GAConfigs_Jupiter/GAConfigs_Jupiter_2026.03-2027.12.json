@@ -37,6 +37,7 @@
             "proximityTerminationBody1": "Vehicle",
             "proximityTerminationBody2": "Jupiter",
             "proximityTerminationCutoffAU": 1,
+            "distanceTerminationAU": 10,
             "maxCPUTimeTerminationSecs": 60
         }
     },

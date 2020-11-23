@@ -26,9 +26,12 @@ jsonInputs_dir = os.path.join(main_app_dir, "JsonInputs")
 
 deepSpaceMagfieldDataDir = os.path.join(tudat_apps_dir, "deepSpaceMagfieldData")
 voyagerMagDataSubDirBase = "Voyagers/pub/data/voyager/voyager%s/magnetic_fields/ip_1hour_ascii"
-voyagerTrajDataSubDirBase = "Voyagers/pub/data/voyager/voyager%s/traj/ssc"
+voyagerMagDataSubDirBase_48s = "Voyagers/pub/data/voyager/voyager%s/magnetic_fields/VIM_48s_mag_ascii"
+voyagerTrajDataSubDirBase = "Voyagers/pub/data/voyager/voyager%s/plasma/sedr"
 voyager1MagDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerMagDataSubDirBase % "1")
 voyager2MagDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerMagDataSubDirBase % "2")
+voyager1MagDataDir_48s = os.path.join(deepSpaceMagfieldDataDir, voyagerMagDataSubDirBase_48s % "1")
+voyager2MagDataDir_48s = os.path.join(deepSpaceMagfieldDataDir, voyagerMagDataSubDirBase_48s % "2")
 voyager1TrajDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerTrajDataSubDirBase % "1")
 voyager2TrajDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerTrajDataSubDirBase % "2")
 
@@ -51,11 +54,88 @@ MarsInfoList = [2020.789, 780/365.25] # Info list contains [initial same side ti
 #######################################################################################################################
 AU = 1.496e11
 indicatorString_9004 = "SN      DecimalYear     F1Mag   ElevAng AzimAng F2Mag"
+indicatorString_0919 = " SC	Yr		DOY	  F1		   Br		   Bt		   Bn"
+referenceParkerRsAU = [10,
+                       11.1727129303638,
+                       12.4017913168933,
+                       13.6765745494801,
+                       15.0823930695153,
+                       16.7415642533113,
+                       18.462433831912,
+                       20.3601920250856,
+                       22.4530212577845,
+                       24.7609729309714,
+                       27.3061595341309,
+                       30.112966505075,
+                       33.2082858668696,
+                       36.6217738803607,
+                       40.386135180867,
+                       44.8288990982471,
+                       49.4368728534518,
+                       54.5185013839415,
+                       60.1224717825836,
+                       66.3024757007037,
+                       73.5962225610273,
+                       80.6335128892091,
+                       88.9218518548644,
+                       98.7038919812137,
+                       108.141984321039,
+                       119.257925948224,
+                       131.516477996652,
+                       145.984231852466,
+                       160.989987572133,
+                       177.5381886769]
+referenceParkerBsnT = [0.523960135300264,
+                       0.473629338502,
+                       0.428133239871939,
+                       0.387007425813149,
+                       0.349832093577504,
+                       0.316227766016838,
+                       0.291683780824842,
+                       0.263665089873036,
+                       0.238337830856296,
+                       0.215443469003188,
+                       0.194748303990876,
+                       0.176041084386555,
+                       0.159130851241951,
+                       0.143844988828766,
+                       0.132680474971472,
+                       0.119935394620923,
+                       0.108414586893583,
+                       0.09800045006277,
+                       0.090394155316908,
+                       0.081711033154572,
+                       0.073861998220794,
+                       0.066766929391876,
+                       0.061584821106603,
+                       0.054555947811685,
+                       0.049315388199506,
+                       0.045487779470038,
+                       0.040296113202004,
+                       0.036425331154496,
+                       0.033598182862838,
+                       0.031622776601684]
+referenceParkerDataArray = np.zeros( (len(referenceParkerBsnT), 2) )
+referenceParkerDataArray[:,0] = referenceParkerRsAU
+referenceParkerDataArray[:,1] = referenceParkerBsnT
 
 
 #######################################################################################################################
 ############################# Some useful functions ####################################################
 #######################################################################################################################
+
+# Function to get true anomaly from a, e, r (NOTE: hyperbolic only, i think). Returns in degrees
+def getTA(a, e, r):
+    inside = ( a*(1-e**2) - r )/(e*r)
+    TA = 1/(np.cos(inside))
+
+    return np.rad2deg(TA)
+
+# a = -1000
+# e = 1.3
+# r = 1
+#
+# print(getTA(a, e, r))
 
 # Function to run a generic bash command. Command contained in first entry of argumentsList, other arguments listed in
 # remaining entried
@@ -66,6 +146,7 @@ def runBashCommand(argumentsList, printSetting=2): #Printsettings: 0 = no printi
         p = subprocess.Popen(argumentsList, stdout=subprocess.PIPE, bufsize=1)
         for line in iter(p.stdout.readline, b''):
             decodedLine = line.decode('utf-8')
+            decodedLine = decodedLine.strip("\n")
             print(decodedLine)
         p.stdout.close()
         p.wait()
@@ -147,17 +228,25 @@ def print_full(x):
     # Function to reshape arrays by interpolation. inputArray is the base data, reframeArray is the array of indices to reshape along. Must be on 0 column!
 def interpolateArrays(inputArray, reframeArray):
 
+
+
     inputDataFrame = pd.DataFrame(inputArray[:,1:], index=inputArray[:,0])
     outputDataFrame = inputDataFrame[~inputDataFrame.index.duplicated(keep='first')]
 
-    # for i in reframeArray:
-    # #     print(pd.Series(0, name=i))
-    # #     outputDataFrame.append(pd.Series(name=i))
     outputDataFrame = outputDataFrame.reindex(outputDataFrame.index.values.tolist()+list(reframeArray))
+
     outputDataFrame.sort_index(inplace=True)
+
     outputDataFrame.interpolate(inplace=True)
 
-    outputDataFrame = outputDataFrame.reindex(reframeArray)
+    outputDataFrame = inputDataFrame[~inputDataFrame.index.duplicated(keep='first')]
+    outputDataFrame.sort_index(inplace=True)
+
+    # print_full(outputDataFrame)
+    outputDataFrame = outputDataFrame.reindex(reframeArray, method="nearest")
+    
+
+
 
     outputIndices = outputDataFrame.index.to_numpy()
     outputData = outputDataFrame.to_numpy()
@@ -169,6 +258,78 @@ def interpolateArrays(inputArray, reframeArray):
 
     return outputArray
 
+# "saveDataConfigs": {
+#     "outputSubFolder": "SSO-CHB-Test-custom-2/",
+#     "baseFilename": "SSO-CH-Test-out-E6-"
+# },
+# "scConfigs": {
+#     "SRP": {
+#         "endmassArea1": 1.2,
+#         "endmassArea2": 1.2,
+#         "endmassRadiationCoefficient": 0.5,
+#         "tetherRadiationCoefficient": 0.5,
+#         "rotationFactor": 0.7
+#     }
+# },
+
+
+
+def createModifiedJson(jsonTemplatePath, jsonSaveToDir, jsonSaveToFilename, listOfChangeKeys, listOfChangeValues):
+
+    # Create save folder if not existing, and set path of save file
+    checkFolderExist(jsonSaveToDir)
+    jsonSaveToPath = os.path.join(jsonSaveToDir, jsonSaveToFilename)
+
+    # Open template json file, and use it as the structure for the rest
+    with open(jsonTemplatePath, 'r+') as f:
+        templateJson = json.load(f)
+        f.close()
+
+    # Make copy of template json, to use as new json
+    newJson = copy.deepcopy(templateJson)
+
+    # Check if lists are of same length
+    if len(listOfChangeKeys) != len(listOfChangeValues):
+        print("ERROR: Length of keys list must equal length of values list, skipping changes")
+        return 1
+
+    # Make the relevant changes to each key here
+    for i in range(len(listOfChangeKeys)):
+        
+        # If-else statements to change the value. Works up to a key nesting of 5
+        tempKeys = listOfChangeKeys[i]
+        keyNesting = len(tempKeys)
+        if keyNesting == 1:
+            newJson [tempKeys[0]] = listOfChangeValues[i]
+        elif keyNesting == 2:
+            newJson [tempKeys[0]] [tempKeys[1]] = listOfChangeValues[i]
+        elif keyNesting == 3:
+            newJson [tempKeys[0]] [tempKeys[1]] [tempKeys[2]] = listOfChangeValues[i]
+        elif keyNesting == 4:
+            newJson [tempKeys[0]] [tempKeys[1]] [tempKeys[2]] [tempKeys[3]] = listOfChangeValues[i]
+        elif keyNesting == 5:
+            newJson [tempKeys[0]] [tempKeys[1]] [tempKeys[2]] [tempKeys[3]] [tempKeys[4]] = listOfChangeValues[i]
+        else:
+            print("ERROR: Function only supports key nesting up to 5, skipping changes")
+            return 1
+
+    # Dump new data into a json file
+    with open(jsonSaveToPath, 'w+') as f:
+        f.seek(0)
+        json.dump(newJson, f, indent=4)
+        f.truncate()
+        f.close()
+
+    return 0
+
+
+# testVariablesJsonPath = "/home/matt/LinkToEDT_thesis/tudat_apps/main_app/JsonInputs/testVariables.json"
+# saveDir = "/home/matt/LinkToEDT_thesis/tudat_apps/main_app/JsonInputs/testDir/"
+# saveName = "test.json"
+# exampleChangeKeys = [["saveDataConfigs","outputSubFolder"], ["scConfigs", "SRP", "endmassArea1"]]
+# exampleChangeValues = ["badabingBadaboom/", 999.1]
+#
+# createModifiedJson(testVariablesJsonPath, saveDir, saveName, exampleChangeKeys, exampleChangeValues)
 
 #######################################################################################################################
 ####################################### GA Related functions #########################################################
@@ -558,7 +719,7 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
                         templateJsonPath=os.path.join(jsonInputs_dir, "GAConfigsNominal.json"), createSynodicJsons=True,
                         algorithmConfigs=None):
 
-    print("======= Creating relevant json files ==========")
+
 
     # Create and / or set some directories
     jsonSaveDir = os.path.join(jsonInputs_dir, jsonSaveSubDir)
@@ -643,6 +804,8 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
             f.truncate()
             f.close()
 
+        return 0
+
 def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
                       runPath=os.path.join(cppApplications_dir, "application_GA_calculator"),
                       printSetting=0):
@@ -674,51 +837,61 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
 ####################################### VNV Related functions #########################################################
 #######################################################################################################################
 
-def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation_output_dir, dataFilenamePortions=[]):
+def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation_output_dir, dataFilenamePortions=[],
+                            todoList=["bodyData", "currentData", "depVarData", "ionoData", "magData", "propData", "thrustData"]):
 
     fullDataFilesDirectoryPath = os.path.join(simulation_output_dir, dataSubdirectory)
     dataToLoadFilenames = os.listdir(fullDataFilesDirectoryPath)
 
+    # Make dummy variables in case not wanted to load
+    bodyDataArray = np.array([0,0,0])
+    currentDataArray = np.array([0,0,0])
+    depVarDataArray = np.array([0,0,0])
+    ionoDataArray = np.array([0,0,0])
+    magDataArray = np.array([0,0,0])
+    propDataArray = np.array([0,0,0])
+    thrustDataArray = np.array([0,0,0])
+
     for i in range(len(dataToLoadFilenames)):
         filename = dataToLoadFilenames[i]
 
-        if "bodyData" in filename:
+        if ("bodyData" in filename) and ("bodyData" in todoList):
             bodyDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             bodyDataArray = np.genfromtxt(bodyDataFilename, delimiter=",")
 
-        elif "currentData" in filename:
+        elif ("currentData" in filename) and ("currentData" in todoList):
             currentDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             currentDataArray = np.genfromtxt(currentDataFilename, delimiter=",")
 
-        elif "depVarData" in filename:
+        elif ("depVarData" in filename) and ("depVarData" in todoList):
             depVarDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             depVarDataArray = np.genfromtxt(depVarDataFilename, delimiter=",")
 
-        elif "ionoData" in filename:
+        elif ("ionoData" in filename) and ("ionoData" in todoList):
             ionoDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             ionoDataArray = np.genfromtxt(ionoDataFilename, delimiter=",")
 
-        elif "magData" in filename:
+        elif ("magData" in filename) and ("magData" in todoList):
             magDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             magDataArray = np.genfromtxt(magDataFilename, delimiter=",")
 
-        elif "propData" in filename:
+        elif ("propData" in filename) and ("propData" in todoList):
             propDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             propDataArray = np.genfromtxt(propDataFilename, delimiter=",")
 
-        elif "thrustData" in filename:
+        elif ("thrustData" in filename) and ("thrustData" in todoList):
             thrustDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             thrustDataArray = np.genfromtxt(thrustDataFilename, delimiter=",")
 
         else:
-            print("Data file does not have recognised type, ignoring: %s" %filename)
+            print("Data file does not have recognised type (or is purposely being ignored), ignoring: %s" %filename)
 
 
     return (bodyDataArray, currentDataArray, depVarDataArray, ionoDataArray, magDataArray, propDataArray, thrustDataArray)
 
 
 def plotMagData(magDataArray, arrayType="simulation", bodyDataArray=None, fignumber=None, plotType="time-magnitude", logScaleY=True, logScaleX=True,
-figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, scatter=False, scatterPointSize=1, legend=None):
+figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, scatter=False, scatterPointSize=1, legend=None, gridOn=False, color=None):
 
     if arrayType == "simulation":
         times = magDataArray[:,0]
@@ -747,10 +920,13 @@ figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, scatter=
         magnitudes = magDataArray[:,2]
         deltasDeg = magDataArray[:,3]
         lambdasDeg = magDataArray[:,4]
+        BRs = magDataArray[:, 5]
+        BTs = magDataArray[:, 6]
+        BNs = magDataArray[:, 7]
 
-
-
-
+    elif arrayType == "simple-radius-magnitude":
+        radiiAU = magDataArray[:,0]
+        magnitudes = magDataArray[:,1]
 
     plt.figure(fignumber, figsize=figsize)
 
@@ -766,17 +942,33 @@ figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, scatter=
         xLabel = "Radius from Sun [AU]"
         yLabel = "Magnetic field magnitude [nT]"
 
+    elif plotType == "radius-BR":
+        xToPlot = radiiAU
+        yToPlot = BRs
+        xLabel = "Radius from Sun [AU]"
+        yLabel = "Magnetic field component strength [nT]"
+    elif plotType == "radius-BT":
+        xToPlot = radiiAU
+        yToPlot = BTs
+        xLabel = "Radius from Sun [AU]"
+        yLabel = "Magnetic field component strength [nT]"
+    elif plotType == "radius-BN":
+        xToPlot = radiiAU
+        yToPlot = BNs
+        xLabel = "Radius from Sun [AU]"
+        yLabel = "Magnetic field component strength [nT]"
+
     else:
         print("ERROR: Plot type not recgonised, ending program")
         sys.exit()
 
     if scatter:
-        plt.scatter(xToPlot, yToPlot, scatterPointSize)
+        plt.scatter(xToPlot, yToPlot, scatterPointSize, c=color)
     else:
-        plt.plot(xToPlot, yToPlot)
+        plt.plot(xToPlot, yToPlot, color=color)
     plt.xlabel(xLabel)
     plt.ylabel(yLabel)
-    plt.grid()
+    if gridOn: plt.grid(which="both")
     if logScaleY: plt.yscale("log")
     if logScaleX:
         plt.xscale("log")
@@ -831,30 +1023,48 @@ def plotTrajectoryData(bodyDataArray, fignumber=None, plotType="x-y", legendSize
 # Function to load magfield data from voyager datafiles. load type is based on year coverage: can be "7789" or "9004"
 def loadVoyagerMagfieldData(dirPath, loadType="7789"):
 
-    if (loadType == "7789") or (loadType=="traj"):
+    if (loadType == "7789") :
+
         fileList = list_files(dirPath, extension="asc", sort=True, exceptions=None)
         outputArray = np.genfromtxt(os.path.join(dirPath, fileList[0]))
         outputArray = np.delete(outputArray, np.where (outputArray==0) [0], 0)
 
-    elif loadType == "9004":
-        fileList = list_files(dirPath, extension="txt", sort=True, exceptions=["00readme", "format"])
+    elif (loadType == "9004") or (loadType == "0919")or (loadType=="traj"):
+
+        if loadType == "9004":
+            indicatorString = indicatorString_9004
+            extension = "txt"
+            exceptions = ["00readme", "format"]
+        elif loadType == "0919":
+            indicatorString = indicatorString_0919
+            extension = "dat"
+            exceptions = ["V2_48s_2019_001-241_sans-masked", "V2_48s_2015_001-031", "V2_48s_2012_301-331", "V2_48s_2011_091-121_141024_corr",
+                          "V2_48s_2009_301-331", "V2_48s_2009_091-121", "V2_48s_2009_061-091"]
+        elif loadType == "traj":
+            indicatorString = None
+            extension = "asc"
+            exceptions = ["v2_sedr_1977_2030"]
+
+        fileList = list_files(dirPath, extension=extension, sort=True, exceptions=exceptions)
         fileDataList = []
         for file in fileList:
             filePath = os.path.join(dirPath, file)
 
-            with open(filePath) as search:
-                for num, line in enumerate(search, 1):
-                    # line = search[lineNo]
-                    line = line.rstrip()  # remove '\n' at end of line
-                    if line == indicatorString_9004:
-                        skipHeaderNum = num
-
+            if indicatorString is not None:
+                with open(filePath) as search:
+                    for num, line in enumerate(search, 1):
+                        # line = search[lineNo]
+                        line = line.rstrip()  # remove '\n' at end of line
+                        if line == indicatorString:
+                            skipHeaderNum = num
+            else:
+                skipHeaderNum=0
 
             fileData = np.genfromtxt( filePath, skip_header=skipHeaderNum )
             fileData = np.delete(fileData, np.where (fileData==999) [0], 0)
 
             # If statement checks for odd files without SN col
-            if (fileData[0,0] != 1.0) and (fileData[0,0] != 2.0):
+            if (fileData[0,0] != 1.0) and (fileData[0,0] != 2.0) and (loadType=="9004"):
                 ReplacementSNCol = np.ones((np.shape(fileData)[0], 1))
                 fileData = np.concatenate(( ReplacementSNCol, fileData ), axis=1)
 
@@ -866,7 +1076,6 @@ def loadVoyagerMagfieldData(dirPath, loadType="7789"):
                 fullDataArray = fileDataList[i]
             else:
                 fullDataArray = np.concatenate((fullDataArray, fileDataList[i]), axis=0)
-
 
         outputArray = fullDataArray
 
@@ -930,43 +1139,87 @@ def yearDayHour2Years(inputArray, yearType="19", dayType="Jan1", hoursType="nomi
 # FUnction to convert regfular trajectory array to anew one of format [Year, Radius]
 def voyagerTrajArrayToRefined(inputArray):
 
+    ## OLD FILE TYPE LOADING ##
+    # outputArray = np.zeros( ( np.shape(inputArray)[0], 2 ) )
+    #
+    # times = yearDayHour2Years(inputArray[:,0:2], yearType="YYYY", dayType="Jan1", hoursType=None)
+    #
+    # outputArray[:, 0] = times
+    # outputArray[:, 1] = inputArray[:,2]
+
     outputArray = np.zeros( ( np.shape(inputArray)[0], 2 ) )
 
-    times = yearDayHour2Years(inputArray[:,0:2], yearType="YYYY", dayType="Jan1", hoursType=None)
+    times = inputArray[:, 15] - 100 + 2000
+    radii = inputArray[:, 12]
 
-    outputArray[:, 0] = times
-    outputArray[:, 1] = inputArray[:,2]
+    outputArray[:,0] = times
+    outputArray[:,1] = radii
 
     return outputArray
 
 def voyagerArrayToPlotArray(inputArray, inputType="7789", trajectoryDataArray=None):
 
-    outputArray = np.zeros( (np.shape(inputArray)[0], 5)   )
+    outputArray = np.zeros( (np.shape(inputArray)[0], 8)   )
 
 
     if inputType == "7789":
 
         times = yearDayHour2Years(inputArray[:, 1:4], yearType="19", dayType="Jan1")
 
-        outputArray[:,0] = times
-        outputArray[:,1:3] = inputArray[:, 7:9]
-        outputArray[:,3:] = inputArray[:, 10:]
+        outputArray[:,0] = times # Times column
+        outputArray[:,1] = inputArray[:, 7] # Radii column
+        outputArray[:, 2] = inputArray[:, 9] # Magfield column (F2)
+        outputArray[:, 3] = inputArray[:, 10] # Delta column
+        outputArray[:, 4] = inputArray[:, 11] # Lambda column
 
-    elif inputType == "9004":
+    elif (inputType == "9004") or (inputType == "0919"):
+        if trajectoryDataArray is None:
+            print("ERROR: trajectory data array required for 1990-2004 data, ending plotting")
+            return 1
+
+
+        if inputType == "9004":
+            times = decimalYearArray2YearArray(inputArray[:, 1])
+        elif inputType == "0919":
+            times = yearDayHour2Years(inputArray[:, 1:3], yearType="20", dayType="Jan1", hoursType=None)
+
+        trajectoryDataArrayRefined = voyagerTrajArrayToRefined(trajectoryDataArray)
+        trajectoryDataArrayRefinedInterpolated = interpolateArrays(trajectoryDataArrayRefined, times)
+
+        if inputType == "9004":
+            outputArray[:, 0] = times # times column
+            outputArray[:, 1] = trajectoryDataArrayRefinedInterpolated[:,1] # Radii column
+            outputArray[:, 2] = inputArray[:, 5] # Magfield column (F2)
+            outputArray[:, 3] = inputArray[:, 3] # Delta column
+            outputArray[:, 4] = inputArray[:, 4] # Lambda column
+        elif inputType == "0919":
+            outputArray[:, 0] = times # times column
+            outputArray[:, 1] = trajectoryDataArrayRefinedInterpolated[:,1] # Radii column
+            outputArray[:, 2] = inputArray[:, 3] # Magfield column (F1, F2 unavailable)
+
+            # NOTE: no deltas or lambdas for these later data
+            # outputArray[:, 3] = inputArray[:, 3] # Delta column
+            # outputArray[:, 4] = inputArray[:, 4] # Lambda column
+
+    elif inputType == "0919":
         if trajectoryDataArray is None:
             print("ERROR: trajectory data array required for 1990-2004 data, ending plotting")
             return 1
 
 
 
-        times = decimalYearArray2YearArray(inputArray[:, 1])
+    # Calculate components of B and add to the array. Formulae taken from voyager data itself
+    BComponentsArray = np.zeros( (np.shape(outputArray)[0], 3) )
+    F2sArray = outputArray[:, 2]
+    deltasArray = outputArray[:, 3]
+    lambdasArray = outputArray[:, 4]
 
-        trajectoryDataArrayRefined = voyagerTrajArrayToRefined(trajectoryDataArray)
-        trajectoryDataArrayRefinedInterpolated = interpolateArrays(trajectoryDataArrayRefined, times)
+    BComponentsArray[:, 0] = F2sArray * np.cos(np.deg2rad(lambdasArray)) * np.cos(np.deg2rad(deltasArray)) # Br
+    BComponentsArray[:, 1] = F2sArray * np.sin(np.deg2rad(lambdasArray)) * np.cos(np.deg2rad(deltasArray)) # Bt
+    BComponentsArray[:, 2] = F2sArray * np.sin(np.deg2rad(deltasArray)) # Bn
 
-        outputArray[:, 0] = times
-        outputArray[:, 1] = trajectoryDataArrayRefinedInterpolated[:,1]
-        outputArray[:, 2:5] = inputArray[:, 2:5]
+    outputArray[:, 5:8] = BComponentsArray
+
 
     return outputArray
 

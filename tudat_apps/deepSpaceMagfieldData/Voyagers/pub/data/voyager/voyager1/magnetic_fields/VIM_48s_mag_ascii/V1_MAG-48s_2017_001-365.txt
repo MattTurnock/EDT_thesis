@@ -1,0 +1,18 @@
+FROM:        L. F. Burlaga
+DATE:        March 26, 2019
+SUBJECT:  Submission of Voyager 1 magnetic field 48 sec average data to the SPDF CDAWeb for the interval DOY 1 - 365, 2017.
+
+I am submitting 48-sec averages of Voyager 1 magnetic field data for the interval 1 - 365, 2017. These are given in the attached tab-delimited ascii (.txt) files in the ZIP folder. 
+There are 13 data sets, namely DOY 1, 31, 61, 91, 121, 151, 181, 211, 241, 271, 301, 331, & 365.
+The columns are:
+1. SC   ID (Voyager 1)
+2, year
+3. DOY (Jan 1 = 1)
+4. F1 (the magnetic field strength, the average of higher resolution field strengths, in nT)
+5, 6, 7 BR, BT, BN (the magnetic field components in RTN coordinates, in nT)
+
+The one sigma uncertainty is dBN ≈ 0.02 nT and dBT ≈ 0.02 nT. The uncertainty in dBR is larger, since we could not obtain this from a magrol. It could be between 0.02 nT and 0.1 nT; the nominal value is 0.06 nT. 
+Let me know when the data are posted. 
+
+Len Burlaga, Code 673
+

@@ -1,0 +1,19 @@
+FROM:        L. F. Burlaga
+DATE:        August 3, 2018
+SUBJECT:  Submission of revised Voyager 2 magnetic field 48 sec average data to CDAWeb for the interval DOY 1 - 365, 2015.
+
+I am submitting revised 48-sec averages of the Voyager 2 magnetic field data for the interval 1 - 365,  2015. 
+The new 48 sec averages are given in the 12 attached tab-delimited ascii (.txt) files, which are contained in the zip file
+There are 12 data sets, beginning with DOY 1, 31, 61, 91, 121, 151, 181, 211, 241, 271, 301 and 331, respectively.
+
+The columns are:
+1. SC   ID (Voyager 2)
+2 year
+3. DOY (Jan 1 = 1)
+4. F1 (the magnetic field strength, the average of higher resolution field strengths, in nT)
+5, 6, 7 BR, BT, BN (the magnetic field components in RTN coordinates, in nT)
+
+The one sigma uncertainty is dBN ≈ 0.03 nT and dBT ≈ 0.03 nT. The uncertainty in dBR could be between 0.02 nT and 0.1 nT. 
+
+Len Burlaga, Code 673
+

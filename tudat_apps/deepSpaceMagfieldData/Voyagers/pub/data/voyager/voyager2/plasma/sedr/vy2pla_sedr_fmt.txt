@@ -1,0 +1,6 @@
+The files give the coordinates of th Voyager Space Craft n a column format
+year day hour min sec mil-sec  x y z  xx yy zz  r lat long time
+x, y, z are Sun-centered ecliptic coordinates, AU (B1950.0)
+xx, yy, zz are Solar Equatorial Coordinate,  AU   (Heliographic system)
+r, lat, log are the Solar Equatorial Coordinate in AU and degrees
+time is time in years since 1900

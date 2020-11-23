@@ -48,13 +48,13 @@ Ness et al., 1973
 
 The data fields in six tab-delimited columns are as follows:
 
-   Col 1  The spacecraft number (1 for Voyager 1, 2 for Voyager 2)
-   Col 2  The time in decimal year. (90.00000 is day 1 of 1990)
-   Col 3  The magnetic field strength,  F1, computed from high-resolution      
+   0 Col 1  The spacecraft number (1 for Voyager 1, 2 for Voyager 2)
+   1 Col 2  The time in decimal year. (90.00000 is day 1 of 1990)
+   2 Col 3  The magnetic field strength,  F1, computed from high-resolution      
           observations.
-   Col 4  The elevation angle (degrees) in heliographic coordinates.
-   Col 5  The azimuthal angle (degrees) in heliographic coordinates. 
-   Col 6  The magnetic field strength, F2, computed from hour averages 
+   3 Col 4  The elevation angle (degrees) in heliographic coordinates.
+   4 Col 5  The azimuthal angle (degrees) in heliographic coordinates. 
+   5 Col 6  The magnetic field strength, F2, computed from hour averages 
           of the components. The components of B can be computed from F2 
           and the two angles.
 

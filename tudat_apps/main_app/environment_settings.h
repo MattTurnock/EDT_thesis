@@ -32,11 +32,14 @@ public:
         //////////// CONSTRUCTOR ////////////////
 
         // Set values for ISMF values from json data, and calculate the new ones
-        BInfMagnitude_ = ISMFVariables_["BInf_tesla"];
+        BInfMagnitude_ = ISMFVariables_["BInf_nT"];
         longitudeInf_deg_ = ISMFVariables_["longitudeInf_deg"];
         latitudeInf_deg_ = ISMFVariables_["latitudeInf_deg"];
         longitudeInf_ = gen::deg2rad * longitudeInf_deg_;
         latitudeInf_ = gen::deg2rad * latitudeInf_deg_;
+        magFieldTransitionType_ = ISMFVariables_["transitionType"];
+        sphericalTransitionDistanceAU_ = ISMFVariables_["sphericalTransitionDistanceAU"];
+        sphericalTransitionDistance_ = gen::AU * sphericalTransitionDistanceAU_;
 
         calculateBinfDirection();
     };
@@ -47,9 +50,29 @@ public:
 
     // Update magnetic field vector using base variables, and determining if Parker model or other should be used
     void updateMagField(){
-        //TODO: Make some way of determining the magnetic field region. Currently uses one predefined here
-        magFieldRegion_ = "Parker";
 
+        // Check the transition to type to determine where parker vs ismf magfield is used
+        if (magFieldTransitionType_ == "spherical"){
+
+            if (R_ <= sphericalTransitionDistance_){
+                magFieldRegion_ = "Parker";
+            }
+            else{
+                magFieldRegion_ = "Interstellar";
+            }
+
+        }
+        else if (magFieldTransitionType_ == "elongated"){
+            //TODO: Implement elongated transition zone (not just spherical)
+        }
+        else{
+            std::cout << "Magnetic field transition type is unknown -  " << magFieldTransitionType_ << std::endl;
+        }
+
+//        std::cout << "Region: " << magFieldRegion_ << std::endl;
+//        std::cout << "Mag strength: " << BInfMagnitude_ << std::endl;
+//        std::cout << "Radius: " << R_ << std::endl;
+//        std::cout << ""  << std::endl;
 
         if (magFieldRegion_ == "Parker") {
             // Define local magnetic field vector
@@ -64,7 +87,7 @@ public:
             // Convert local magfield to inertial and calculate magnitude
             magField_ = gen::LvlhToInertial(magFieldLvlh_, theta_);
             magFieldMagnitude_ = magFieldMaglocal_.norm();
-            std::cout << "Magfield  B0 - phi0 - magnitude - R - R0: " << B0_ << " - " << phi0_ << " - " << magFieldMagnitude_ << " - " << R_ << " - " << R0_ << std::endl;
+//            std::cout << "Magfield  B0 - phi0 - magnitude - R - R0: " << B0_ << " - " << phi0_ << " - " << magFieldMagnitude_ << " - " << R_ << " - " << R0_ << std::endl;
         }
 
         else if (magFieldRegion_ == "Transitional"){
@@ -76,6 +99,8 @@ public:
             // set magnetic field magnitude and vector, directly from data, and from the calculated values
             magFieldMagnitude_ = BInfMagnitude_;
             magField_ = magFieldMagnitude_ * BInfDirection_;
+
+
 
         }
         else{
@@ -118,6 +143,7 @@ public:
         // Create, initialise, and normalise (inplace) direction vector from above components
         BInfDirection_ << BInfx_unit, BInfy_unit, BInfz_unit;
         BInfDirection_.normalize();
+
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -242,6 +268,9 @@ protected:
     double latitudeInf_deg_;
     double longitudeInf_;
     double latitudeInf_;
+    std::string magFieldTransitionType_;
+    double sphericalTransitionDistanceAU_;
+    double sphericalTransitionDistance_;
 
     // Base vehicle variables. State position and velocity vectors, radius from sun, EDT pitch (or effective pitch) (ie bodyParameters)
     Eigen::Vector6d vehicleState_;

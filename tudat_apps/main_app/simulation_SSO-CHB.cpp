@@ -8,7 +8,7 @@
 #include "universal_settings.h"
 #include "environment_settings.h"
 
-int main( )
+int main(int argc, char *argv[] )
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////            USING STATEMENTS              //////////////////////////////////////////////////////
@@ -34,7 +34,16 @@ int main( )
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     std::cout<< "===============Loading Variables From File==================" << std::endl;
 
-    nlohmann::json simulationVariables = gen::readJson("VnV/testVariablesParkerVnV.json"); // TODO: change me back to nominal testVariables
+    // Read json file for general use (name of json is passed as first argument, or default set here)
+    std::string jsonName;
+    if (argc != 1){
+        jsonName = argv[1];
+    }
+    else{
+//        jsonName = "VnV/testVariablesParkerVnV.json"; // TODO: change to nominal test variables
+        jsonName = "testVariables.json";
+    }
+    nlohmann::json simulationVariables = gen::readJson(jsonName);
 
 
     std::cout<< "===============Prepping Sim==================" << std::endl;
@@ -96,8 +105,8 @@ int main( )
 
     // Get universal class for propagation bodies
     std::cout<< " -- Creating Propbodies class -- " << std::endl;
-    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"];
-    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, CHBEDTGuidance, baseBodyMap, jsonBodiesToInclude);
+//    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"];
+    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, CHBEDTGuidance, baseBodyMap, simulationVariables);
 
     // Get universal class for propagation settings + set vehicle initial state
     std::cout<< " -- Creating Propsettings class -- " << std::endl;
@@ -153,7 +162,6 @@ int main( )
     std::map< double, Eigen::VectorXd > integrationResult = dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
     std::map< double, Eigen::VectorXd > dependentVariableResult = dynamicsSimulator.getDependentVariableHistory();
 
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////             SAVE DATA                  ////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,6 +172,18 @@ int main( )
     std::string outputSubFolder = simulationVariables["saveDataConfigs"]["outputSubFolder"];
     std::string baseFilename = simulationVariables["saveDataConfigs"]["baseFilename"];
 
+    // Set variables for data types to be saved
+    nlohmann::json dataTypesToSave = simulationVariables["saveDataConfigs"]["dataTypesToSave"];
+    bool saveMagneticFieldData = dataTypesToSave["magneticField"];
+    bool saveIonosphereData = dataTypesToSave["ionosphere"];
+    bool saveThrustData = dataTypesToSave["thrust"];
+    bool saveCurrentData = dataTypesToSave["current"];
+    bool saveBodyData = dataTypesToSave["bodyData"];
+    bool saveDependentVariablesData = dataTypesToSave["dependentVariables"];
+
+    // Check which data types to save, and save them
+
+//    if (saveMagneticFieldData)
     // Write satellite propagation history to file.
     input_output::writeDataMapToTextFile( integrationResult,
                                           baseFilename + "propData.dat",
