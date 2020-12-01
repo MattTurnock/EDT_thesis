@@ -136,7 +136,9 @@ namespace univ {
             bodyMap["Vehicle"] = vehicleConfig.EDTBody;
 
             // Finalise body creation
-            setGlobalFrameBodyEphemerides( bodyMap, "SSB", "ECLIPJ2000" );
+            setGlobalFrameBodyEphemerides( bodyMap, "Sun", "ECLIPJ2000" );
+
+
 
             ///////////////// Create bodies acceleration map (includes perturbations) ///////////////////////
             // Add acceleration model settings for vehicle - ie thrust guidance settings. Uses boolean for creating acceleration map without vehicle thrust if wanted
@@ -153,6 +155,10 @@ namespace univ {
             // Add acceleration model for cannonball SRP
             SRPReferenceArea_ = vehicleConfig_.getEffectiveSRPArea();
             SRPCoefficient_ = vehicleConfig_.getEffectiveSRPCoefficient();
+
+            std::cout << "Effective SRP radiation coefficient of vehicle: " << SRPCoefficient_ << std::endl;
+            std::cout << "Effective SRP reference area of vehicle       : " << SRPReferenceArea_ << std::endl;
+            std::cout << "Spacecraft Mass                               : " << vehicleConfig_.getVehicleMass() << std::endl;
 
             vehicleRadiationPressureSettings_ = std::make_shared< CannonBallRadiationPressureInterfaceSettings >(
                     "Sun", SRPReferenceArea_, SRPCoefficient_);
@@ -257,7 +263,11 @@ namespace univ {
                 terminationSettingsJson_(terminationSettingsJson),
                 initialEphemerisYear_(initialEphemerisYear){
 
-            /////////////// Propagation Settings ///////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //////////////////////////////// Propagation Settings //////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            /////////////// Misc Initialisations ///////////////////////
             // Set termination Parameters from json data
             std::string terminationType = terminationSettingsJson_["terminationType"];
             double timeTerminationYears = terminationSettingsJson_["timeTerminationYears"];
@@ -274,13 +284,12 @@ namespace univ {
             std::cout << "INITIAL EPHEMERIS TIME: " << initialEphemerisTime_ << std::endl;
             vehicleInitialState_ << vehicleInitialPosition_, vehicleInitialVelocity_;
 
+            /////////////// Termination Setttings ///////////////////////
+
             // Set maximum CPU termination time for all cases
             terminationSettingsList.push_back( std::make_shared< PropagationCPUTimeTerminationSettings >(
                     maxCPUTimeTerminationSecs ) );
 
-//            // Set maximum simulation date to Jan 01 2100, since this is when ephemerides run out
-//            terminationSettingsList.push_back( std::make_shared< PropagationTimeTerminationSettings >(
-//                    gen::year2MJDSeconds(2100) ) );
 
             // Define propagation termination conditions
             // Time termination - ends after a certain number of years defined from simulationLength
@@ -305,10 +314,6 @@ namespace univ {
                     distanceToUse = distanceTerminationAU;
                 }
 
-//                // Add time termination
-//                double maximumEphemTime = initialEphemerisTime_ + timeTerminationYears * 365 * 24 * 60 * 60;
-//                terminationSettingsList.push_back(std::make_shared<PropagationTimeTerminationSettings>(
-//                        maximumEphemTime));
 
                 // Add proximity termination
                 proximityTerminationDepVar_ =
@@ -335,30 +340,47 @@ namespace univ {
 
             // Using above if-else really make the termination settings
             terminationSettings = std::make_shared< PropagationHybridTerminationSettings >( terminationSettingsList, true );
-            std::cout << "Set termination settings" << std::endl;
-            // Add dependent variables to save to list (kepler + altitude)
+
+            /////////////// Set dependent variables to save ///////////////////////
+
+            // Add Keplerian state
             dependentVariablesList.push_back(
                     std::make_shared< SingleDependentVariableSaveSettings >( keplerian_state_dependent_variable,
                             "Vehicle" ,
                             "Sun" ) );
 
+            // Add Relative distance
             dependentVariablesList.push_back(
                     std::make_shared< SingleDependentVariableSaveSettings >(relative_distance_dependent_variable,
                             "Vehicle", "Sun"));
 
+            // Add Single acceleration variable for SRP
+            dependentVariablesList.push_back(
+                    std::make_shared< SingleAccelerationDependentVariableSaveSettings >(
+                            cannon_ball_radiation_pressure,
+                            "Vehicle",
+                            "Sun",
+                            false)
+                    );
 
+            // Finalise dependent variables to save
             dependentVariablesToSave_ =
                     std::make_shared< DependentVariableSaveSettings >( dependentVariablesList );
-            std::cout << "Set dependent variables to save" << std::endl;
+
+
+            /////////////// Finalise propagation settings ///////////////////////
+
             // Define settings for propagation of translational dynamics.
             propagatorSettings = std::make_shared< TranslationalStatePropagatorSettings< double > >(
                             simulationPropBodies_.centralBodies, simulationPropBodies_.accelerationModelMap,
                             simulationPropBodies_.bodiesToPropagate, vehicleInitialState_, terminationSettings,
                             cowell, dependentVariablesToSave_ );
 
-            std::cout << "Set proagator settings" << std::endl;
 
-            ///////////////////// Integration Settings //////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////// Integration Settings ////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
             // TODO: Check general settings of integrator, and adjust as necessary (especially tolerances).
             // TODO: part 2, add some integrator settings to the json file
             std::string RKCoefficients = integratorSettingsJson["integrator"];
@@ -373,7 +395,6 @@ namespace univ {
                             integratorSettingsJson_["maximumStepSize"],
                             integratorSettingsJson_["relativeErrorTolerance"],
                             integratorSettingsJson_["absoluteErrorTolerance"]);
-            std::cout << "Set integrator settings" << std::endl;
         }
 
         propBodies getSimulationPropBodies(){

@@ -93,6 +93,7 @@
     "outputSubFolder": "testCase/",
     "baseFilename": "test-",
     "dataTypesToSave": {
+      "propData": true,
       "magneticField": true,
       "ionosphere": true,
       "thrust": true,

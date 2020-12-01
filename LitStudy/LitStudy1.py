@@ -5,6 +5,7 @@ from astropy import units as u
 import itertools
 
 showing = True
+onlyDefineFunctions = True
 
 # def getB_p10(B0, R0, R, units=None):
 #     """
@@ -67,94 +68,96 @@ def list_to_dimensionless(old_list):
 
     return newlist
 
-B0_min = 4 * u.nT
-B0_max = 12 * u.nT
-B0s = [B0_min, B0_max]
-phi0_min = 35*u.deg
-phi0_max = 55*u.deg
-phi0s = [phi0_min, phi0_max]
+if onlyDefineFunctions is False:
 
-permutations = itertools.product(B0s, phi0s)
+    B0_min = 4 * u.nT
+    B0_max = 12 * u.nT
+    B0s = [B0_min, B0_max]
+    phi0_min = 35*u.deg
+    phi0_max = 55*u.deg
+    phi0s = [phi0_min, phi0_max]
 
-R0 = 1 * u.AU
+    permutations = itertools.product(B0s, phi0s)
 
-radii = []
-radii_tmp = np.linspace(0.1, 80, 100)
+    R0 = 1 * u.AU
 
-for R_tmp in radii_tmp:
-    radii.append(R_tmp*u.AU)
+    radii = []
+    radii_tmp = np.linspace(0.1, 80, 100)
 
-B11 = []
-B12 = []
-B21 = []
-B22 = []
+    for R_tmp in radii_tmp:
+        radii.append(R_tmp*u.AU)
 
-for R in radii:
-    # if R <= 10*u.AU:
-    #     Bmax10 = getB_b10(B0_max, R0, R, u.nT)
-    #     Bmin10 = getB_b10(B0_min, R0, R, u.nT)
-    #     Bmax.append(Bmax10)
-    #     Bmin.append(Bmin10)
-    #     R10 = 10*u.AU
-    #
-    # elif R > 10*u.AU:
-    #     Bmax.append(getB_p10(Bmax10, R10, R, u.nT))
-    #     Bmin.append(getB_p10(Bmin10, R10, R, u.nT))
-    # else:
-    #     print("failed")
-    #
-    # print(Bmin10)
-    # print(Bmax10)
+    B11 = []
+    B12 = []
+    B21 = []
+    B22 = []
 
-    B11.append(getB_2(B0_min, phi0_min, R0, R, u.nT))
-    B12.append(getB_2(B0_min, phi0_max, R0, R, u.nT))
-    B21.append(getB_2(B0_max, phi0_min, R0, R, u.nT))
-    B22.append(getB_2(B0_max, phi0_max, R0, R, u.nT))
+    for R in radii:
+        # if R <= 10*u.AU:
+        #     Bmax10 = getB_b10(B0_max, R0, R, u.nT)
+        #     Bmin10 = getB_b10(B0_min, R0, R, u.nT)
+        #     Bmax.append(Bmax10)
+        #     Bmin.append(Bmin10)
+        #     R10 = 10*u.AU
+        #
+        # elif R > 10*u.AU:
+        #     Bmax.append(getB_p10(Bmax10, R10, R, u.nT))
+        #     Bmin.append(getB_p10(Bmin10, R10, R, u.nT))
+        # else:
+        #     print("failed")
+        #
+        # print(Bmin10)
+        # print(Bmax10)
 
-
-# Source surface is a
-
-# fig, ax = plt.subplots()
-# # ax.plot(list_to_dimensionless(radii), list_to_dimensionless(Bmax))
-# # ax.plot(list_to_dimensionless(radii), list_to_dimensionless(Bmin))
-# # ax.xaxis.set_major_formatter(mticker.ScalarFormatter())
-# # ax.xaxis.set_minor_formatter(mticker.ScalarFormatter())
-# # plt.grid(which='both')
-# # plt.yscale("log")
-# # plt.xscale("log")
-# # plt.xlabel("Distance from Sun, R [AU]")
-# # plt.ylabel("Magnetic Field Magnitude, B [nT]")
-# # plt.legend(["Solar Maximum", "Solar Minimum"])
-# # plt.show()
+        B11.append(getB_2(B0_min, phi0_min, R0, R, u.nT))
+        B12.append(getB_2(B0_min, phi0_max, R0, R, u.nT))
+        B21.append(getB_2(B0_max, phi0_min, R0, R, u.nT))
+        B22.append(getB_2(B0_max, phi0_max, R0, R, u.nT))
 
 
-fig1savespace = "E:\\Documents\\MEGA\\NEW\\delft\\schoolwork\\Master\\Thesis\\Literature Study\\images\\%s"
-plt.figure()
-plt.plot(list_to_dimensionless(radii), list_to_dimensionless(B11))
-plt.plot(list_to_dimensionless(radii), list_to_dimensionless(B12))
-plt.plot(list_to_dimensionless(radii), list_to_dimensionless(B21))
-plt.plot(list_to_dimensionless(radii), list_to_dimensionless(B22))
-plt.axvline(x=0.39, linestyle=':', color='black')
-plt.axvline(x=5.20, linestyle='--', color='black')
-plt.axvline(x=80, linestyle='-', color='black')
-ax=plt.gca()
-ax.set_xscale('log')
-ax.set_yscale('log')
-plt.xlabel("Distance from Sun, R [AU]")
-plt.ylabel("Magnetic Field Strength, B [nT]")
-tmp_string = "$B_0$ = %s, $\phi_0$ = %s"
-plt.legend([tmp_string %(B0_min, phi0_min),
-            tmp_string %(B0_min, phi0_max),
-            tmp_string %(B0_max, phi0_min),
-            tmp_string %(B0_max, phi0_max),
-            "Mercury Orbit Radius",
-            "Jupiter Orbit Radius",
-            "(Aprroximate) Termination Shock"])
-plt.grid(which='both')
+    # Source surface is a
 
-ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda y, _: '{:g}'.format(y)))
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y, _: '{:g}'.format(y)))
-# ax.xaxis.get_minor_formatter().set_scientific(False)
-# ax.xaxis.get_minor_formatter().set_useOffset(False)
-plt.savefig(fig1savespace %"HMF_char.pdf" )
-if showing: plt.show()
+    # fig, ax = plt.subplots()
+    # # ax.plot(list_to_dimensionless(radii), list_to_dimensionless(Bmax))
+    # # ax.plot(list_to_dimensionless(radii), list_to_dimensionless(Bmin))
+    # # ax.xaxis.set_major_formatter(mticker.ScalarFormatter())
+    # # ax.xaxis.set_minor_formatter(mticker.ScalarFormatter())
+    # # plt.grid(which='both')
+    # # plt.yscale("log")
+    # # plt.xscale("log")
+    # # plt.xlabel("Distance from Sun, R [AU]")
+    # # plt.ylabel("Magnetic Field Magnitude, B [nT]")
+    # # plt.legend(["Solar Maximum", "Solar Minimum"])
+    # # plt.show()
+
+
+    fig1savespace = "E:\\Documents\\MEGA\\NEW\\delft\\schoolwork\\Master\\Thesis\\Literature Study\\images\\%s"
+    plt.figure()
+    plt.plot(list_to_dimensionless(radii), list_to_dimensionless(B11))
+    plt.plot(list_to_dimensionless(radii), list_to_dimensionless(B12))
+    plt.plot(list_to_dimensionless(radii), list_to_dimensionless(B21))
+    plt.plot(list_to_dimensionless(radii), list_to_dimensionless(B22))
+    plt.axvline(x=0.39, linestyle=':', color='black')
+    plt.axvline(x=5.20, linestyle='--', color='black')
+    plt.axvline(x=80, linestyle='-', color='black')
+    ax=plt.gca()
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    plt.xlabel("Distance from Sun, R [AU]")
+    plt.ylabel("Magnetic Field Strength, B [nT]")
+    tmp_string = "$B_0$ = %s, $\phi_0$ = %s"
+    plt.legend([tmp_string %(B0_min, phi0_min),
+                tmp_string %(B0_min, phi0_max),
+                tmp_string %(B0_max, phi0_min),
+                tmp_string %(B0_max, phi0_max),
+                "Mercury Orbit Radius",
+                "Jupiter Orbit Radius",
+                "(Aprroximate) Termination Shock"])
+    plt.grid(which='both')
+
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda y, _: '{:g}'.format(y)))
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y, _: '{:g}'.format(y)))
+    # ax.xaxis.get_minor_formatter().set_scientific(False)
+    # ax.xaxis.get_minor_formatter().set_useOffset(False)
+    plt.savefig(fig1savespace %"HMF_char.pdf" )
+    if showing: plt.show()

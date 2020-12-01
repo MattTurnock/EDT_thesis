@@ -208,6 +208,10 @@ namespace EDTs {
             return xSecAreaConducting_;
         }
 
+        double getVehicleMass(){
+            return vehicleMass_;
+        }
+
     protected:
 
         /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////

@@ -7,6 +7,7 @@
 #include "EDTGuidance.h"
 #include "universal_settings.h"
 #include "environment_settings.h"
+//#include <experimental/filesystem>
 
 int main(int argc, char *argv[] )
 {
@@ -170,10 +171,15 @@ int main(int argc, char *argv[] )
 
     // Set output folder and base data title for all data
     std::string outputSubFolder = simulationVariables["saveDataConfigs"]["outputSubFolder"];
+    std::string outputPath = tudat_applications::getOutputPath() + outputSubFolder;
     std::string baseFilename = simulationVariables["saveDataConfigs"]["baseFilename"];
+
+    // Delete all existing files in directory before saving
+    boost::filesystem::remove_all(outputPath);
 
     // Set variables for data types to be saved
     nlohmann::json dataTypesToSave = simulationVariables["saveDataConfigs"]["dataTypesToSave"];
+    bool savePropData = dataTypesToSave["propData"];
     bool saveMagneticFieldData = dataTypesToSave["magneticField"];
     bool saveIonosphereData = dataTypesToSave["ionosphere"];
     bool saveThrustData = dataTypesToSave["thrust"];
@@ -183,70 +189,117 @@ int main(int argc, char *argv[] )
 
     // Check which data types to save, and save them
 
-//    if (saveMagneticFieldData)
-    // Write satellite propagation history to file.
-    input_output::writeDataMapToTextFile( integrationResult,
-                                          baseFilename + "propData.dat",
-                                          tudat_applications::getOutputPath( ) + outputSubFolder,
-                                          "",
-                                          std::numeric_limits< double >::digits10,
-                                          std::numeric_limits< double >::digits10,
-                                          "," );
+    if (savePropData) {
+        std::cout << "Saving propData" << std::endl;
 
-    // Write dependent variables to file
-    input_output::writeDataMapToTextFile( dependentVariableResult,
-                                          baseFilename + "depVarData.dat",
-                                          tudat_applications::getOutputPath( ) + outputSubFolder,
-                                          "",
-                                          std::numeric_limits< double >::digits10,
-                                          std::numeric_limits< double >::digits10,
-                                          "," );
+        // Write satellite propagation history to file.
+        input_output::writeDataMapToTextFile(integrationResult,
+                                             baseFilename + "propData.dat",
+                                             outputPath,
+                                             "",
+                                             std::numeric_limits<double>::digits10,
+                                             std::numeric_limits<double>::digits10,
+                                             ",");
+    }
+    else{
+        std::cout << "Ignoring propData" << std::endl;
+    }
 
-    // Write magField history to file.
-    input_output::writeDataMapToTextFile( CHBEDTGuidance.getMagFieldMap(),
-                                          baseFilename + "magData.dat",
-                                          tudat_applications::getOutputPath( ) + outputSubFolder,
-                                          "",
-                                          std::numeric_limits< double >::digits10,
-                                          std::numeric_limits< double >::digits10,
-                                          "," );
+    if (saveMagneticFieldData) {
+        std::cout << "Saving magneticFieldData" << std::endl;
 
-    // Write ionosphere history to file.
-    input_output::writeDataMapToTextFile( CHBEDTGuidance.getIonosphereMap(),
-                                          baseFilename + "ionoData.dat",
-                                          tudat_applications::getOutputPath( ) + outputSubFolder,
-                                          "",
-                                          std::numeric_limits< double >::digits10,
-                                          std::numeric_limits< double >::digits10,
-                                          "," );
+        // Write magField history to file.
+        input_output::writeDataMapToTextFile(CHBEDTGuidance.getMagFieldMap(),
+                                             baseFilename + "magData.dat",
+                                             outputPath,
+                                             "",
+                                             std::numeric_limits<double>::digits10,
+                                             std::numeric_limits<double>::digits10,
+                                             ",");
+    }
+    else{
+        std::cout << "Ignoring magneticFieldData" << std::endl;
+    }
 
-    // Write thrust history to file.
-    input_output::writeDataMapToTextFile( CHBEDTGuidance.getThrustMap(),
-                                          baseFilename + "thrustData.dat",
-                                          tudat_applications::getOutputPath( ) + outputSubFolder,
-                                          "",
-                                          std::numeric_limits< double >::digits10,
-                                          std::numeric_limits< double >::digits10,
-                                          "," );
+    if (saveIonosphereData) {
+        std::cout << "Saving ionosphericData" << std::endl;
 
-    // Write current history to file.
-    input_output::writeDataMapToTextFile( CHBEDTGuidance.getCurrentMap(),
-                                          baseFilename + "currentData.dat",
-                                          tudat_applications::getOutputPath( ) + outputSubFolder,
-                                          "",
-                                          std::numeric_limits< double >::digits10,
-                                          std::numeric_limits< double >::digits10,
-                                          "," );
+        // Write ionosphere history to file.
+        input_output::writeDataMapToTextFile(CHBEDTGuidance.getIonosphereMap(),
+                                             baseFilename + "ionoData.dat",
+                                             outputPath,
+                                             "",
+                                             std::numeric_limits<double>::digits10,
+                                             std::numeric_limits<double>::digits10,
+                                             ",");
+    }
+    else{
+        std::cout << "Ignoring ionosphericData" << std::endl;
+    }
 
-    // Write bodyData history to files
-    input_output::writeDataMapToTextFile( CHBEDTGuidance.getBodyDataMap(),
-                                          baseFilename + "bodyData.dat",
-                                          tudat_applications::getOutputPath( ) + outputSubFolder,
-                                          "",
-                                          std::numeric_limits< double >::digits10,
-                                          std::numeric_limits< double >::digits10,
-                                          "," );
-//
+    if (saveThrustData) {
+        std::cout << "Saving thrustData" << std::endl;
+
+        // Write thrust history to file.
+        input_output::writeDataMapToTextFile(CHBEDTGuidance.getThrustMap(),
+                                             baseFilename + "thrustData.dat",
+                                             outputPath,
+                                             "",
+                                             std::numeric_limits<double>::digits10,
+                                             std::numeric_limits<double>::digits10,
+                                             ",");
+    }
+    else{
+        std::cout << "Ignoring thrustData" << std::endl;
+    }
+
+    if (saveCurrentData) {
+        std::cout << "Saving currentData" << std::endl;
+
+        // Write current history to file.
+        input_output::writeDataMapToTextFile(CHBEDTGuidance.getCurrentMap(),
+                                             baseFilename + "currentData.dat",
+                                             outputPath,
+                                             "",
+                                             std::numeric_limits<double>::digits10,
+                                             std::numeric_limits<double>::digits10,
+                                             ",");
+    }
+    else{
+        std::cout << "Ignoring currentData" << std::endl;
+    }
+
+    if (saveBodyData) {
+        std::cout << "Saving bodyData" << std::endl;
+
+        // Write bodyData history to files
+        input_output::writeDataMapToTextFile(CHBEDTGuidance.getBodyDataMap(),
+                                             baseFilename + "bodyData.dat",
+                                             outputPath,
+                                             "",
+                                             std::numeric_limits<double>::digits10,
+                                             std::numeric_limits<double>::digits10,
+                                             ",");
+    }
+    else{
+        std::cout << "Ignoring bodyData" << std::endl;
+    }
+
+    if (saveDependentVariablesData) {
+        std::cout << "Saving dependentVariableData" << std::endl;
+
+        // Write dependent variables to file
+        input_output::writeDataMapToTextFile(dependentVariableResult,
+                                             baseFilename + "depVarData.dat",
+                                             outputPath,
+                                             "",
+                                             std::numeric_limits<double>::digits10,
+                                             std::numeric_limits<double>::digits10,
+                                             ",");
+    }
+    else{
+        std::cout << "Ignoring dependentVariableData" << std::endl;
+    }
 
 //    std::cout<< "============= TESTING ===============" << std::endl;
 //

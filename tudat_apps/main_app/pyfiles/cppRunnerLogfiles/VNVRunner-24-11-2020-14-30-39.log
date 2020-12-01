@@ -1,0 +1,70 @@
+2020-11-24 14:30:39,600 - Ignoring file: testVariablesParkerReferenceVnV.json
+2020-11-24 14:30:39,600 - Ignoring file: testVariablesParkerVnV.json
+2020-11-24 14:30:39,600 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesSRPNominalVnV.json
+
+2020-11-24 14:30:39,604 - ===============Loading Variables From File==================
+2020-11-24 14:30:39,604 - ===============Prepping Sim==================
+2020-11-24 14:30:39,604 -  -- Loading spice kernels -- 
+2020-11-24 14:30:39,626 -  -- Creating environment class -- 
+2020-11-24 14:30:39,626 - B0 for year 2001.3 : 6.97219
+2020-11-24 14:30:39,626 -  -- Creating Config class -- 
+2020-11-24 14:30:39,626 -  -- Creating Guidance class -- 
+2020-11-24 14:30:39,626 -  -- Creating Propbodies class -- 
+2020-11-24 14:30:39,626 - Using bodies: 
+2020-11-24 14:30:39,626 - Sun
+2020-11-24 14:30:39,626 - MEMEMEM: -1
+2020-11-24 14:30:39,626 - Effective SRP radiation coefficient of vehicle: 0.5
+2020-11-24 14:30:39,626 - Effective SRP reference area of vehicle       : 2.4
+2020-11-24 14:30:39,626 -  -- Creating Propsettings class -- 
+2020-11-24 14:30:39,626 - INITIAL EPHEMERIS YEAR: 1977
+2020-11-24 14:30:39,626 - INITIAL EPHEMERIS TIME: -7.25825e+08
+2020-11-24 14:30:39,626 - ====================Propagating==========================
+2020-11-24 14:30:39,626 - Dependent variables being saved, output vectors contain: 
+2020-11-24 14:30:39,626 - Vector entry, Vector contents
+2020-11-24 14:30:39,626 - 0, Kepler elements of Vehicle w.r.t. Sun
+2020-11-24 14:30:39,626 - 6, Relative distance of Vehicle w.r.t. Sun
+2020-11-24 14:30:39,626 - 7, Single acceleration in inertial frame of type cannonball radiation pressure , acting on Vehicle, exerted by Sun
+2020-11-24 14:30:58,540 - ====================Saving Data==========================
+2020-11-24 14:30:58,570 - Saving propData
+2020-11-24 14:30:59,193 - Ignoring magneticFieldData
+2020-11-24 14:30:59,194 - Ignoring ionosphericData
+2020-11-24 14:30:59,194 - Ignoring thrustData
+2020-11-24 14:30:59,194 - Ignoring currentData
+2020-11-24 14:30:59,194 - Saving bodyData
+2020-11-24 14:31:07,145 - Saving dependentVariableData
+2020-11-24 14:31:08,981 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesSRPZeroAreaVnV.json
+
+2020-11-24 14:31:08,986 - ===============Loading Variables From File==================
+2020-11-24 14:31:08,986 - ===============Prepping Sim==================
+2020-11-24 14:31:08,986 -  -- Loading spice kernels -- 
+2020-11-24 14:31:09,008 -  -- Creating environment class -- 
+2020-11-24 14:31:09,008 - B0 for year 2001.3 : 6.97219
+2020-11-24 14:31:09,008 -  -- Creating Config class -- 
+2020-11-24 14:31:09,008 -  -- Creating Guidance class -- 
+2020-11-24 14:31:09,008 -  -- Creating Propbodies class -- 
+2020-11-24 14:31:09,008 - Using bodies: 
+2020-11-24 14:31:09,008 - Sun
+2020-11-24 14:31:09,008 - MEMEMEM: -1
+2020-11-24 14:31:09,008 - Effective SRP radiation coefficient of vehicle: 0
+2020-11-24 14:31:09,008 - Effective SRP reference area of vehicle       : 1.87259e-308
+2020-11-24 14:31:09,008 -  -- Creating Propsettings class -- 
+2020-11-24 14:31:09,008 - INITIAL EPHEMERIS YEAR: 1977
+2020-11-24 14:31:09,008 - INITIAL EPHEMERIS TIME: -7.25825e+08
+2020-11-24 14:31:09,008 - ====================Propagating==========================
+2020-11-24 14:31:09,008 - Dependent variables being saved, output vectors contain: 
+2020-11-24 14:31:09,008 - Vector entry, Vector contents
+2020-11-24 14:31:09,008 - 0, Kepler elements of Vehicle w.r.t. Sun
+2020-11-24 14:31:09,008 - 6, Relative distance of Vehicle w.r.t. Sun
+2020-11-24 14:31:09,009 - 7, Single acceleration in inertial frame of type cannonball radiation pressure , acting on Vehicle, exerted by Sun
+2020-11-24 14:31:26,394 - ====================Saving Data==========================
+2020-11-24 14:31:26,404 - Saving propData
+2020-11-24 14:31:27,063 - Ignoring magneticFieldData
+2020-11-24 14:31:27,063 - Ignoring ionosphericData
+2020-11-24 14:31:27,063 - Ignoring thrustData
+2020-11-24 14:31:27,063 - Ignoring currentData
+2020-11-24 14:31:27,063 - Saving bodyData
+2020-11-24 14:31:35,191 - Saving dependentVariableData

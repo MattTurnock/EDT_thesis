@@ -74,8 +74,9 @@ public:
                 currentToSet_ << 0, 0, -1*guidanceEnvironment_.getCurrentMagnitude(); //TODO: Fix to use EDT length unit vector, instead of hardcode
             }
             // Set current in guidance class and update it
-            guidanceEnvironment_.setCurrent(currentToSet_); // TODO: check if this is needed or no
+            guidanceEnvironment_.setCurrent(currentToSet_); // TODO: check if this is needed or no - ie move to update script
             updateAllEnviro(simulationTime_);
+
             // Get thrust vector and normalise to use as guidance vector
             thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
             thrustDirection_ = thrustVector_.normalized();
@@ -173,6 +174,8 @@ public:
             // Calculate final average true current, and set current magnitude to it
             avgTrueCurrent_ = gen::trueCurrentDimensionlessConvert(avgDimensionlessCurrent_, unitCurrent_);
             currentMagnitude_ = avgTrueCurrent_;
+
+            // Update the
         }
 
             // For spacecraft using a transient-current concept

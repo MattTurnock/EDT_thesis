@@ -15,7 +15,7 @@ VnVReferenceSubDir = "ParkerReferenceVnV"
 VnVSaveFolder = os.path.join("pyplots", "VnV")
 showing=True
 doVoyager = True
-doVoyagerSims = True
+doVoyagerSims = False
 doVoyagerScatters = False
 doReference = False
 
@@ -107,8 +107,8 @@ if doVoyager:
 
     ########################################## Directionality Plots ###############################################
     utils.plotMagData(vy1magdata_7789_avg, scatter=False, arrayType="voyager", logScaleX=False, logScaleY=False, fignumber=5, plotType="radius-BR")
-    # utils.plotMagData(vy1magdata_7789_avg, scatter=False, arrayType="voyager", logScaleX=False, logScaleY=False, fignumber=5, plotType="radius-BT")
-    # utils.plotMagData(vy1magdata_7789_avg, scatter=False, arrayType="voyager", logScaleX=False, logScaleY=False, fignumber=5, plotType="radius-BN")
+    utils.plotMagData(vy1magdata_7789_avg, scatter=False, arrayType="voyager", logScaleX=False, logScaleY=False, fignumber=5, plotType="radius-BT")
+    utils.plotMagData(vy1magdata_7789_avg, scatter=False, arrayType="voyager", logScaleX=False, logScaleY=False, fignumber=5, plotType="radius-BN")
 
     # plt.figure(100)
     # plt.plot(vy1magdata_7789[:, 4], vy1magdata_7789[:, 5])

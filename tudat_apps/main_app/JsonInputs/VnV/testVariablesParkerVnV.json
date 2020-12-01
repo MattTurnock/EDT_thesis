@@ -91,15 +91,24 @@
   },
   "saveDataConfigs": {
     "outputSubFolder": "ParkerVnV/",
-    "baseFilename": "ParkerVnV"
+    "baseFilename": "ParkerVnV",
+    "dataTypesToSave": {
+      "propData": true,
+      "magneticField": true,
+      "ionosphere": false,
+      "thrust": false,
+      "current": false,
+      "bodyData": true,
+      "dependentVariables": false
+    }
   },
   "scConfigs": {
     "SRP": {
-      "endmassArea1": 1.2,
-      "endmassArea2": 1.2,
-      "endmassRadiationCoefficient": 0.5,
-      "tetherRadiationCoefficient": 0.5,
-      "rotationFactor": 0.7
+      "endmassArea1": 0,
+      "endmassArea2": 0,
+      "endmassRadiationCoefficient": 0,
+      "tetherRadiationCoefficient": 0,
+      "rotationFactor": 0
     }
   },
   "materialProperties": {

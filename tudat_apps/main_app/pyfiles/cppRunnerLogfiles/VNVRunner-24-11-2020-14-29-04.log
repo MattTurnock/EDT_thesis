@@ -1,0 +1,28 @@
+2020-11-24 14:29:04,063 - Ignoring file: testVariablesParkerReferenceVnV.json
+2020-11-24 14:29:04,063 - Ignoring file: testVariablesParkerVnV.json
+2020-11-24 14:29:04,063 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesSRPNominalVnV.json
+
+2020-11-24 14:29:04,070 - ===============Loading Variables From File==================
+2020-11-24 14:29:04,070 - ===============Prepping Sim==================
+2020-11-24 14:29:04,070 -  -- Loading spice kernels -- 
+2020-11-24 14:29:04,093 -  -- Creating environment class -- 
+2020-11-24 14:29:04,093 - B0 for year 2001.3 : 6.97219
+2020-11-24 14:29:04,093 -  -- Creating Config class -- 
+2020-11-24 14:29:04,093 -  -- Creating Guidance class -- 
+2020-11-24 14:29:04,093 -  -- Creating Propbodies class -- 
+2020-11-24 14:29:04,093 - Using bodies: 
+2020-11-24 14:29:04,093 - Sun
+2020-11-24 14:29:04,093 - MEMEMEM: -1
+2020-11-24 14:29:04,094 - Effective SRP radiation coefficient of vehicle: 0.5
+2020-11-24 14:29:04,094 - Effective SRP reference area of vehicle       : 2.4
+2020-11-24 14:29:04,094 -  -- Creating Propsettings class -- 
+2020-11-24 14:29:04,094 - INITIAL EPHEMERIS YEAR: 1977
+2020-11-24 14:29:04,094 - INITIAL EPHEMERIS TIME: -7.25825e+08
+2020-11-24 14:29:04,094 - ====================Propagating==========================
+2020-11-24 14:29:04,094 - Dependent variables being saved, output vectors contain: 
+2020-11-24 14:29:04,094 - Vector entry, Vector contents
+2020-11-24 14:29:04,094 - 0, Kepler elements of Vehicle w.r.t. Sun
+2020-11-24 14:29:04,094 - 6, Relative distance of Vehicle w.r.t. Sun
+2020-11-24 14:29:04,094 - 7, Single acceleration in inertial frame of type cannonball radiation pressure , acting on Vehicle, exerted by Sun

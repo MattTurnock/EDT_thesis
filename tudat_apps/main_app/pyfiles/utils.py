@@ -9,6 +9,8 @@ import copy
 import re
 from scipy.interpolate import interp1d
 import pandas as pd
+from datetime import datetime
+import logging
 
 #######################################################################################################################
 ############################## Set various project directories ############################################
@@ -35,6 +37,8 @@ voyager2MagDataDir_48s = os.path.join(deepSpaceMagfieldDataDir, voyagerMagDataSu
 voyager1TrajDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerTrajDataSubDirBase % "1")
 voyager2TrajDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerTrajDataSubDirBase % "2")
 
+pythonRunnerLogfilesDir = os.path.join(pyfiles_dir, "cppRunnerLogfiles")
+
 
 #######################################################################################################################
 ############################## Set constant values for use in GACalculatorRunner.py and others ######################
@@ -53,6 +57,9 @@ MarsInfoList = [2020.789, 780/365.25] # Info list contains [initial same side ti
 ############################## Set constant values for VnV stuff ######################
 #######################################################################################################################
 AU = 1.496e11
+c = 299792458
+W0 = 1367.0
+
 indicatorString_9004 = "SN      DecimalYear     F1Mag   ElevAng AzimAng F2Mag"
 indicatorString_0919 = " SC	Yr		DOY	  F1		   Br		   Bt		   Bn"
 referenceParkerRsAU = [10,
@@ -147,7 +154,7 @@ def runBashCommand(argumentsList, printSetting=2): #Printsettings: 0 = no printi
         for line in iter(p.stdout.readline, b''):
             decodedLine = line.decode('utf-8')
             decodedLine = decodedLine.strip("\n")
-            print(decodedLine)
+            logger.info(decodedLine)
         p.stdout.close()
         p.wait()
 
@@ -158,9 +165,9 @@ def runBashCommand(argumentsList, printSetting=2): #Printsettings: 0 = no printi
         stdout,stderr = out.communicate()
         stdout = stdout.decode('utf-8')
         if printSetting == 2:
-            print(stdout)
+            logger.info(stdout)
             if stderr is not None:
-                print("Command finished with error: ", stderr)
+                logger.info("Command finished with error: ", stderr)
 
 def normaliseValue(initialValue, lowerBound, upperBound, denormalise = False):
     if denormalise:
@@ -180,7 +187,7 @@ def checkFolderExist(folderToCheck):
     """
 
     if not os.path.exists(folderToCheck):
-        print("Creating new folder %s" %folderToCheck)
+        logger.info("Creating new folder %s" %folderToCheck)
         os.mkdir(folderToCheck)
 
 def findNearestInArray(array, value):
@@ -222,7 +229,7 @@ def list_files(directory, extension=None, sort=True, exceptions=None):
 
 def print_full(x):
     pd.set_option('display.max_rows', len(x))
-    print(x)
+    logger.info(x)
     pd.reset_option('display.max_rows')
 
     # Function to reshape arrays by interpolation. inputArray is the base data, reframeArray is the array of indices to reshape along. Must be on 0 column!
@@ -258,6 +265,9 @@ def interpolateArrays(inputArray, reframeArray):
 
     return outputArray
 
+
+
+
 # "saveDataConfigs": {
 #     "outputSubFolder": "SSO-CHB-Test-custom-2/",
 #     "baseFilename": "SSO-CH-Test-out-E6-"
@@ -290,7 +300,7 @@ def createModifiedJson(jsonTemplatePath, jsonSaveToDir, jsonSaveToFilename, list
 
     # Check if lists are of same length
     if len(listOfChangeKeys) != len(listOfChangeValues):
-        print("ERROR: Length of keys list must equal length of values list, skipping changes")
+        logger.info("ERROR: Length of keys list must equal length of values list, skipping changes")
         return 1
 
     # Make the relevant changes to each key here
@@ -310,7 +320,7 @@ def createModifiedJson(jsonTemplatePath, jsonSaveToDir, jsonSaveToFilename, list
         elif keyNesting == 5:
             newJson [tempKeys[0]] [tempKeys[1]] [tempKeys[2]] [tempKeys[3]] [tempKeys[4]] = listOfChangeValues[i]
         else:
-            print("ERROR: Function only supports key nesting up to 5, skipping changes")
+            logger.info("ERROR: Function only supports key nesting up to 5, skipping changes")
             return 1
 
     # Dump new data into a json file
@@ -321,6 +331,39 @@ def createModifiedJson(jsonTemplatePath, jsonSaveToDir, jsonSaveToFilename, list
         f.close()
 
     return 0
+
+#Function to create name for a logfile using the time
+def createLogfileName(baseName):
+
+    timeNow = datetime.now()
+    timeNowString = timeNow.strftime("%d-%m-%Y-%H-%M-%S")
+    logfileName = "%s-%s.log" %(baseName, timeNowString)
+
+    return logfileName
+
+# Function to create the logger for a file, must replace print statements with logger.info statements
+
+def createLogger(logfileName, makeDummy=False):
+    logger = logging.getLogger('scope.name')
+    logger.handlers=[]
+
+    if makeDummy is False:
+        file_log_handler = logging.FileHandler(logfileName)
+        logger.addHandler(file_log_handler)
+
+    stderr_log_handler = logging.StreamHandler()
+    logger.addHandler(stderr_log_handler)
+    logger.setLevel('DEBUG')
+
+    # nice output format
+    formatter = logging.Formatter('%(asctime)s - %(message)s')
+    if makeDummy is False: file_log_handler.setFormatter(formatter)
+    stderr_log_handler.setFormatter(formatter)
+
+    return logger
+
+# Dummy log variable for when none made
+logger = createLogger("", makeDummy=True)
 
 
 # testVariablesJsonPath = "/home/matt/LinkToEDT_thesis/tudat_apps/main_app/JsonInputs/testVariables.json"
@@ -374,7 +417,7 @@ def arrayCoordsConvert(inputParameter1, inputParameter2=None):
 # Function to get lists of pareto parameters x and y, given input x and y.
 def getParetoLists(XInput, YInput, sortOutput=True):
     if len(XInput) != len(YInput):
-        print("ERROR: Input lengths of lists for pareto are not equal")
+        logger.info("ERROR: Input lengths of lists for pareto are not equal")
         sys.exit()
 
     inputArray = np.zeros((len(XInput), 2))
@@ -420,7 +463,7 @@ def loadAndNormaliseGA(GAFolder, simulation_output_dir, generation=90, fileSuffi
 
             if normalising:
                 if (DVBounds is None) or (TOFBounds is None):
-                    print("ERROR: To normalise, DVBounds and TOFBounds must be specified")
+                    logger.info("ERROR: To normalise, DVBounds and TOFBounds must be specified")
                     sys.exit()
                 DV = normaliseValue(DV, DVBounds[0], DVBounds[1], denormalise=True)
                 TOF = normaliseValue(TOF, TOFBounds[0], TOFBounds[1], denormalise=True)
@@ -459,7 +502,7 @@ def getAllYearsGA(quickConfigs, GASubfolder):
     elif planetName == "Mars":
         fileSuffix = "GA_EM"
     else:
-        print("ERROR: planetName in quickConfigs not recognised")
+        logger.info("ERROR: planetName in quickConfigs not recognised")
         sys.exit()
 
     # startYearsRaw = np.arange(startYear, endYear+1, synodicPeriod)
@@ -539,9 +582,9 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
             TOFsToPlot = fitnessFileTOFSAll[i]
 
         if printMinDV:
-            print(min(fitnessFileDVsAll[i]))
-            print(fitnessFileDVsAll[i])
-            print(TOFsToPlot)
+            logger.info(min(fitnessFileDVsAll[i]))
+            logger.info(fitnessFileDVsAll[i])
+            logger.info(TOFsToPlot)
 
         if startYear in startYearsToPlot:
             plt.figure(fignumber)
@@ -558,7 +601,7 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
                 yToPlot = fitnessFileDVsAll[i]
                 # plt.scatter(launchYearsAll[i], fitnessFileDVsAll[i], scatterPointSize, c=scatterColour, marker=scatterMarker, linewidth=scatterLinewidths)
             else:
-                print("ERROR: plotType not recognised")
+                logger.info("ERROR: plotType not recognised")
                 sys.exit()
 
             if removeDominated and plotType=="DV-TOFS":
@@ -576,7 +619,7 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
 
             if plotParetoFront:
                 if removeDominated == False:
-                    print("ERROR: Cannot plot pareto front without removing dominated points")
+                    logger.info("ERROR: Cannot plot pareto front without removing dominated points")
                     sys.exit()
 
                 plt.plot(xToPlot, yToPlot)
@@ -705,14 +748,14 @@ def runCppGASims(jsonName, jsonDirectory=jsonInputs_dir, GAApplicationName="appl
         elif planetName == "Mars":
             planetConfigString = "MarsConfigs"
         else:
-            print("WARNING: Planet not recognised")
+            logger.info("WARNING: Planet not recognised")
 
         startYearLower = GAVariables["PlanetConfigs"][planetConfigString]["Bounds"]["StartYearLower"]
         startYearUpper = GAVariables["PlanetConfigs"][planetConfigString]["Bounds"]["StartYearUpper"]
 
 
         # Run simulations using relevant json file
-        print("Running %s simulations for %s - %s" %(planetName, startYearLower, startYearUpper))
+        logger.info("Running %s simulations for %s - %s" %(planetName, startYearLower, startYearUpper))
         runBashCommand( GAArgumentsList, printSetting=printing)
 
 def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonFilenameBase, inputStartYearsRange, infoList,
@@ -763,7 +806,7 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
         planetConfigString = "MarsConfigs"
         planetName = "Mars"
     else:
-        print("WARNING: Planet not recognised")
+        logger.info("WARNING: Planet not recognised")
 
     # Open template json file, and use it as the structure for the rest
     with open(templateJsonPath, 'r+') as f:
@@ -808,7 +851,7 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
 
 def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
                       runPath=os.path.join(cppApplications_dir, "application_GA_calculator"),
-                      printSetting=0):
+                      printSetting=0, fileIgnores=[]):
     """
     Runs all simulations within a json directory
     :param jsonSubDirectory:
@@ -824,11 +867,22 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
     applicationName = os.path.basename(os.path.normpath(runPath))
 
     for i in range(len(jsonsToRunFilenames)):
-        jsonsToRunPaths.append(os.path.join(jsonSubDirectory, jsonsToRunFilenames[i]))
+        jsonFilenameTemp = jsonsToRunFilenames[i]
+        toAppend = True
+
+        for ignoreString in fileIgnores:
+            if ignoreString in jsonFilenameTemp:
+                toAppend = False
+
+        if toAppend:
+            jsonsToRunPaths.append(os.path.join(jsonSubDirectory, jsonFilenameTemp))
+        else:
+            logger.info("Ignoring file: %s" %jsonFilenameTemp )
+
 
     for i in range(len(jsonsToRunPaths)):
         # Run simulations using relevant json file
-        print("Running application %s, with json %s" %(applicationName, jsonsToRunFilenames[i]))
+        logger.info("\n\nRunning application %s, with json %s\n" %(applicationName, jsonsToRunPaths[i].split("/")[-1]))
         argumentsList = [runPath, jsonsToRunPaths[i]]
         runBashCommand( argumentsList, printSetting=printSetting)
 
@@ -884,7 +938,7 @@ def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation
             thrustDataArray = np.genfromtxt(thrustDataFilename, delimiter=",")
 
         else:
-            print("Data file does not have recognised type (or is purposely being ignored), ignoring: %s" %filename)
+            logger.info("Data file does not have recognised type (or is purposely being ignored), ignoring: %s" %filename)
 
 
     return (bodyDataArray, currentDataArray, depVarDataArray, ionoDataArray, magDataArray, propDataArray, thrustDataArray)
@@ -911,7 +965,7 @@ figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, scatter=
             stateVectorAU = stateVector / AU
 
             if len(bodyDataTimes) != len(times):
-                print("WARNING: Body data times not equal to magdata times, terminating plot")
+                logger.info("WARNING: Body data times not equal to magdata times, terminating plot")
                 return 1
 
     elif arrayType == "voyager":
@@ -959,7 +1013,7 @@ figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, scatter=
         yLabel = "Magnetic field component strength [nT]"
 
     else:
-        print("ERROR: Plot type not recgonised, ending program")
+        logger.info("ERROR: Plot type not recgonised, ending program")
         sys.exit()
 
     if scatter:
@@ -1000,7 +1054,7 @@ def plotTrajectoryData(bodyDataArray, fignumber=None, plotType="x-y", legendSize
         yLabel = "Y coordinate [AU]"
         legendLabels.append("Spacecraft trajectory")
     else:
-        print("ERROR: Plot type not recognised, ending program")
+        logger.info("ERROR: Plot type not recognised, ending program")
         sys.exit()
 
     if plotSun:
@@ -1174,7 +1228,7 @@ def voyagerArrayToPlotArray(inputArray, inputType="7789", trajectoryDataArray=No
 
     elif (inputType == "9004") or (inputType == "0919"):
         if trajectoryDataArray is None:
-            print("ERROR: trajectory data array required for 1990-2004 data, ending plotting")
+            logger.info("ERROR: trajectory data array required for 1990-2004 data, ending plotting")
             return 1
 
 
@@ -1203,7 +1257,7 @@ def voyagerArrayToPlotArray(inputArray, inputType="7789", trajectoryDataArray=No
 
     elif inputType == "0919":
         if trajectoryDataArray is None:
-            print("ERROR: trajectory data array required for 1990-2004 data, ending plotting")
+            logger.info("ERROR: trajectory data array required for 1990-2004 data, ending plotting")
             return 1
 
 

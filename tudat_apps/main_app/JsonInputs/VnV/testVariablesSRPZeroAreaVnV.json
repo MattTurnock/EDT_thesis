@@ -15,15 +15,15 @@
   },
   "ParkerMagField": {
     "B0_tesla": 12.0E-9,
-    "phi0_deg": 45.356,
+    "phi0_deg": 42.748,
     "R0_au": 1,
     "twoSinePars": {
-      "a1": 0,
-      "b1": 0,
-      "c1": 0,
-      "a2": 0,
-      "b2": 0,
-      "c2": 0,
+      "a1": 1.33554129,
+      "b1": 0.07853982,
+      "c1": -22.57281224,
+      "a2": -0.98083566,
+      "b2": 0.55305433,
+      "c2": 46.69738187,
       "d": 5.83456192
     }
   },
@@ -56,21 +56,21 @@
     },
     "terminationSettings": {
       "terminationType": "distanceTermination",
-      "timeTerminationYears": 1E100,
-      "absoluteTimeTerminationYear": 2650,
+      "timeTerminationYears": 1000,
+      "absoluteTimeTerminationYear": 2649,
       "proximityTerminationBody1": "Vehicle",
       "proximityTerminationBody2": "Sun",
       "proximityTerminationCutoffAU": 1,
-      "distanceTerminationAU": 200,
-      "maxCPUTimeTerminationSecs": 1E100
+      "distanceTerminationAU": 1000,
+      "maxCPUTimeTerminationSecs": 10E10
     },
     "vehicleInitialKeplerian": {
-      "a_au": 1000,
-      "e": 0.999999999,
+      "a_au": -0.8,
+      "e": 1.3,
       "i_deg": 0,
       "aop_deg": 180,
       "raan_deg": 0,
-      "ta_deg": 179
+      "ta_deg": 0
     }
   },
   "EDTConfigs": {
@@ -90,16 +90,16 @@
     }
   },
   "saveDataConfigs": {
-    "outputSubFolder": "ParkerReferenceVnV/",
-    "baseFilename": "ParkerReferenceVnV",
+    "outputSubFolder": "SRPZeroAreaVnV/",
+    "baseFilename": "SRPZeroAreaVnV",
     "dataTypesToSave": {
       "propData": true,
-      "magneticField": true,
+      "magneticField": false,
       "ionosphere": false,
       "thrust": false,
       "current": false,
       "bodyData": true,
-      "dependentVariables": false
+      "dependentVariables": true
     }
   },
   "scConfigs": {
