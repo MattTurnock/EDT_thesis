@@ -39,6 +39,8 @@ namespace EDTs {
                 constantThrustAccel_(constantThrustAccel),
                 bodyFixedThrustDirection_(bodyFixedThrustDirection){
 
+            emitterCurrent_ = emitterCurrentmA_ / 1000;
+
             // Normalize body fixed thrust direction
             bodyFixedThrustDirection_.normalize();
 
@@ -46,8 +48,8 @@ namespace EDTs {
             EDTBody->setConstantBodyMass(vehicleMass);
 
             // Set and calculate hoytether variables from the hoytether variables json
-            tetherDiameterInnerSecondary_ = hoytetherVariables_["tetherDiameterInnerSecondary"];
-            tetherDiameterOuterSecondary_ = hoytetherVariables_["tetherDiameterOuterSecondary"];
+            tetherAreaInnerSecondary_ = hoytetherVariables_["tetherAreaInnerSecondary"];
+            tetherAreaOuterSecondary_ = hoytetherVariables_["tetherAreaOuterSecondary"];
             noPrimaryLines_ = hoytetherVariables_["noPrimaryLines"];
             primaryLineSegmentLength_ = hoytetherVariables_["primaryLineSegmentLength"];
             slackCoefficient_ = hoytetherVariables_["slackCoefficient"];
@@ -62,14 +64,30 @@ namespace EDTs {
             endmassRadiationCoefficient_ = SRPVariables_["endmassRadiationCoefficient"];
             tetherRadiationCoefficient_ = SRPVariables_["tetherRadiationCoefficient"];
             rotationCoefficient_ = SRPVariables_["rotationFactor"];
-            /////////////////////// Calculate derived EDT variables /////////////////////////
+
+            //////////////////////// Set diameters from Areas /////////////////////
+
+            tetherDiameterOuter_ = gen::calculateCircleDiameter(tetherAreaInner_ + tetherAreaOuter_);
+            tetherDiameterInner_ = gen::calculateCircleDiameter(tetherAreaInner_);
+            tetherDiameterOuterSecondary_ = gen::calculateCircleDiameter(tetherAreaInnerSecondary_ + tetherAreaOuterSecondary_);
+            tetherDiameterInnerSecondary_ = gen::calculateCircleDiameter(tetherAreaInnerSecondary_);
+
+            /////////////////////// Calculate geometric variables based on config /////////////////////////
+
+            if ( (configType_ == "CHB") or (configType_ == "CHTr")){
+                xSecAreaTotal_ = xSecAreaHoytetherPrimaryTotal_;
+                xSecAreaInner_ = xSecAreaHoytetherPrimaryInnerTotal_;
+                xSecAreaOuter_ = xSecAreaHoytetherPrimaryOuterTotal_;
+            }
+            else{
+                // TODO: Add some stuff here if we use the other types
+            }
 
             // Tether cross sectional areas
-            xSecAreaTotal_ = gen::getCircleArea(diameterOuter_); //TODO: make a function that calculates cross sectional area, depending on config type
-            xSecAreaInner_ = gen::getCircleArea(diameterInner_);
-            xSecAreaDonut_ = gen::getDonutArea(diameterInner_, diameterOuter_);
+//            xSecAreaTotal_ = gen::getCircleArea(tetherAreaOuter_); //TODO: make a function that calculates cross sectional area, depending on config type
+//            xSecAreaInner_ = gen::getCircleArea(tetherAreaInner_);
+//            xSecAreaDonut_ = gen::getDonutArea(tetherAreaInner_, tetherAreaOuter_);
 
-            // Tether
 
             /////////////////////// Set SRP parameters (based on config type) /////////////////////////////////////
             if ( (configType_ == "CHB") or (configType_ == "CHTr") ){ // TODO: CHECK DESIGN SPECS - do we use tape tethers or no? IMPORTANT!!!!!!
@@ -90,15 +108,19 @@ namespace EDTs {
                 std::cout << "Config type: " << configType_ << " Not recognised" << std::endl;
             }
 
+
             ///////////////////////// Set current-based parameters (based on config type) ///////////////////////
             if ( (configType_ == "CHB") or (configType_ == "CHTr") ) {
-                resistivity_ = getCompositeResistivity(length_, resistivityAl_, resistivityCu_, xSecAreaDonut_, xSecAreaInner_);
+                resistivity_ = calculateCompositeResistivity(length_, resistivityAl_, resistivityCu_, xSecAreaOuter_,
+                                                             xSecAreaInner_);
             }
             else if ( (configType_ == "AlMB") or (configType_ == "AlMTr") ) {
                 resistivity_ = resistivityAl_;
             }
-            conductivity_ = getConductivity(resistivity_);
-            EDTResistance_ = getResistance(resistivity_, length_, xSecAreaConducting_); // TODO: Check length correct
+
+            xSecAreaConducting_ = xSecAreaHoytetherPrimaryTotal_; // TODO: This assumes all designs use hoytether - ensure this is true in final sims!
+            conductivity_ = resistivityToConductivity(resistivity_);
+            EDTResistance_ = calculateResistance(resistivity_, length_, xSecAreaConducting_); // TODO: Check length correct
 
 
 
@@ -124,9 +146,17 @@ namespace EDTs {
             totalSecondaryLineLength_ = noSecondaryLinks_ * secondaryLineSegmentLength_;
 
             // Calculate total primary and secondary SRP areas Ap and As, as well as effective SRP area Aeff
-            totalPrimarySRPArea_ = diameterOuter_ * totalPrimaryLineLength_;
+            totalPrimarySRPArea_ = tetherDiameterOuter_ * totalPrimaryLineLength_;
             totalSecondarySRPArea_ = tetherDiameterOuterSecondary_ * totalSecondaryLineLength_;
             effectiveHoytetherSRPArea_ = rotationCoefficient_ * occultationCoefficient_ * (totalPrimarySRPArea_ + totalSecondarySRPArea_);
+
+            // Calculate the total cross sectional areas of primary and secondary lines
+            xSecAreaHoytetherPrimaryInnerTotal_ = noPrimaryLines_ * tetherAreaInner_;
+            xSecAreaHoytetherPrimaryOuterTotal_  = noPrimaryLines_ * tetherAreaOuter_;
+            xSecAreaHoytetherPrimaryTotal_ = xSecAreaHoytetherPrimaryInnerTotal_ + xSecAreaHoytetherPrimaryOuterTotal_;
+
+            // For use in EDT stuff
+
         }
 
 
@@ -145,7 +175,7 @@ namespace EDTs {
 
         void setSRPForSingleLine(){
             // Set total effective SRP area
-            effectiveSingleLineSRPArea_ = rotationCoefficient_ * length_ * diameterOuter_;
+            effectiveSingleLineSRPArea_ = rotationCoefficient_ * length_ * tetherAreaOuter_;
             totalEffectiveSRPArea_ = endmassArea1_ + endmassArea2_ + effectiveSingleLineSRPArea_;
 
             // Set total effective radiation pressure coefficient, using a weighted sum
@@ -158,31 +188,31 @@ namespace EDTs {
         ////////////////////// Conductivity and other current-related EDT properties /////////////////////////////
 
         // Function to calculate conductivity, from length, area, and total resistance
-        void setConductivity(double length, double resistance, double area){
+        void calculateConductivity(double length, double resistance, double area){
             conductivity_ = length / (resistance*area);
         }
 
-        double getResistance(double resistivity, double length, double area){
+        double calculateResistance(double resistivity, double length, double area){
             return (resistivity*length)/area;
         }
 
         // Function to calculate total resistance for a composite tether (assumed as 2 resistors in parallel)
-        double getCompositeResistance(double resistance1, double resistance2){
+        double calculateCompositeResistance(double resistance1, double resistance2){
             return pow( (1/resistance1 + 1/resistance2) ,-1);
         }
 
         // Function to get composite resistivity, using resistance as an intermediary
-        double getCompositeResistivity(double length, double resistivity1, double resistivity2, double area1, double area2){
+        double calculateCompositeResistivity(double length, double resistivity1, double resistivity2, double area1, double area2){
             double Atot = area1 + area2;
-            double R1 = getResistance(resistivity1, length, area1);
-            double R2 = getResistance(resistivity2, length, area2);
-            double Rtot = getCompositeResistance(R1, R2);
+            double R1 = calculateResistance(resistivity1, length, area1);
+            double R2 = calculateResistance(resistivity2, length, area2);
+            double Rtot = calculateCompositeResistance(R1, R2);
 
             return (Rtot * Atot)/length;
         }
 
         // Function to calculate conductivity, from resistivity (ie the inverse)
-        double getConductivity(double resistivity) {
+        double resistivityToConductivity(double resistivity) {
             return 1/resistivity;
         }
 
@@ -212,6 +242,22 @@ namespace EDTs {
             return vehicleMass_;
         }
 
+        double getVehicleConductivity(){
+            return conductivity_;
+        }
+
+        double getEmitterCurrent(){
+            return emitterCurrent_;
+        }
+
+        std::string getConfigType(){
+            return configType_;
+        }
+
+        double getTetherLength(){
+            return length_;
+        }
+
     protected:
 
         /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
@@ -225,12 +271,15 @@ namespace EDTs {
 
         // Create initial variables for EDT properties
         double length_ = configVariables_["tetherLength"];
-        double diameterInner_ = configVariables_["tetherDiameterInner"];
-        double diameterOuter_ = configVariables_["tetherDiameterOuter"];
+        double tetherAreaInner_ = configVariables_["tetherAreaInner"];
+        double tetherAreaOuter_ = configVariables_["tetherAreaOuter"];
+        double tetherDiameterInner_;
+        double tetherDiameterOuter_; // Is set from the above areas, as is inner
+
 
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
         double vehicleMass_;
-        double vehicleISP_;
+        double vehicleISP_; // TODO: Remove me
         double constantThrustAccel_;
 
 
@@ -241,11 +290,14 @@ namespace EDTs {
         // Create derived EDT properties - cross sectional areas. Inner is Cu, outer is Al
         double xSecAreaTotal_;
         double xSecAreaInner_;
-        double xSecAreaDonut_;
+        double xSecAreaOuter_;
         double xSecAreaConducting_; // Refers to the cross sectional area used for carrying current TODO: Add functions to calculate this
+
 
         // Create json hoytether EDT properties
         nlohmann::json hoytetherVariables_ = configVariables_["hoytether"];
+        double tetherAreaInnerSecondary_;
+        double tetherAreaOuterSecondary_;
         double tetherDiameterInnerSecondary_;
         double tetherDiameterOuterSecondary_;
         double noPrimaryLines_;
@@ -265,6 +317,10 @@ namespace EDTs {
         double totalSecondarySRPArea_;
         double effectiveHoytetherSRPArea_;
 
+        double xSecAreaHoytetherPrimaryInnerTotal_;
+        double xSecAreaHoytetherPrimaryOuterTotal_;
+        double xSecAreaHoytetherPrimaryTotal_;
+
 
         // Create derived EDT properties - other
         nlohmann::json materialProperties_;
@@ -273,7 +329,8 @@ namespace EDTs {
         double resistivity_;
         double conductivity_;
         double EDTResistance_;
-        double emitterCurrent_ = configVariables_["emitterCurrent"]; // Corresponds to Ic, the current from the e- emitter
+        double emitterCurrentmA_ = configVariables_["emitterCurrentmA"] ; // Corresponds to Ic, the current from the e- emitter
+        double emitterCurrent_ ;
 
         // Create json object and regular variables for SRP properties
         nlohmann::json SRPVariables_;

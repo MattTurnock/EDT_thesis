@@ -23,13 +23,16 @@ public:
             double& phi0,
             double& R0,
             NamedBodyMap& environmentBodyMap,
-            nlohmann::json ISMFVariables):
+            nlohmann::json simulationVariables):
             B0EstimationParameters_(B0EstimationParameters),
             phi0_(phi0),
             R0_(R0),
             environmentBodyMap_(environmentBodyMap),
-            ISMFVariables_(ISMFVariables){
+            simulationVariables_(simulationVariables){
         //////////// CONSTRUCTOR ////////////////
+
+        // Set values from test variables
+        ISMFVariables_ = simulationVariables_["InterstellarMagField"];
 
         // Set values for ISMF values from json data, and calculate the new ones
         BInfMagnitude_ = ISMFVariables_["BInf_nT"];
@@ -41,6 +44,13 @@ public:
         sphericalTransitionDistanceAU_ = ISMFVariables_["sphericalTransitionDistanceAU"];
         sphericalTransitionDistance_ = gen::AU * sphericalTransitionDistanceAU_;
 
+        // Set values for imposed magnetic field
+        imposingMagField_ = simulationVariables_["ImposedMagField"]["imposingMagField"];
+        double imposedB1 = simulationVariables_["ImposedMagField"]["B1_nT"];
+        double imposedB2 = simulationVariables_["ImposedMagField"]["B2_nT"];
+        double imposedB3 = simulationVariables_["ImposedMagField"]["B3_nT"];
+        imposedMagField_ << imposedB1, imposedB2, imposedB3;
+
         calculateBinfDirection();
     };
 
@@ -51,62 +61,68 @@ public:
     // Update magnetic field vector using base variables, and determining if Parker model or other should be used
     void updateMagField(){
 
-        // Check the transition to type to determine where parker vs ismf magfield is used
-        if (magFieldTransitionType_ == "spherical"){
-
-            if (R_ <= sphericalTransitionDistance_){
-                magFieldRegion_ = "Parker";
-            }
-            else{
-                magFieldRegion_ = "Interstellar";
-            }
-
-        }
-        else if (magFieldTransitionType_ == "elongated"){
-            //TODO: Implement elongated transition zone (not just spherical)
+        // Checks if magnetic field is directly imposed, and sets it to that if it is
+        if (imposingMagField_){
+            magField_ = imposedMagField_;
+            magFieldMagnitude_ = imposedMagField_.norm();
         }
         else{
-            std::cout << "Magnetic field transition type is unknown -  " << magFieldTransitionType_ << std::endl;
-        }
+            // Check the transition to type to determine where parker vs ismf magfield is used
+            if (magFieldTransitionType_ == "spherical"){
+
+                if (R_ <= sphericalTransitionDistance_){
+                    magFieldRegion_ = "Parker";
+                }
+                else{
+                    magFieldRegion_ = "Interstellar";
+                }
+
+            }
+            else if (magFieldTransitionType_ == "elongated"){
+                //TODO: Implement elongated transition zone (not just spherical)
+            }
+            else{
+                std::cout << "Magnetic field transition type is unknown -  " << magFieldTransitionType_ << std::endl;
+            }
 
 //        std::cout << "Region: " << magFieldRegion_ << std::endl;
 //        std::cout << "Mag strength: " << BInfMagnitude_ << std::endl;
 //        std::cout << "Radius: " << R_ << std::endl;
 //        std::cout << ""  << std::endl;
 
-        if (magFieldRegion_ == "Parker") {
-            // Define local magnetic field vector
-            double BR = B0_ * cos(phi0_) * pow((R0_ / R_), 2);
-            double Bphi = B0_ * sin(phi0_) * pow((R0_ / R_), 1);
-            double BzLocal = 0;
-            magFieldMaglocal_ << BR, Bphi, BzLocal;
+            if (magFieldRegion_ == "Parker") {
+                // Define local magnetic field vector
+                double BR = B0_ * cos(phi0_) * pow((R0_ / R_), 2);
+                double Bphi = B0_ * sin(phi0_) * pow((R0_ / R_), 1);
+                double BzLocal = 0;
+                magFieldMaglocal_ << BR, Bphi, BzLocal;
 
-            // Convert magnetic standard local magnetic field to lvlh
-            magFieldLvlh_ = gen::MaglocalToLvlh(magFieldMaglocal_);
+                // Convert magnetic standard local magnetic field to lvlh
+                magFieldLvlh_ = gen::MaglocalToLvlh(magFieldMaglocal_);
 
-            // Convert local magfield to inertial and calculate magnitude
-            magField_ = gen::LvlhToInertial(magFieldLvlh_, theta_);
-            magFieldMagnitude_ = magFieldMaglocal_.norm();
+                // Convert local magfield to inertial and calculate magnitude
+                magField_ = gen::LvlhToInertial(magFieldLvlh_, theta_);
+                magFieldMagnitude_ = magFieldMaglocal_.norm();
 //            std::cout << "Magfield  B0 - phi0 - magnitude - R - R0: " << B0_ << " - " << phi0_ << " - " << magFieldMagnitude_ << " - " << R_ << " - " << R0_ << std::endl;
+            }
+
+            else if (magFieldRegion_ == "Transitional"){
+                //TODO: make transitional magfield info here (NOTE: No longer required)
+            }
+
+            else if (magFieldRegion_ == "Interstellar"){
+
+                // set magnetic field magnitude and vector, directly from data, and from the calculated values
+                magFieldMagnitude_ = BInfMagnitude_;
+                magField_ = magFieldMagnitude_ * BInfDirection_;
+
+
+
+            }
+            else{
+                std::cout << "Magnetic field region is unknown -  " << magFieldRegion_ << std::endl;
+            }
         }
-
-        else if (magFieldRegion_ == "Transitional"){
-            //TODO: make transitional magfield info here (NOTE: No longer required)
-        }
-
-        else if (magFieldRegion_ == "Interstellar"){
-
-            // set magnetic field magnitude and vector, directly from data, and from the calculated values
-            magFieldMagnitude_ = BInfMagnitude_;
-            magField_ = magFieldMagnitude_ * BInfDirection_;
-
-
-
-        }
-        else{
-            std::cout << "Magnetic field region is unknown -  " << magFieldRegion_ << std::endl;
-        }
-
     }
 
     // Update various body parameters from state, or calculation
@@ -121,7 +137,7 @@ public:
             theta_ += 2*PI;
         }
 
-        // Update B0 using approximate sin relationship (need to convert to proper time, and convert to nanotesla)
+        // Update B0 using approximate sin relationship (need to convert to proper time, and result is in nT)
         simulationTimeYears_ = gen::tudatTime2DecimalYear(simulationTime);
         B0_ = gen::twoSines(simulationTimeYears_, B0EstimationParameters_);
     }
@@ -150,8 +166,19 @@ public:
     // ////////////////// Define some set functions (eg for pitch) ///////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    void setCurrentMagnitude(double newCurrentMagnitude){
+        currentMagnitude_ = newCurrentMagnitude;
+//        std::cout << ":: current magnitude: " << currentMagnitude_ << std::endl;
+    }
+
+    void setCurrentDirectionVector(Eigen::Vector3d newCurrentDirectionVector){
+        currentDirectionVector_ = newCurrentDirectionVector;
+//        std::cout << ":: current direction vector components: " << currentDirectionVector_[0] << currentDirectionVector_[1] << currentDirectionVector_[2] << std::endl;
+    }
+
     void setCurrent(Eigen::Vector3d newCurrent){
         current_ = newCurrent;
+//        std::cout << ":: current vector components: " << current_[0] << current_[1] << current_[2] << std::endl;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,16 +206,34 @@ public:
         return currentMagnitude_;
     }
 
-    Eigen::Vector3d getMagFieldInertial(){
+    Eigen::Vector3d getCurrentDirectionVector(){
+        return currentDirectionVector_;
+    }
+
+    // Return magnetic field values - both nanotesla returns AND tesla returns
+
+    Eigen::Vector3d getMagFieldInertialnT(){
         return magField_;
     }
 
-    Eigen::Vector3d getMagFieldLocal(){
+    Eigen::Vector3d getMagFieldLocalnT(){
         return magFieldMaglocal_;
     }
 
-    double getMagFieldMagnitude(){
+    double getMagFieldMagnitudenT(){
         return magFieldMagnitude_;
+    }
+
+    Eigen::Vector3d getMagFieldInertial(){
+        return 1E-9 * magField_;
+    }
+
+    Eigen::Vector3d getMagFieldLocal(){
+        return 1E-9 * magFieldMaglocal_;
+    }
+
+    double getMagFieldMagnitude(){
+        return 1E-9 * magFieldMagnitude_;
     }
 
     double getB0(){
@@ -239,6 +284,9 @@ protected:
     // Body map for simulation
     NamedBodyMap& environmentBodyMap_;
 
+    // General test variables
+    nlohmann::json simulationVariables_;
+
     /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
 
 
@@ -250,6 +298,7 @@ protected:
 
     // Variables for general current calcs TODO: Check if thes values actually needed for anything here
     Eigen::Vector3d current_;
+    Eigen::Vector3d currentDirectionVector_;
     double currentMagnitude_;
 
 
@@ -259,6 +308,9 @@ protected:
     Eigen::Vector3d magField_;
     double magFieldMagnitude_;
     std::string magFieldRegion_;
+
+    bool imposingMagField_;
+    Eigen::Vector3d imposedMagField_;
 
     // Data values for interstellar magnetic field
     Eigen::Vector3d BInfDirection_;

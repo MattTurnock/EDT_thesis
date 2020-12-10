@@ -365,14 +365,10 @@ def createLogger(logfileName, makeDummy=False):
 # Dummy log variable for when none made
 logger = createLogger("", makeDummy=True)
 
+# Function for creating indices to resize a list logarithmically
+def getLogarithmicResizeIndices(inputList, newListLength):
+    return np.geomspace(1, len(inputList), newListLength, dtype=int) - 1
 
-# testVariablesJsonPath = "/home/matt/LinkToEDT_thesis/tudat_apps/main_app/JsonInputs/testVariables.json"
-# saveDir = "/home/matt/LinkToEDT_thesis/tudat_apps/main_app/JsonInputs/testDir/"
-# saveName = "test.json"
-# exampleChangeKeys = [["saveDataConfigs","outputSubFolder"], ["scConfigs", "SRP", "endmassArea1"]]
-# exampleChangeValues = ["badabingBadaboom/", 999.1]
-#
-# createModifiedJson(testVariablesJsonPath, saveDir, saveName, exampleChangeKeys, exampleChangeValues)
 
 #######################################################################################################################
 ####################################### GA Related functions #########################################################

@@ -80,7 +80,7 @@ int main(int argc, char *argv[] )
     nlohmann::json ISMFVariables = simulationVariables["InterstellarMagField"];
     double testYear = 2001.3;
     std::cout << "B0 for year " << testYear << " : " << gen::twoSines(testYear, twoSinePars) << std::endl;
-    EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, ISMFVariables);
+    EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, simulationVariables);
 
     // Create EDT config class and set constant thrust in guidance class
     std::cout<< " -- Creating Config class -- " << std::endl;
@@ -101,33 +101,64 @@ int main(int argc, char *argv[] )
             baseBodyMap,
             CHBEDTEnviro,
             CHBEDTConfig);
-    CHBEDTGuidance.setThrustMagnitudeConstant(CHBEDTConfig.getConstantThrust());
+    CHBEDTGuidance.setThrustMagnitudeConstant(CHBEDTConfig.getConstantThrust()); // TODO: Check if this works / is needed
 
 
     // Get universal class for propagation bodies
     std::cout<< " -- Creating Propbodies class -- " << std::endl;
 //    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"];
-    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, CHBEDTGuidance, baseBodyMap, simulationVariables);
+    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, CHBEDTGuidance, baseBodyMap, simulationVariables, true);
 
     // Get universal class for propagation settings + set vehicle initial state
     std::cout<< " -- Creating Propsettings class -- " << std::endl;
 
-    // Set vehicle initial state using keplerian elements (load from json first and convert to proper value)
-    double a_au = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["a_au"];
-    double e = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["e"];
-    double i_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["i_deg"];
-    double aop_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["aop_deg"];
-    double raan_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["raan_deg"];
-    double ta_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["ta_deg"];
 
-    Eigen::Vector6d vehicleInitialKeplerian;
-    vehicleInitialKeplerian << a_au*AU, e, i_deg*deg2rad, aop_deg*deg2rad, raan_deg*deg2rad, ta_deg*deg2rad;
+    // Set vehicle state either directly from cartesian elements, or via keplerian elements, depending which stateType is specified
+    std::string initialStateType = simulationVariables["GuidanceConfigs"]["initialStateType"];
+    Eigen::Vector6d vehicleInitialCartesian;
 
-    // Convert to cartesian state, and create position and velocity vectors
-    double solarGravPar = SSOPropBodies.bodyMap["Sun"]->getGravityFieldModel()->getGravitationalParameter();
-    Eigen::Vector6d vehicleInitialCartesian = convertKeplerianToCartesianElements(
-            vehicleInitialKeplerian,
-            solarGravPar);
+    // Directly set cartesian coordinates
+    if (initialStateType == "Cartesian"){
+        vehicleInitialCartesian[0] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["x1_m"];
+        vehicleInitialCartesian[1] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["x2_m"];
+        vehicleInitialCartesian[2] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["x3_m"];
+        vehicleInitialCartesian[3] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["v1_m"];
+        vehicleInitialCartesian[4] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["v2_m"];
+        vehicleInitialCartesian[5] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["v3_m"];
+    }
+    // Set cartesian coordinates via keplerian ones
+    else if (initialStateType=="Keplerian"){
+        // Set vehicle initial state using keplerian elements (load from json first and convert to proper value)
+        double a_au = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["a_au"];
+        double e = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["e"];
+        double i_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["i_deg"];
+        double aop_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["aop_deg"];
+        double raan_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["raan_deg"];
+        double ta_deg = simulationVariables["GuidanceConfigs"]["vehicleInitialKeplerian"]["ta_deg"];
+
+        Eigen::Vector6d vehicleInitialKeplerian;
+        vehicleInitialKeplerian << a_au*AU, e, i_deg*deg2rad, aop_deg*deg2rad, raan_deg*deg2rad, ta_deg*deg2rad;
+
+        // Convert to cartesian state, and create position and velocity vectors
+        double solarGravPar = SSOPropBodies.bodyMap["Sun"]->getGravityFieldModel()->getGravitationalParameter();
+        vehicleInitialCartesian = convertKeplerianToCartesianElements(
+                vehicleInitialKeplerian,
+                solarGravPar);
+    }
+    else{
+        std::cout<< "ERROR: intialStateType [" << initialStateType << "] not recognised!" << std::endl;
+    }
+
+
+
+    std::cout << "Vehicle initial cartesian components: "
+              << vehicleInitialCartesian[0] << " "
+              << vehicleInitialCartesian[1] << " "
+              << vehicleInitialCartesian[2] << " "
+              << vehicleInitialCartesian[3] << " "
+              << vehicleInitialCartesian[4] << " "
+              << vehicleInitialCartesian[5]
+              << std::endl; //TODO:Remove me
 
     Eigen::Vector3d vehicleInitialPosition;
     vehicleInitialPosition << vehicleInitialCartesian[0], vehicleInitialCartesian[1], vehicleInitialCartesian[2];
@@ -138,6 +169,7 @@ int main(int argc, char *argv[] )
     double initialEphemerisYear = simulationVariables["GuidanceConfigs"]["initialEphemerisYear"];
     nlohmann::json  terminationSettingsJson = simulationVariables["GuidanceConfigs"]["terminationSettings"];
     nlohmann::json integratorSettingsJson = simulationVariables["GuidanceConfigs"]["integratorSettings"];
+//    std::cout << ""
 
     // Actually create the propSettings class
     univ::propSettings SSOPropSettings = univ::propSettings(SSOPropBodies,
@@ -163,9 +195,9 @@ int main(int argc, char *argv[] )
     std::map< double, Eigen::VectorXd > integrationResult = dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
     std::map< double, Eigen::VectorXd > dependentVariableResult = dynamicsSimulator.getDependentVariableHistory();
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////             SAVE DATA                  ////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////             SAVE DATA                  ////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     std::cout<< "====================Saving Data==========================" << std::endl;
 
@@ -301,88 +333,8 @@ int main(int argc, char *argv[] )
         std::cout << "Ignoring dependentVariableData" << std::endl;
     }
 
-//    std::cout<< "============= TESTING ===============" << std::endl;
-//
-//
-//    double tehTime = gen::tudatTime2DecimalYear(1E7);
-//    std::cout << "teh time is: " << tehTime << std::endl;
-
-//    std::string pathToJson = gen::jsonInputsRootPath + "test1.json";
-//    std::ifstream people_file(pathToJson);
-//    nlohmann::json test1 = nlohmann::json::parse(people_file);
-////    test1 << people_file;
-//
-//    std::cout << test1 << std::endl;
-//    std::cout << test1["Anna"] << std::endl;
-//    std::cout << test1["Anna"]["Profession"] << std::endl;
-//
-//    double annaAge = test1["Anna"]["Age"];
-//    std::string annaProfession = test1["Anna"]["Profession"];
 
 
 
-
-//    Eigen::Vector3d localMag;
-//    Eigen::Vector3d inertialMag;
-//    Eigen::Vector3d localMag2_pos;
-//    Eigen::Vector3d localMag2_neg;
-//    double theta = 0*deg2rad;
-//    localMag << -0.06883, 0.098298, 0;
-//
-//    inertialMag = gen::LvlhToInertial(localMag, theta);
-//    localMag2_pos = gen::LvlhToInertial(inertialMag, theta);
-//    localMag2_neg = gen::LvlhToInertial(inertialMag, -theta);
-//
-//    std::cout << "localMag     : " << localMag << std::endl;
-//    std::cout << "inertialMag  : " << inertialMag << std::endl;
-//    std::cout << "localMag2_pos: " << localMag2_pos << std::endl;
-//    std::cout << "localMag2_neg: " << localMag2_neg << std::endl;
-
-//
-//    std::map< std::string, Eigen::VectorXd > testMap;
-////    std::pair<std::string, double> testPair;
-//    Eigen::VectorXd testPairVector;
-//    testPairVector.resize(3);
-//
-////    testPairVector <<1,2,3;
-//    testPairVector[0] =  1;
-//    testPairVector[1] =  2;
-//    testPairVector[2] =  3;
-////    testPair = ("one", 1);
-//    testMap.insert( std::pair<std::string, Eigen::VectorXd> ("one", testPairVector) );
-//
-//
-//    testPairVector[0] =  4;
-//    testPairVector[1] =  5;
-//    testPairVector[2] =  6;
-//
-////    testPair = ("one", 1);
-//    testMap.insert( std::pair<std::string, Eigen::VectorXd> ("two", testPairVector) );
-//
-////    testPairVector = {4,5,6};
-////    testPair = ("two", 2);
-////    testMap.insert( testPair  );
-//
-//
-//
-//    std::string outputSubFolder = "testDump/";
-//    input_output::writeDataMapToTextFile( testMap,
-//                                          "testMap.dat",
-//                                          tudat_applications::getOutputPath( ) + outputSubFolder,
-//                                          "",
-//                                          std::numeric_limits< double >::digits10,
-//                                          std::numeric_limits< double >::digits10,
-//                                          "," );
-
-//    Eigen::Matrix3d LvlhToPlanetocentric = tudat::reference_frames::getLocalVerticalToRotatingPlanetocentricFrameTransformationMatrix(0,0);
-//
-//    std::cout << LvlhToPlanetocentric << std::endl;
-
-
-//
-//    std::string filepath_(__FILE__);
-//    boost::filesystem::path boostPath(filepath_);
-//    boostPath = boostPath.parent_path().parent_path().parent_path().parent_path().parent_path();
-//    boostPath += "/tudat/Tudat/External/SpiceInterface/Kernels/tudat_merged_spk_kernel.inp";
-//    std::cout<< boostPath <<std::endl;
+    std::cout << "Program finished " << std::endl;
 }

@@ -1,6 +1,6 @@
 {
   "Spice": {
-    "customKernelName": "tudat_EDT_spk_kernel.bsp",
+    "customKernelName": "de430.bsp",
     "bodiesToInclude": {
       "Sun": 1,
       "Mercury": 1,
@@ -28,12 +28,14 @@
     }
   },
   "InterstellarMagField": {
-    "BInf_tesla": 0.293E-9,
+    "transitionType": "spherical",
+    "sphericalTransitionDistanceAU": 100,
+    "BInf_nT": 0.375,
     "longitudeInf_deg": 227.28,
     "latitudeInf_deg": 34.62
   },
   "GuidanceConfigs": {
-    "thrustMagnitudeConfig": "nominal",
+    "thrustMagnitudeConfig": "constant",
     "thrustDirectionConfig": "nominalPrograde",
     "initialEphemerisYear": 2000,
     "integratorSettings": {
@@ -54,8 +56,8 @@
     },
     "terminationSettings": {
       "terminationType": "nominalTimeTermination",
-      "timeTerminationYears": 2.3,
-      "absoluteTimeTerminationYear": 2099,
+      "timeTerminationYears": 0.000001,
+      "absoluteTimeTerminationYear": 2650,
       "proximityTerminationBody1": "Vehicle",
       "proximityTerminationBody2": "Jupiter",
       "proximityTerminationCutoffAU": 1,
@@ -73,23 +75,32 @@
   },
   "EDTConfigs": {
     "configType": "CHB",
-    "tetherLength": 100,
-    "tetherDiameterInner": 0.01,
-    "tetherDiameterOuter": 0.01,
-    "emitterCurrent": 1,
+    "tetherLength": 10,
+    "tetherAreaInner": 3.92E-5,
+    "tetherAreaOuter": 3.92E-5,
+    "emitterCurrentmA": 2,
     "hoytether": {
-      "tetherDiameterInnerSecondary": 0.01,
-      "tetherDiameterOuterSecondary": 0.01,
+      "tetherAreaInnerSecondary": 3.92E-5,
+      "tetherAreaOuterSecondary": 3.92E-5,
       "noPrimaryLines": 6,
-      "primaryLineSegmentLength": 0.2,
+      "primaryLineSegmentLength": 1.0,
       "slackCoefficient": 1.005,
       "primaryLineSeparation": 0.5,
       "occultationCoefficient": 0.7
     }
   },
   "saveDataConfigs": {
-    "outputSubFolder": "SSO-CHB-Test-custom-2/",
-    "baseFilename": "SSO-CH-Test-out-E6-"
+    "outputSubFolder": "testCase/",
+    "baseFilename": "test-",
+    "dataTypesToSave": {
+      "propData": true,
+      "magneticField": true,
+      "ionosphere": true,
+      "thrust": true,
+      "current": true,
+      "bodyData": true,
+      "dependentVariables": true
+    }
   },
   "scConfigs": {
     "SRP": {
@@ -112,15 +123,15 @@
   },
   "constants": {
     "gravitationalParameters": {
-      "Sun": 1.32712428e20,
-      "Mercury": 2.2032E13,
-      "Venus": 3.24859E14,
-      "EarthMoon": 3.986004418E14,
-      "Mars": 4.282837E13,
-      "Jupiter": 1.26686534E17,
-      "Saturn": 3.7931187E16,
-      "Uranus": 5.793939E15,
-      "Neptune": 6.836529E15
+      "Sun": 132712440041.939400E9,
+      "Mercury": 22031.780000E9,
+      "Venus": 324858.592000E9,
+      "Earth": 398600.435436E9,
+      "Mars": 42828.375214E9,
+      "Jupiter": 126712764.800000E9,
+      "Saturn": 37940585.200000E9,
+      "Uranus": 5794548.600000E9,
+      "Neptune": 6836527.100580E9
     }
   }
 }

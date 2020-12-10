@@ -53,7 +53,11 @@ timesNominal = propDataArrayNominal[:, 0]
 radiiNominal = np.linalg.norm(coordsArrayNominal, axis=1) / utils.AU
 
 plt.figure(1, figsize=defaultFigsize)
-plt.plot(radiiNominal, magnitudeAccelerationArrayNominal)
+# plt.plot(radiiNominal, magnitudeAccelerationArrayNominal)
+
+
+indices = utils.getLogarithmicResizeIndices(radiiNominal, 30)
+plt.scatter(radiiNominal[indices], magnitudeAccelerationArrayNominal[indices], marker='x')
 
 
 
@@ -83,7 +87,8 @@ differenceArray = magnitudeAccelerationArrayNominal - magnitudeAccelerationArray
 print("Maximum difference in SRP acceleration: %s m/s^2" %abs(np.max(differenceArray)))
 
 plt.figure(1)
-plt.plot(radiiReference, magnitudeAccelerationArrayReference)
+plt.plot(radiiReference, magnitudeAccelerationArrayReference, c='C1')
+# plt.scatter(radiiReference, magnitudeAccelerationArrayReference, c='C1', marker='x')
 
 ## Add graph markings etc ##
 
@@ -93,6 +98,7 @@ plt.grid(which="both")
 plt.yscale("log")
 plt.xscale("log")
 plt.xlim([1E-1, 1E3])
+plt.ylim([1E-14, 1E-6])
 plt.legend(plotLegend)
 plt.savefig(os.path.join(VnVSaveFolder, "SRP-Nominal.png"))
 

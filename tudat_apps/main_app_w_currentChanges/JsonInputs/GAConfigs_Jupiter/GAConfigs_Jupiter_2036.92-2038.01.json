@@ -1,0 +1,104 @@
+{
+    "Spice": {
+        "customKernelName": "tudat_EDT_spk_kernel.bsp",
+        "bodiesToInclude": {
+            "Sun": 1,
+            "Mercury": 1,
+            "Venus": 1,
+            "Earth": 1,
+            "Mars": 1,
+            "Jupiter": 1,
+            "Saturn": 1,
+            "Uranus": 1,
+            "Neptune": 1
+        }
+    },
+    "GuidanceConfigs": {
+        "initialEphemerisTime": 10000000.0,
+        "integratorSettings": {
+            "initialTimeStep": 1.0,
+            "integrator": "RK87DP",
+            "minimumStepSize": 1e-20,
+            "maximumStepSize": 86400,
+            "relativeErrorTolerance": 1e-10,
+            "absoluteErrorTolerance": 1e-10
+        },
+        "integratorSettingsPerturbed": {
+            "initialTimeStep": 1.0,
+            "integrator": "RK87DP",
+            "minimumStepSize": 1e-20,
+            "maximumStepSize": 31536000,
+            "relativeErrorTolerance": 1e-06,
+            "absoluteErrorTolerance": 1e-06
+        },
+        "terminationSettings": {
+            "terminationType": "nominalTimeTermination",
+            "timeTerminationYears": 2.3,
+            "proximityTerminationBody1": "Vehicle",
+            "proximityTerminationBody2": "Jupiter",
+            "proximityTerminationCutoffAU": 1,
+            "distanceTerminationAU": 10,
+            "maxCPUTimeTerminationSecs": 60
+        }
+    },
+    "saveDataConfigs": {
+        "outputSubFolderBase": "GAJupiterSynodic/GACalculatorNominal",
+        "outputSubFolder": "GAJupiterSynodic/GACalculatorNominal_Jupiter_2036.92-2038.01"
+    },
+    "PlanetConfigs": {
+        "JupiterConfigs": {
+            "Bounds": {
+                "StartYearLower": 2036.92,
+                "StartYearUpper": 2038.01,
+                "FlightDurationYearsLower": 1.0,
+                "FlightDurationYearsUpper": 5,
+                "DeltaVKmsLower": 8.5,
+                "DeltaVKmsUpper": 9.68
+            }
+        },
+        "SaturnConfigs": {
+            "Bounds": {
+                "StartYearLower": 2020,
+                "StartYearUpper": 2050,
+                "FlightDurationYearsLower": 2,
+                "FlightDurationYearsUpper": 15,
+                "DeltaVKmsLower": 10,
+                "DeltaVKmsUpper": 11.33
+            }
+        },
+        "MarsConfigs": {
+            "Bounds": {
+                "StartYearLower": 2020,
+                "StartYearUpper": 2025,
+                "FlightDurationYearsLower": 0.54757,
+                "FlightDurationYearsUpper": 2.7379,
+                "DeltaVKmsLower": 0.1,
+                "DeltaVKmsUpper": 100.0
+            }
+        },
+        "planetToFlyby": "Jupiter"
+    },
+    "AlgorithmConfigs": {
+        "algorithmName": "moead",
+        "islandSize": 1000,
+        "noGenerations": 100,
+        "normaliseValues": false,
+        "doGridSearch": false,
+        "gridSearchSize": 1000,
+        "includeDepartureDV": true,
+        "includeArrivalDV": false
+    },
+    "constants": {
+        "gravitationalParameters": {
+            "Sun": 1.32712428e+20,
+            "Mercury": 22032000000000.0,
+            "Venus": 324859000000000.0,
+            "EarthMoon": 398600441800000.0,
+            "Mars": 42828370000000.0,
+            "Jupiter": 1.26686534e+17,
+            "Saturn": 3.7931187e+16,
+            "Uranus": 5793939000000000.0,
+            "Neptune": 6836529000000000.0
+        }
+    }
+}

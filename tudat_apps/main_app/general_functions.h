@@ -341,13 +341,20 @@ namespace gen {
 
     ////////////////////////// Some Equations and formulae for bare tethers ///////////////////////
 
-    // Function to convert from true current to dimensionless current through EDT, or vice versa
-    double trueCurrentDimensionlessConvert(double currentToConvert, double unitCurrent){
-        return currentToConvert / unitCurrent;
+    // Function to convert from true current to dimensionless current through EDT, or vice versa (using bool)
+    double trueCurrentDimensionlessConvert(double currentToConvert, double unitCurrent, bool trueToDimensionless=true){
+        if (trueToDimensionless) {
+            return currentToConvert / unitCurrent;
+        }
+        else{
+            return currentToConvert * unitCurrent;
+        }
     }
 
     // Function to get unit current I_0
     double getUnitCurrent(double conductivity, double motionalEMF, double tetherCrossSectionalArea){
+        std::cout << "Conductivity: " << conductivity << std::endl; // TODO:remove me
+        std::cout << "tetherCrossSectionalArea: " << tetherCrossSectionalArea << std::endl; // TODO:remove me
         return conductivity * motionalEMF * tetherCrossSectionalArea;
     }
 
@@ -358,18 +365,45 @@ namespace gen {
 
     // Function to get average unit current i_avg
     double getAvgDimensionlessCurrent(double tetherLength, double dimensionlessVoltageA){
-        return -(1/5*tetherLength)*pow(dimensionlessVoltageA, 5/2) + 0.5*pow(dimensionlessVoltageA, 3/2);
+        double term1 = -(1/(5*tetherLength))*pow(dimensionlessVoltageA, 5.0/2.0);
+        double term2 = 0.5*pow(dimensionlessVoltageA, 3.0/2.0);
+        std::cout << "tetherLength: " << tetherLength << std::endl; // TODO: remove me
+        std::cout << "dimensionlessVoltageA: " << dimensionlessVoltageA << std::endl; // TODO: remove me
+        std::cout << "Term1: " << term1 << std::endl; // TODO: remove me
+        std::cout << "Term2: " << term2 << std::endl; // TODO: remove me
+
+        return  term1 + term2;
     }
 
     // Function to get dimensionless voltage at A lambda_A, using a known value for ic
     double getDimensionlessVoltageA(double dimensionlessCurrentC){
         double ic = dimensionlessCurrentC;
-        return pow( (2*ic - pow(ic, 2)), 2/3 );
+        double twothirds = 2.0/3.0;
+        double term1 = 2*ic - pow(ic, 2);
+        double absTerm1 = abs(term1);
+        double term2 = pow(abs(term1), twothirds);
+
+        // If-else statement to catch negative inputs - required since pow won't do this itself
+//        double finalReturn;
+//        if (term1 < 0){
+//            finalReturn = -term2;
+//        }
+//        else{
+//            finalReturn = term2;
+//        }
+
+        std::cout << "IN FUNCTION ic: " << ic << std::endl; //TODO: remove me
+        std::cout << "IN FUNCTION term1: " << term1 << std::endl; //TODO: remove me
+        std::cout << "IN FUNCTION absTerm1: " << absTerm1 << std::endl; //TODO: remove me
+        std::cout << "IN FUNCTION term2: " << term2 << std::endl; //TODO: remove me
+//        std::cout << "IN FUNCTION finalReturn: " << finalReturn << std::endl; //TODO: remove me
+        return term2;
+//        return pow( (2*ic - pow(ic, 2)), 2/3 );
     }
 
     /// FOllowing for general tethers ///
 
-    // Calculate circle area
+    // Calculate circle area TODO: Remove me
     double getCircleArea(double diameter){
         double radius = 0.5*diameter;
         double area =  PI * std::pow(radius, 2);
@@ -377,7 +411,7 @@ namespace gen {
         return area;
     }
 
-    // Calculate donut area (of 2 circles)
+    // Calculate donut area (of 2 circles) TODO: Remove me
     double getDonutArea(double diameterInner, double diameterOuter){
         double areaInner = gen::getCircleArea(diameterInner);
         double areaOuter = gen::getCircleArea(diameterOuter);
@@ -385,6 +419,15 @@ namespace gen {
 
         return donutArea;
     }
+
+    // Calculate Diameter of a circle given the area
+    double calculateCircleDiameter(double area){
+
+        double radius = std::pow( area/PI, 0.5 );
+        return radius*2;
+    }
+
+    // Calculate Diameter of the tether core, given the 2 area
 
 
 

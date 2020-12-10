@@ -34,8 +34,14 @@
     "longitudeInf_deg": 227.28,
     "latitudeInf_deg": 34.62
   },
+  "ImposedMagField": {
+    "imposingMagField": false,
+    "B1_nT": 4.78,
+    "B2_nT": 4.42,
+    "B3_nT": 0.0
+  },
   "GuidanceConfigs": {
-    "thrustMagnitudeConfig": "nominal",
+    "thrustMagnitudeConfig": "constant",
     "thrustDirectionConfig": "nominalPrograde",
     "initialEphemerisYear": 2000,
     "integratorSettings": {
@@ -56,7 +62,7 @@
     },
     "terminationSettings": {
       "terminationType": "nominalTimeTermination",
-      "timeTerminationYears": 2.3,
+      "timeTerminationYears": 0.000001,
       "absoluteTimeTerminationYear": 2650,
       "proximityTerminationBody1": "Vehicle",
       "proximityTerminationBody2": "Jupiter",
@@ -64,6 +70,7 @@
       "distanceTerminationAU": 10,
       "maxCPUTimeTerminationSecs": 60
     },
+    "initialStateType": "Keplerian",
     "vehicleInitialKeplerian": {
       "a_au": 1,
       "e": 0,
@@ -71,19 +78,27 @@
       "aop_deg": 0,
       "raan_deg": 0,
       "ta_deg": 0
+    },
+    "vehicleInitialCartesian": {
+      "x1_m": 1.496E11,
+      "x2_m": 0,
+      "x3_m": 0,
+      "v1_ms": 0,
+      "v2_ms": 29784,
+      "v3_ma": 0
     }
   },
   "EDTConfigs": {
     "configType": "CHB",
-    "tetherLength": 100,
-    "tetherDiameterInner": 0.01,
-    "tetherDiameterOuter": 0.01,
-    "emitterCurrent": 1,
+    "tetherLength": 10,
+    "tetherAreaInner": 3.92E-5,
+    "tetherAreaOuter": 3.92E-5,
+    "emitterCurrentmA": 2,
     "hoytether": {
-      "tetherDiameterInnerSecondary": 0.01,
-      "tetherDiameterOuterSecondary": 0.01,
+      "tetherAreaInnerSecondary": 3.92E-5,
+      "tetherAreaOuterSecondary": 3.92E-5,
       "noPrimaryLines": 6,
-      "primaryLineSegmentLength": 0.2,
+      "primaryLineSegmentLength": 1.0,
       "slackCoefficient": 1.005,
       "primaryLineSeparation": 0.5,
       "occultationCoefficient": 0.7

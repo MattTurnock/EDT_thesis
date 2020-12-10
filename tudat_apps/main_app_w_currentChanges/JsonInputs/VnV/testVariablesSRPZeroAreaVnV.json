@@ -1,0 +1,137 @@
+{
+  "Spice": {
+    "customKernelName": "de430.bsp",
+    "bodiesToInclude": {
+      "Sun": 1,
+      "Mercury": 0,
+      "Venus": 0,
+      "Earth": 0,
+      "Mars": 0,
+      "Jupiter": 0,
+      "Saturn": 0,
+      "Uranus": 0,
+      "Neptune": 0
+    }
+  },
+  "ParkerMagField": {
+    "B0_tesla": 12.0E-9,
+    "phi0_deg": 42.748,
+    "R0_au": 1,
+    "twoSinePars": {
+      "a1": 1.33554129,
+      "b1": 0.07853982,
+      "c1": -22.57281224,
+      "a2": -0.98083566,
+      "b2": 0.55305433,
+      "c2": 46.69738187,
+      "d": 5.83456192
+    }
+  },
+  "InterstellarMagField": {
+    "transitionType": "spherical",
+    "sphericalTransitionDistanceAU": 100,
+    "BInf_nT": 0.375,
+    "longitudeInf_deg": 227.28,
+    "latitudeInf_deg": 34.62
+  },
+  "GuidanceConfigs": {
+    "thrustMagnitudeConfig": "nominal",
+    "thrustDirectionConfig": "nominalPrograde",
+    "initialEphemerisYear": 1977,
+    "integratorSettings": {
+      "initialTimeStep": 1.0,
+      "integrator": "RK87DP",
+      "minimumStepSize": 1E-20,
+      "maximumStepSize": 86400,
+      "relativeErrorTolerance": 1E-10,
+      "absoluteErrorTolerance": 1E-10
+    },
+    "integratorSettingsPerturbed": {
+      "initialTimeStep": 1.0,
+      "integrator": "RK87DP",
+      "minimumStepSize": 1E-20,
+      "maximumStepSize": 31536000,
+      "relativeErrorTolerance": 1E-6,
+      "absoluteErrorTolerance": 1E-6
+    },
+    "terminationSettings": {
+      "terminationType": "distanceTermination",
+      "timeTerminationYears": 1000,
+      "absoluteTimeTerminationYear": 2649,
+      "proximityTerminationBody1": "Vehicle",
+      "proximityTerminationBody2": "Sun",
+      "proximityTerminationCutoffAU": 1,
+      "distanceTerminationAU": 1000,
+      "maxCPUTimeTerminationSecs": 10E10
+    },
+    "vehicleInitialKeplerian": {
+      "a_au": -0.8,
+      "e": 1.3,
+      "i_deg": 0,
+      "aop_deg": 180,
+      "raan_deg": 0,
+      "ta_deg": 0
+    }
+  },
+  "EDTConfigs": {
+    "configType": "CHB",
+    "tetherLength": 100,
+    "tetherDiameterInner": 0.01,
+    "tetherDiameterOuter": 0.01,
+    "emitterCurrent": 1,
+    "hoytether": {
+      "tetherDiameterInnerSecondary": 0.01,
+      "tetherDiameterOuterSecondary": 0.01,
+      "noPrimaryLines": 6,
+      "primaryLineSegmentLength": 0.2,
+      "slackCoefficient": 1.005,
+      "primaryLineSeparation": 0.5,
+      "occultationCoefficient": 0.7
+    }
+  },
+  "saveDataConfigs": {
+    "outputSubFolder": "SRPZeroAreaVnV/",
+    "baseFilename": "SRPZeroAreaVnV",
+    "dataTypesToSave": {
+      "propData": true,
+      "magneticField": false,
+      "ionosphere": false,
+      "thrust": false,
+      "current": false,
+      "bodyData": true,
+      "dependentVariables": true
+    }
+  },
+  "scConfigs": {
+    "SRP": {
+      "endmassArea1": 0,
+      "endmassArea2": 0,
+      "endmassRadiationCoefficient": 0,
+      "tetherRadiationCoefficient": 0,
+      "rotationFactor": 0
+    }
+  },
+  "materialProperties": {
+    "resistivity": {
+      "Al": 2.65E-8,
+      "Cu": 1.68E-8
+    },
+    "tempCoefficient": {
+      "Al": 0.00429,
+      "Cu": 0.0068
+    }
+  },
+  "constants": {
+    "gravitationalParameters": {
+      "Sun": 132712440041.939400E9,
+      "Mercury": 22031.780000E9,
+      "Venus": 324858.592000E9,
+      "Earth": 398600.435436E9,
+      "Mars": 42828.375214E9,
+      "Jupiter": 126712764.800000E9,
+      "Saturn": 37940585.200000E9,
+      "Uranus": 5794548.600000E9,
+      "Neptune": 6836527.100580E9
+    }
+  }
+}
