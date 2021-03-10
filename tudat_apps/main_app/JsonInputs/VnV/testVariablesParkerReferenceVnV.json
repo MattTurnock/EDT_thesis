@@ -34,6 +34,12 @@
     "longitudeInf_deg": 227.28,
     "latitudeInf_deg": 34.62
   },
+  "ImposedMagField": {
+    "imposingMagField": false,
+    "B1_nT": 4.78,
+    "B2_nT": 4.42,
+    "B3_nT": 0.0
+  },
   "GuidanceConfigs": {
     "thrustMagnitudeConfig": "nominal",
     "thrustDirectionConfig": "nominalPrograde",
@@ -42,9 +48,9 @@
       "initialTimeStep": 1.0,
       "integrator": "RK87DP",
       "minimumStepSize": 1E-20,
-      "maximumStepSize": 86400,
-      "relativeErrorTolerance": 1E-10,
-      "absoluteErrorTolerance": 1E-10
+      "maximumStepSize": 1E10,
+      "relativeErrorTolerance": 1E-12,
+      "absoluteErrorTolerance": 1E-12
     },
     "integratorSettingsPerturbed": {
       "initialTimeStep": 1.0,
@@ -52,7 +58,7 @@
       "minimumStepSize": 1E-20,
       "maximumStepSize": 31536000,
       "relativeErrorTolerance": 1E-6,
-      "absoluteErrorTolerance": 1E-6
+      "absoluteErrorTolerance":1E-6
     },
     "terminationSettings": {
       "terminationType": "distanceTermination",
@@ -64,6 +70,7 @@
       "distanceTerminationAU": 200,
       "maxCPUTimeTerminationSecs": 1E100
     },
+    "initialStateType": "Keplerian",
     "vehicleInitialKeplerian": {
       "a_au": 1000,
       "e": 0.999999999,
@@ -71,19 +78,29 @@
       "aop_deg": 180,
       "raan_deg": 0,
       "ta_deg": 179
+    },
+    "vehicleInitialCartesian": {
+      "x1_m": 1.496E11,
+      "x2_m": 0,
+      "x3_m": 0,
+      "v1_ms": 0,
+      "v2_ms": 29784,
+      "v3_ms": 0
     }
   },
   "EDTConfigs": {
     "configType": "CHB",
-    "tetherLength": 100,
-    "tetherAreaInner": 0.01,
-    "tetherAreaOuter": 0.01,
-    "emitterCurrent": 1,
+    "tetherLength": 10,
+    "tetherAreaInner": 3.92E-5,
+    "tetherAreaOuter": 3.92E-5,
+    "imposedAreaBool": false,
+    "imposedArea": 4.704E-4,
+    "emitterCurrentmA": 0,
     "hoytether": {
-      "tetherAreaInnerSecondary": 0.01,
-      "tetherAreaOuterSecondary": 0.01,
+      "tetherAreaInnerSecondary": 3.92E-5,
+      "tetherAreaOuterSecondary": 3.92E-5,
       "noPrimaryLines": 6,
-      "primaryLineSegmentLength": 0.2,
+      "primaryLineSegmentLength": 1.0,
       "slackCoefficient": 1.005,
       "primaryLineSeparation": 0.5,
       "occultationCoefficient": 0.7
@@ -98,20 +115,23 @@
       "ionosphere": false,
       "thrust": false,
       "current": false,
+      "currentVNV": false,
       "bodyData": true,
       "dependentVariables": false
     }
   },
   "scConfigs": {
     "SRP": {
-      "endmassArea1": 0,
-      "endmassArea2": 0,
-      "endmassRadiationCoefficient": 0,
-      "tetherRadiationCoefficient": 0,
-      "rotationFactor": 0
+      "endmassArea1": 1E-20,
+      "endmassArea2": 1E-20,
+      "endmassRadiationCoefficient": 1E-20,
+      "tetherRadiationCoefficient": 1E-20,
+      "rotationFactor": 1
     }
   },
   "materialProperties": {
+    "imposedConductivityBool": false,
+    "imposedConductivity": 4.86E7,
     "resistivity": {
       "Al": 2.65E-8,
       "Cu": 1.68E-8

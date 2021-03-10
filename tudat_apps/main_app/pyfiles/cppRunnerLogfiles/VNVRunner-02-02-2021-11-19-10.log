@@ -1,0 +1,27 @@
+2021-02-02 11:19:10,585 - Ignoring file: testVariablesCurrentVnV_1a.json
+2021-02-02 11:19:10,586 - Ignoring file: testVariablesCurrentVnV_1b.json
+2021-02-02 11:19:10,586 - Ignoring file: testVariablesCurrentVnV_2a.json
+2021-02-02 11:19:10,586 - Ignoring file: testVariablesIntegratorGA.json
+2021-02-02 11:19:10,586 - Ignoring file: testVariablesIntegratorGA_Reference.json
+2021-02-02 11:19:10,586 - Ignoring file: testVariablesIntegratorInner.json
+2021-02-02 11:19:10,586 - Ignoring file: testVariablesIntegratorInner_Reference.json
+2021-02-02 11:19:10,586 - Ignoring file: testVariablesSRPNominalVnV.json
+2021-02-02 11:19:10,586 - Ignoring file: testVariablesSRPZeroAreaVnV.json
+2021-02-02 11:19:10,586 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesParkerReferenceVnV.json
+
+2021-02-02 11:19:10,653 - ===============Loading Variables From File==================
+2021-02-02 11:19:10,653 - ===============Prepping Sim==================
+2021-02-02 11:19:10,653 -  -- Loading spice kernels -- 
+2021-02-02 11:19:10,697 -  -- Creating environment class -- 
+2021-02-02 11:19:10,698 - B0 for year 2001.3 : 5.83456
+2021-02-02 11:19:10,798 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesParkerVnV.json
+
+2021-02-02 11:19:10,802 - ===============Loading Variables From File==================
+2021-02-02 11:19:10,822 - ===============Prepping Sim==================
+2021-02-02 11:19:10,823 -  -- Loading spice kernels -- 
+2021-02-02 11:19:10,844 -  -- Creating environment class -- 
+2021-02-02 11:19:10,844 - B0 for year 2001.3 : 6.97219

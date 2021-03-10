@@ -41,8 +41,11 @@ int main(int argc, char *argv[] )
         jsonName = argv[1];
     }
     else{
-//        jsonName = "VnV/testVariablesParkerVnV.json"; // TODO: change to nominal test variables
-        jsonName = "testVariables.json";
+//        jsonName = "VnV/testVariablesCurrentVnV_2a.json"; // TODO: change to nominal test variables
+        jsonName = "finalSims/SSO.json"; // TODO: change to nominal test variables
+//        jsonName = "finalSims/InO.json"; // TODO: change to nominal test variables
+//        jsonName = "VnV/testVariablesIntegratorGA_Reference.json"; // TODO: Make python file to run all variants as needed
+//        jsonName = "testVariables.json";
     }
     nlohmann::json simulationVariables = gen::readJson(jsonName);
 
@@ -100,7 +103,8 @@ int main(int argc, char *argv[] )
             thrustDirectionConfig,
             baseBodyMap,
             CHBEDTEnviro,
-            CHBEDTConfig);
+            CHBEDTConfig,
+            simulationVariables);
     CHBEDTGuidance.setThrustMagnitudeConstant(CHBEDTConfig.getConstantThrust()); // TODO: Check if this works / is needed
 
 
@@ -122,9 +126,9 @@ int main(int argc, char *argv[] )
         vehicleInitialCartesian[0] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["x1_m"];
         vehicleInitialCartesian[1] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["x2_m"];
         vehicleInitialCartesian[2] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["x3_m"];
-        vehicleInitialCartesian[3] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["v1_m"];
-        vehicleInitialCartesian[4] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["v2_m"];
-        vehicleInitialCartesian[5] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["v3_m"];
+        vehicleInitialCartesian[3] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["v1_ms"];
+        vehicleInitialCartesian[4] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["v2_ms"];
+        vehicleInitialCartesian[5] = simulationVariables["GuidanceConfigs"]["vehicleInitialCartesian"]["v3_ms"];
     }
     // Set cartesian coordinates via keplerian ones
     else if (initialStateType=="Keplerian"){
@@ -150,15 +154,14 @@ int main(int argc, char *argv[] )
     }
 
 
-
-    std::cout << "Vehicle initial cartesian components: "
-              << vehicleInitialCartesian[0] << " "
-              << vehicleInitialCartesian[1] << " "
-              << vehicleInitialCartesian[2] << " "
-              << vehicleInitialCartesian[3] << " "
-              << vehicleInitialCartesian[4] << " "
-              << vehicleInitialCartesian[5]
-              << std::endl; //TODO:Remove me
+//    std::cout << "Vehicle initial cartesian components: "
+//              << vehicleInitialCartesian[0] << " "
+//              << vehicleInitialCartesian[1] << " "
+//              << vehicleInitialCartesian[2] << " "
+//              << vehicleInitialCartesian[3] << " "
+//              << vehicleInitialCartesian[4] << " "
+//              << vehicleInitialCartesian[5]
+//              << std::endl; //TODO:Remove me
 
     Eigen::Vector3d vehicleInitialPosition;
     vehicleInitialPosition << vehicleInitialCartesian[0], vehicleInitialCartesian[1], vehicleInitialCartesian[2];
@@ -218,6 +221,7 @@ int main(int argc, char *argv[] )
     bool saveCurrentData = dataTypesToSave["current"];
     bool saveBodyData = dataTypesToSave["bodyData"];
     bool saveDependentVariablesData = dataTypesToSave["dependentVariables"];
+    bool saveCurrentVNVData = dataTypesToSave["currentVNV"];
 
     // Check which data types to save, and save them
 
@@ -301,6 +305,22 @@ int main(int argc, char *argv[] )
         std::cout << "Ignoring currentData" << std::endl;
     }
 
+    if (saveCurrentVNVData) {
+        std::cout << "Saving currentVNVData" << std::endl;
+
+        // Write dependent variables to file
+        input_output::writeDataMapToTextFile(CHBEDTGuidance.getCurrentVNVMap(),
+                                             baseFilename + "currentVNVData.dat",
+                                             outputPath,
+                                             "",
+                                             std::numeric_limits<double>::digits10,
+                                             std::numeric_limits<double>::digits10,
+                                             ",");
+    }
+    else{
+        std::cout << "Ignoring currentVNVData" << std::endl;
+    }
+
     if (saveBodyData) {
         std::cout << "Saving bodyData" << std::endl;
 
@@ -334,6 +354,8 @@ int main(int argc, char *argv[] )
     }
 
 
+
+//    std::cout << "Program ran for " << integrationResult[0] << std::endl;
 
 
     std::cout << "Program finished " << std::endl;

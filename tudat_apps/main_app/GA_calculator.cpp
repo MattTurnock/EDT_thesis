@@ -355,7 +355,9 @@ int main(int argc, char *argv[])
     {
         std::cout << "Leg " << itr.first << "\n\n";
         std::cout << "Departure state vector: " << fullProblemPatchedConicTrajectory[ itr.first ].begin( )->second << "\n\n";
-        std::cout << "Departure time: " << fullProblemPatchedConicTrajectory[ itr.first ].begin( )->first << "\n\n";
+        double departureTime = fullProblemPatchedConicTrajectory[ itr.first ].begin( )->first;
+        std::cout << "Departure time: " << departureTime << "\n\n";
+        std::cout << "Departure time years: " << departureTime / 365.25/24/60/60 << "\n\n";
 
         std::cout << "Arrival state vector: " << fullProblemPatchedConicTrajectory[ itr.first ].rbegin( )->second  << "\n\n";
 //        for( auto itr2 : fullProblemPatchedConicTrajectory[ itr.first ]){
@@ -364,172 +366,174 @@ int main(int argc, char *argv[])
     }
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////// Do the perturbed  case using initial conditions from patched conic   //////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ////////////////////////   Get initial conditions from patchedConicsTrajectory    //////////////////////////////////
-    double departureEpoch;
-    Eigen::Vector6d departureStateVector;
-    double rawDepartureEpoch;
-    Eigen::Vector6d rawDepartureStateVector;
-    double fullSimDelay = 14 * 24*60*60;
-    for( auto itr : patchedConicsTrajectory )
-    {
-        if (itr.first == 0){
-            // Get departure epoch and state vector
-            rawDepartureEpoch = patchedConicsTrajectory[ itr.first ].begin( )->first;
-            rawDepartureStateVector = patchedConicsTrajectory[ itr.first ].begin( )->second;
-            std::cout<<"Raw departure epoch, years: " << rawDepartureEpoch /60 /60 /24 /365.25 << std::endl;
-
-            // Implement to delay to starting initial simulation
-            bool departureEpochFound = false;
-            for( auto itr2 : fullProblemPatchedConicTrajectory[ itr.first ]){
-//                std::cout<<itr2.first<<std::endl;
-//                std::cout << itr2.first << std::endl;
-//                std::cout << rawDepartureEpoch + fullSimDelay << "\n\n" << std::endl;
-                if ( (itr2.first > rawDepartureEpoch + fullSimDelay) and (departureEpochFound == false)){
-//                    std::cout << "here" << std::endl;
-                    departureEpoch = itr2.first;
-                    departureStateVector = itr2.second;
-                    departureEpochFound = true;
-                    std::cout<<"Raw departure epoch, years: " << rawDepartureEpoch /60 /60 /24 /365.25 << std::endl;
-                }
-            }
-
-        }
-    }
-
-    ////////////////////////// Create propagation mechanism in the conventional way ////////////////////////////////
-    // NOTE: uses the methods created for the EDT simulations, for consistency, but does not require full functionlaity
-    // therefore some dummy variables etc are created
-
-    // Create EDTConfig for GA
-    std::cout<< " -- Creating Config class -- " << std::endl;
-    nlohmann::json configVariables = dummyVariablesJson["EDTConfigs"];
-    std::string configType = dummyVariablesJson["EDTConfigs"]["configType"];
-    nlohmann::json SRPVariables = dummyVariablesJson["scConfigs"]["SRP"];
-    nlohmann::json materialProperties = dummyVariablesJson["materialProperties"];
-    EDTs::EDTConfig GAConfig = EDTs::EDTConfig(configVariables, configType, SRPVariables, materialProperties);
-
-    // Create EDTEnvironment for GA, using some dummy variables
-    std::cout<< " -- Creating environment class -- " << std::endl;
-    NamedBodyMap GABodyMap;
-    double dummyphi0;
-    double dummyR0;
-    std::vector<double> dummytwoSinePars;
-    nlohmann::json dummyISMFVariables = dummyVariablesJson["InterstellarMagField"];
-    EDTEnvironment GAEnvironment = EDTEnvironment(dummytwoSinePars, dummyphi0, dummyR0, GABodyMap, dummyISMFVariables);
-
-    // Create EDTGuidance for GA
-    std::cout<< " -- Creating Guidance class -- " << std::endl;
-    std::string placeholderThrustMagnitudeConfig = dummyVariablesJson["GuidanceConfigs"]["thrustMagnitudeConfig"];
-    std::string placeholderThrustDirectionConfig = dummyVariablesJson["GuidanceConfigs"]["thrustDirectionConfig"];
-    EDTGuidance GAGuidance = EDTGuidance(
-            placeholderThrustMagnitudeConfig,
-            placeholderThrustDirectionConfig,
-            GABodyMap,
-            GAEnvironment,
-            GAConfig);
-
-    // Create propBodies class for GA
-    std::cout<< " -- Creating Propbodies class -- " << std::endl;
-//    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"]; // TODO: Check if these should be used
-    univ::propBodies GAPropBodies = univ::propBodies(GAConfig, GAGuidance, GABodyMap, simulationVariables, false);
-
-    // Create propSettings class for GA
-    std::cout<< " -- Creating Propsettings class -- " << std::endl;
-    Eigen::Vector3d departurePosition;
-    departurePosition << departureStateVector[0], departureStateVector[1], departureStateVector[2];
-    Eigen::Vector3d departureVelocity;
-    departureVelocity << departureStateVector[3], departureStateVector[4], departureStateVector[5];
-
-    // Set json info
-    nlohmann::json terminationSettingsJson = simulationVariables["GuidanceConfigs"]["terminationSettings"];
-    nlohmann::json integratorSettingsJsonPerturbed;
-    double simulationTimeUpperLimit = terminationSettingsJson["timeTerminationYears"];
-
-    univ::propSettings GAPropSettings = univ::propSettings(GAPropBodies,
-                                                           departurePosition,
-                                                           departureVelocity,
-                                                            integratorSettingsJson,
-                                                            terminationSettingsJson,
-                                                            departureEpoch);
-
-    std::cout << "Done creating GAPropSettings" << std::endl;
-    // Ensure environment is properly updated
-//    GAGuidance.updateAllEnviro();
-
-    std::cout<< "====================Propagating Perturbed Case==========================" << std::endl;
-    std::cout << "Departure epoch (years): " << departureEpoch /60 /60 /24 /365.25 << std::endl;
-    std::cout << "Sim time upper limit: " << simulationTimeUpperLimit << std::endl;
-    // Create simulation object and propagate dynamics.
-    SingleArcDynamicsSimulator< > dynamicsSimulator(
-            GAPropBodies.bodyMap, GAPropSettings.integratorSettings, GAPropSettings.propagatorSettings);
-    std::map< double, Eigen::VectorXd > integrationResultPerturbedCase = dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
-    std::map< double, Eigen::VectorXd > dependentVariableResultPerturbedCase = dynamicsSimulator.getDependentVariableHistory();
-
-
-
-
-    //////////////////////////////////////// Save variables and maps ////////////////////////////////////////////////////
-
-    std::map< double, Eigen::VectorXd > dependentVariableResultPatchedConic = dependentVariablesResultForEachLeg[0];
-//    std::map< double, Eigen::VectorXd > dependentVariableResultPerturbed = dependentVariablesPerturbedCase[0]; TODO: uncomment me
-
-    // Save stuff to file
-//    std::string outputSubFolder = PlanetConfigs["saveDataInfo"]["outputSubFolder"]; //TODO: combine / differentiate this from the one in the first stage
-    // TODO: make file naming convention work for jupiter / saturn
-    for( std::map< int, std::map< double, Eigen::Vector6d > >::iterator itr = patchedConicsTrajectory.begin( );
-         itr != patchedConicsTrajectory.end( ); itr++ ) {
-
-        // Saving for the unperturbed patched conic case
-        input_output::writeDataMapToTextFile( patchedConicsTrajectory[itr->first],
-                                              "unperturbed_patchedConic_leg_" + std::to_string(itr->first) + ".dat",
-                                              tudat_applications::getOutputPath( ) + outputSubFolder,
-                                              "",
-                                              std::numeric_limits< double >::digits10,
-                                              std::numeric_limits< double >::digits10,
-                                              "," );
-
-        input_output::writeDataMapToTextFile( fullProblemPatchedConicTrajectory[itr->first],
-                                              "unperturbed_fullProblem_leg_" + std::to_string(itr->first) + ".dat",
-                                              tudat_applications::getOutputPath( ) + outputSubFolder,
-                                              "",
-                                              std::numeric_limits< double >::digits10,
-                                              std::numeric_limits< double >::digits10,
-                                              "," );
-
-        input_output::writeDataMapToTextFile( dependentVariableResultPatchedConic,
-                                              "unperturbed_depVars_leg_" + std::to_string(itr->first) + ".dat",
-                                              tudat_applications::getOutputPath( ) + outputSubFolder,
-                                              "",
-                                              std::numeric_limits< double >::digits10,
-                                              std::numeric_limits< double >::digits10,
-                                              "," );
-
-        // Saving for the perturbed case
-        input_output::writeDataMapToTextFile( integrationResultPerturbedCase,
-                                              "perturbed_fullProblem_leg_0.dat",
-                                              tudat_applications::getOutputPath( ) + outputSubFolder,
-                                              "",
-                                             std::numeric_limits< double >::digits10,
-                                             std::numeric_limits< double >::digits10,
-                                             "," );
-        input_output::writeDataMapToTextFile( integrationResultPerturbedCase,
-                                              "perturbed_depVars_leg_0.dat",
-                                              tudat_applications::getOutputPath( ) + outputSubFolder,
-                                              "",
-                                              std::numeric_limits< double >::digits10,
-                                              std::numeric_limits< double >::digits10,
-                                              "," );
-    }
-
-
-
-
-
-
-
+    // TODO: Reinstate below when / if actually needed
+//    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//    //////////////// Do the perturbed  case using initial conditions from patched conic   //////////////////////////////
+//    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    ////////////////////////   Get initial conditions from patchedConicsTrajectory    //////////////////////////////////
+//    double departureEpoch;
+//    Eigen::Vector6d departureStateVector;
+//    double rawDepartureEpoch;
+//    Eigen::Vector6d rawDepartureStateVector;
+//    double fullSimDelay = 14 * 24*60*60;
+//    for( auto itr : patchedConicsTrajectory )
+//    {
+//        if (itr.first == 0){
+//            // Get departure epoch and state vector
+//            rawDepartureEpoch = patchedConicsTrajectory[ itr.first ].begin( )->first;
+//            rawDepartureStateVector = patchedConicsTrajectory[ itr.first ].begin( )->second;
+//            std::cout<<"Raw departure epoch, years: " << rawDepartureEpoch /60 /60 /24 /365.25 << std::endl;
+//
+//            // Implement to delay to starting initial simulation
+//            bool departureEpochFound = false;
+//            for( auto itr2 : fullProblemPatchedConicTrajectory[ itr.first ]){
+////                std::cout<<itr2.first<<std::endl;
+////                std::cout << itr2.first << std::endl;
+////                std::cout << rawDepartureEpoch + fullSimDelay << "\n\n" << std::endl;
+//                if ( (itr2.first > rawDepartureEpoch + fullSimDelay) and (departureEpochFound == false)){
+////                    std::cout << "here" << std::endl;
+//                    departureEpoch = itr2.first;
+//                    departureStateVector = itr2.second;
+//                    departureEpochFound = true;
+//                    std::cout<<"Raw departure epoch, years: " << rawDepartureEpoch /60 /60 /24 /365.25 << std::endl;
+//                }
+//            }
+//
+//        }
+//    }
+//
+//    ////////////////////////// Create propagation mechanism in the conventional way ////////////////////////////////
+//    // NOTE: uses the methods created for the EDT simulations, for consistency, but does not require full functionlaity
+//    // therefore some dummy variables etc are created
+//
+//    // Create EDTConfig for GA
+//    std::cout<< " -- Creating Config class -- " << std::endl;
+//    nlohmann::json configVariables = dummyVariablesJson["EDTConfigs"];
+//    std::string configType = dummyVariablesJson["EDTConfigs"]["configType"];
+//    nlohmann::json SRPVariables = dummyVariablesJson["scConfigs"]["SRP"];
+//    nlohmann::json materialProperties = dummyVariablesJson["materialProperties"];
+//    EDTs::EDTConfig GAConfig = EDTs::EDTConfig(configVariables, configType, SRPVariables, materialProperties);
+//
+//    // Create EDTEnvironment for GA, using some dummy variables
+//    std::cout<< " -- Creating environment class -- " << std::endl;
+//    NamedBodyMap GABodyMap;
+//    double dummyphi0;
+//    double dummyR0;
+//    std::vector<double> dummytwoSinePars;
+////    nlohmann::json dummyISMFVariables = dummyVariablesJson["InterstellarMagField"];
+//    EDTEnvironment GAEnvironment = EDTEnvironment(dummytwoSinePars, dummyphi0, dummyR0, GABodyMap, simulationVariables);
+//
+//    // Create EDTGuidance for GA
+//    std::cout<< " -- Creating Guidance class -- " << std::endl;
+//    std::string placeholderThrustMagnitudeConfig = dummyVariablesJson["GuidanceConfigs"]["thrustMagnitudeConfig"];
+//    std::string placeholderThrustDirectionConfig = dummyVariablesJson["GuidanceConfigs"]["thrustDirectionConfig"];
+//    EDTGuidance GAGuidance = EDTGuidance(
+//            placeholderThrustMagnitudeConfig,
+//            placeholderThrustDirectionConfig,
+//            GABodyMap,
+//            GAEnvironment,
+//            GAConfig);
+//
+//    // Create propBodies class for GA
+//    std::cout<< " -- Creating Propbodies class -- " << std::endl;
+////    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"]; // TODO: Check if these should be used
+//    univ::propBodies GAPropBodies = univ::propBodies(GAConfig, GAGuidance, GABodyMap, simulationVariables, false);
+//
+//    // Create propSettings class for GA
+//    std::cout<< " -- Creating Propsettings class -- " << std::endl;
+//    Eigen::Vector3d departurePosition;
+//    departurePosition << departureStateVector[0], departureStateVector[1], departureStateVector[2];
+//    Eigen::Vector3d departureVelocity;
+//    departureVelocity << departureStateVector[3], departureStateVector[4], departureStateVector[5];
+//
+//    // Set json info
+//    nlohmann::json terminationSettingsJson = simulationVariables["GuidanceConfigs"]["terminationSettings"];
+//    nlohmann::json integratorSettingsJsonPerturbed;
+//    double simulationTimeUpperLimit = terminationSettingsJson["timeTerminationYears"];
+//
+//    univ::propSettings GAPropSettings = univ::propSettings(GAPropBodies,
+//                                                           departurePosition,
+//                                                           departureVelocity,
+//                                                            integratorSettingsJson,
+//                                                            terminationSettingsJson,
+//                                                            departureEpoch);
+//
+//    std::cout << "Done creating GAPropSettings" << std::endl;
+//    // Ensure environment is properly updated
+////    GAGuidance.updateAllEnviro();
+//
+//    std::cout<< "====================Propagating Perturbed Case==========================" << std::endl;
+//    std::cout << "Departure epoch (years): " << departureEpoch /60 /60 /24 /365.25 << std::endl;
+//    std::cout << "Sim time upper limit: " << simulationTimeUpperLimit << std::endl;
+//    // Create simulation object and propagate dynamics.
+//    SingleArcDynamicsSimulator< > dynamicsSimulator(
+//            GAPropBodies.bodyMap, GAPropSettings.integratorSettings, GAPropSettings.propagatorSettings);
+//    std::map< double, Eigen::VectorXd > integrationResultPerturbedCase = dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
+//    std::map< double, Eigen::VectorXd > dependentVariableResultPerturbedCase = dynamicsSimulator.getDependentVariableHistory();
+//
+//
+//
+//
+//    //////////////////////////////////////// Save variables and maps ////////////////////////////////////////////////////
+//
+//    std::map< double, Eigen::VectorXd > dependentVariableResultPatchedConic = dependentVariablesResultForEachLeg[0];
+////    std::map< double, Eigen::VectorXd > dependentVariableResultPerturbed = dependentVariablesPerturbedCase[0]; TODO: uncomment me
+//
+//    // Save stuff to file
+////    std::string outputSubFolder = PlanetConfigs["saveDataInfo"]["outputSubFolder"]; //TODO: combine / differentiate this from the one in the first stage
+//    // TODO: make file naming convention work for jupiter / saturn
+//    for( std::map< int, std::map< double, Eigen::Vector6d > >::iterator itr = patchedConicsTrajectory.begin( );
+//         itr != patchedConicsTrajectory.end( ); itr++ ) {
+//
+//        // Saving for the unperturbed patched conic case
+//        input_output::writeDataMapToTextFile( patchedConicsTrajectory[itr->first],
+//                                              "unperturbed_patchedConic_leg_" + std::to_string(itr->first) + ".dat",
+//                                              tudat_applications::getOutputPath( ) + outputSubFolder,
+//                                              "",
+//                                              std::numeric_limits< double >::digits10,
+//                                              std::numeric_limits< double >::digits10,
+//                                              "," );
+//
+//        input_output::writeDataMapToTextFile( fullProblemPatchedConicTrajectory[itr->first],
+//                                              "unperturbed_fullProblem_leg_" + std::to_string(itr->first) + ".dat",
+//                                              tudat_applications::getOutputPath( ) + outputSubFolder,
+//                                              "",
+//                                              std::numeric_limits< double >::digits10,
+//                                              std::numeric_limits< double >::digits10,
+//                                              "," );
+//
+//        input_output::writeDataMapToTextFile( dependentVariableResultPatchedConic,
+//                                              "unperturbed_depVars_leg_" + std::to_string(itr->first) + ".dat",
+//                                              tudat_applications::getOutputPath( ) + outputSubFolder,
+//                                              "",
+//                                              std::numeric_limits< double >::digits10,
+//                                              std::numeric_limits< double >::digits10,
+//                                              "," );
+//
+//        // Saving for the perturbed case
+//        input_output::writeDataMapToTextFile( integrationResultPerturbedCase,
+//                                              "perturbed_fullProblem_leg_0.dat",
+//                                              tudat_applications::getOutputPath( ) + outputSubFolder,
+//                                              "",
+//                                             std::numeric_limits< double >::digits10,
+//                                             std::numeric_limits< double >::digits10,
+//                                             "," );
+//        input_output::writeDataMapToTextFile( integrationResultPerturbedCase,
+//                                              "perturbed_depVars_leg_0.dat",
+//                                              tudat_applications::getOutputPath( ) + outputSubFolder,
+//                                              "",
+//                                              std::numeric_limits< double >::digits10,
+//                                              std::numeric_limits< double >::digits10,
+//                                              "," );
+//    }
+//
+//
+//
+//
+//
+//
+//
     return 0;
 }

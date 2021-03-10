@@ -146,7 +146,7 @@ namespace univ {
                 accelerationsOfVehicle_["Vehicle"].push_back(
                         std::make_shared<ThrustAccelerationSettings>(guidanceClass.thrustDirectionGuidanceSettings,
                                                                      guidanceClass.thrustMagnitudeSettings));
-                std::cout << "thrust acceleration added to vehicle" << std::endl; //TODO: remove me
+//                std::cout << "thrust acceleration added to vehicle" << std::endl; //TODO: remove me
             }
             // Add acceleration model settings for celestials using for loop
             for(std::size_t i=0; i<bodiesToCreate_.size(); ++i){
@@ -213,6 +213,7 @@ namespace univ {
         /////////////////////////// Other set parameters ///////////////////////////////
         // simulation variables (from json)
         nlohmann::json jsonSimulationVariables_;
+        
 
         // Body variables
         std::vector<std::string> bodiesToCreate_;
@@ -226,6 +227,7 @@ namespace univ {
         double SRPReferenceArea_;
         double SRPCoefficient_;
         std::shared_ptr< RadiationPressureInterfaceSettings > vehicleRadiationPressureSettings_;
+        
 
         // misc
         int intPlaceholder_;
@@ -383,19 +385,30 @@ namespace univ {
             ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // TODO: Check general settings of integrator, and adjust as necessary (especially tolerances).
-            // TODO: part 2, add some integrator settings to the json file
             std::string RKCoefficients = integratorSettingsJson["integrator"];
-            RungeKuttaCoefficients::CoefficientSets coefficientSet = gen::getIntegratorCoefficientSet(RKCoefficients);
-            
-            integratorSettings =
-                    std::make_shared< RungeKuttaVariableStepSizeSettings< > >(
-                            initialEphemerisTime_,
-                            integratorSettingsJson_["initialTimeStep"],
-                            coefficientSet, //TODO: change this integrator to FILG if possible (ask dominic?)
-                            integratorSettingsJson_["minimumStepSize"],
-                            integratorSettingsJson_["maximumStepSize"],
-                            integratorSettingsJson_["relativeErrorTolerance"],
-                            integratorSettingsJson_["absoluteErrorTolerance"]);
+
+            if (RKCoefficients == "RK4"){
+                integratorSettings = std::make_shared<IntegratorSettings< > >(
+                        rungeKutta4,
+                        initialEphemerisTime_,
+                        integratorSettingsJson_["initialTimeStep"]
+                        );
+            }
+
+            else {
+                RungeKuttaCoefficients::CoefficientSets coefficientSet = gen::getIntegratorCoefficientSet(
+                        RKCoefficients);
+
+                integratorSettings =
+                        std::make_shared<RungeKuttaVariableStepSizeSettings<> >(
+                                initialEphemerisTime_,
+                                integratorSettingsJson_["initialTimeStep"],
+                                coefficientSet, //TODO: change this integrator to FILG if possible (ask dominic?)
+                                integratorSettingsJson_["minimumStepSize"],
+                                integratorSettingsJson_["maximumStepSize"],
+                                integratorSettingsJson_["relativeErrorTolerance"],
+                                integratorSettingsJson_["absoluteErrorTolerance"]);
+            }
         }
 
         propBodies getSimulationPropBodies(){

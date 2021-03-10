@@ -20,7 +20,8 @@ VNVJsonSubDir = "VnV"
 
 templateJson = os.path.join(utils.jsonInputs_dir, "testVariables.json")
 jsonSaveDir = os.path.join(utils.jsonInputs_dir, "VnV/")
-fileStringIgnores = ["Parker"]
+fileStringIgnores = ["Parker", "SRP", "Integrator", "BACKUP" ]
+# fileStringIgnores = ["SRP", "Current", "Integrator", "BACKUP"]
 
 #NOTE: jsons create manually for most of these, not by python function
 # ############################################ Create json files ########################################################

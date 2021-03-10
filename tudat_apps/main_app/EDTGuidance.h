@@ -23,18 +23,25 @@ public:
             NamedBodyMap& environmentBodyMap,
             EDTEnvironment& guidanceEnvironment,
             EDTs::EDTConfig& vehicleConfig,
+            nlohmann::json simulationVariables,
             const double throttleSetting = 1 ):
             thrustMagnitudeConfig_(thrustMagnitudeConfig),
             thrustDirectionConfig_(thrustDirectionConfig),
             environmentBodyMap_(environmentBodyMap),
             guidanceEnvironment_(guidanceEnvironment),
             vehicleConfig_(vehicleConfig),
+            simulationVariables_(simulationVariables),
             throttleSetting_(throttleSetting){
+
+        // Set Sun gravitation parameter
+        SunMu_ = simulationVariables_["constants"]["gravitationalParameters"]["Sun"];
+
         // Set sizes for save vectors
         magFieldSaveVector_.resize(9);
         ionosphereSaveVector_.resize(1);
         thrustSaveVector_.resize(7);
         currentSaveVector_.resize(7);
+        currentVNVSaveVector_.resize(16);
         bodyDataSaveVector_.resize(7);
 
         // Set configType_ from config class
@@ -57,7 +64,9 @@ public:
             thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
             thrustMagnitude_ = thrustVector_.norm();
         }
-
+//        std::cout << "Thrust magnitude: " << thrustMagnitude_ <<  std::endl; \\TODO: remove me
+//        std::cout << "Thrust vector: " << thrustVector_ <<  std::endl;\\TODO: remove me
+//        std::cout << "Thrust vector local: " << thrustVectorLocal_ <<  std::endl;\\TODO: remove me
         // Save simulation time and relevant data to save map
         simulationTime_ = simulationTime;
         saveParametersToMap();
@@ -65,33 +74,146 @@ public:
 
     void updateThrustDirection(const double simulationTime){
 
-        // Set current vector for prograde and retrograde, normalised vector pointing upwards and downwards
-        if ((thrustDirectionConfig_ == "nominalPrograde") or (thrustDirectionConfig_ == "nominalRetrograde") ){
-            if (thrustDirectionConfig_ == "nominalPrograde") {
+//        ///////// TODO: Below is old version of thrust direction logic, use the new one!!! /////////////////////
+//        // Set current vector for prograde and retrograde, normalised vector pointing upwards and downwards
+//        if ((thrustDirectionConfig_ == "nominalPrograde") or (thrustDirectionConfig_ == "nominalRetrograde") or (thrustDirectionConfig_ == "currentArbitraryVNV")){
+//            if (thrustDirectionConfig_ == "nominalPrograde") {
+//
+//                // For prograde use current oriented in positive Z-direction
+//                currentDirectionVector_ << 0, 0, 1; //TODO: Fix to use EDT length unit vector, instead of hardcode
+//            }
+//            else if (thrustDirectionConfig_ == "nominalRetrograde") {
+//
+//                // For retrograde use current oriented in negative Z-direction
+//                currentDirectionVector_ << 0, 0, -1; //TODO: Fix to use EDT length unit vector, instead of hardcode
+//            }
+//            else if (thrustDirectionConfig_ == "currentArbitraryVNV"){
+//
+//                // Manually use the value used for the arbitrary VNV case
+//                currentDirectionVector_ << 0.17583754,  0.87544648, -0.45019399;
+//            }
+////            std::cout << "CurrentDirectionVector at set: " << currentDirectionVector_ << std::endl;
+//            // Set current in guidance class and update it
+////            guidanceEnvironment_.setCurrent(currentDirectionVector_); // TODO: check if this is needed or no - ie move to update script
+//            updateAllEnviro(simulationTime_);
+//
+//            // Get thrust vector and normalise to use as guidance vector
+//            thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
+//            thrustDirection_ = thrustVector_.normalized();
+//
+//            // Convert inertial thrust vector to local vector for saving
+//            thrustVectorLocal_ = gen::InertialToLvlh(thrustVector_, guidanceEnvironment_.getTheta());
+//        }
+//
+//        // Save simulation time and relevant data to save map
+//        simulationTime_ = simulationTime;
+//        saveParametersToMap();
 
-                // For prograde use current oriented in positive Z-direction
-                currentDirectionVector_ << 0, 0, 1; //TODO: Fix to use EDT length unit vector, instead of hardcode
+
+
+        ////////////// THE NEW ONE ///////////////////////////////
+
+        // Define positive and negative current direction vectors
+        Eigen::Vector3d currentPositiveDirectionVector;
+        currentPositiveDirectionVector << 0, 0, 1;
+        Eigen::Vector3d currentNegativeDirectionVector;
+        currentNegativeDirectionVector << 0, 0, -1;
+        Eigen::Vector3d currentDirectionVectorNoThrust;
+        currentDirectionVectorNoThrust << 0, 0, -1;
+        Eigen::Vector3d currentDirectionArbitraryVnV;
+        currentDirectionArbitraryVnV <<  0.17583754,  0.87544648, -0.45019399;
+
+        // Initialise boolean forcing current magnitude to 0, if thrusting should be disabled
+        bool forceCurrentMagnitude = false;
+
+        // Grab spacecraft state at the current time and convert to keplerian, then calculate Ap and Pe for T0
+        Eigen::Vector6d spacecraftStateCartesianT0 = guidanceEnvironment_.getVehicleState();
+        Eigen::Vector6d spacecraftStateKeplerianT0 = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(spacecraftStateCartesianT0, SunMu_);
+        double ApT0 =  spacecraftStateKeplerianT0[0] * (1 + spacecraftStateKeplerianT0[1]);
+        double PeT0 = spacecraftStateKeplerianT0[0] * (1 - spacecraftStateKeplerianT0[1]);
+
+        // Grab thrust direction at T0, for both positive and negative current cases
+        Eigen::Vector3d thrustVectorPositive = currentPositiveDirectionVector.cross(guidanceEnvironment_.getMagFieldInertial());
+        Eigen::Vector3d thrustDirectionPositive = thrustVectorPositive.normalized();
+
+        Eigen::Vector3d thrustVectorNegative = currentNegativeDirectionVector.cross(guidanceEnvironment_.getMagFieldInertial());
+        Eigen::Vector3d thrustDirectionNegative = thrustVectorNegative.normalized();
+
+        // Use normalised thrust direction directly as a 1m/s impulse on the original state velocity, to get new Ap and Pe, for both positive and negative cases
+        Eigen::Vector6d spacecraftStateDeltaPositive;
+        spacecraftStateDeltaPositive << 0, 0, 0, thrustDirectionPositive[0], thrustDirectionPositive[1], thrustDirectionPositive[2];
+        Eigen::Vector6d spacecraftStateCartesianT1Positive = spacecraftStateCartesianT0 + spacecraftStateDeltaPositive;
+        Eigen::Vector6d spacecraftStateKeplerianT1Positive = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(spacecraftStateCartesianT1Positive, SunMu_);
+        double ApT1Positive = spacecraftStateKeplerianT1Positive[0] * (1 + spacecraftStateKeplerianT1Positive[1]);
+        double PeT1Positive = spacecraftStateKeplerianT1Positive[0] * (1 - spacecraftStateKeplerianT1Positive[1]);
+
+        Eigen::Vector6d spacecraftStateDeltaNegative;
+        spacecraftStateDeltaNegative << 0, 0, 0, thrustDirectionNegative[0], thrustDirectionNegative[1], thrustDirectionNegative[2];
+        Eigen::Vector6d spacecraftStateCartesianT1Negative = spacecraftStateCartesianT0 + spacecraftStateDeltaNegative;
+        Eigen::Vector6d spacecraftStateKeplerianT1Negative = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(spacecraftStateCartesianT1Negative, SunMu_);
+        double ApT1Negative = spacecraftStateKeplerianT1Negative[0] * (1 + spacecraftStateKeplerianT1Negative[1]);
+        double PeT1Negative = spacecraftStateKeplerianT1Negative[0] * (1 - spacecraftStateKeplerianT1Negative[1]);
+
+
+        // For whether using nominalPrograde or nominalRetrograde, apply the relevant logic to achieve a final thrust direction
+        if (thrustDirectionConfig_ == "nominalPrograde"){
+
+            if ((ApT1Positive > ApT0) and (PeT1Positive > PeT0)){
+                currentDirectionVector_ = currentPositiveDirectionVector;
             }
-            else if (thrustDirectionConfig_ == "nominalRetrograde") {
-
-                // For retrograde use current oriented in negative Z-direction
-                currentDirectionVector_ << 0, 0, -1; //TODO: Fix to use EDT length unit vector, instead of hardcode
+            else if ((ApT1Negative > ApT0) and (PeT1Negative > PeT0)){
+                currentDirectionVector_ = currentNegativeDirectionVector;
             }
-            // Set current in guidance class and update it
-//            guidanceEnvironment_.setCurrent(currentDirectionVector_); // TODO: check if this is needed or no - ie move to update script
-            updateAllEnviro(simulationTime_);
-
-            // Get thrust vector and normalise to use as guidance vector
-            thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
-            thrustDirection_ = thrustVector_.normalized();
-
-            // Convert inertial thrust vector to local vector for saving
-            thrustVectorLocal_ = gen::InertialToLvlh(thrustVector_, guidanceEnvironment_.getTheta());
+            else if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0)){
+                currentDirectionVector_ = currentPositiveDirectionVector;
+            }
+            else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0)){
+                currentDirectionVector_ = currentNegativeDirectionVector;
+            }
+            else{
+                currentDirectionVector_ = currentDirectionVectorNoThrust;
+                forceCurrentMagnitude = true;
+            }
         }
+
+        else if (thrustDirectionConfig_ == "nominalRetrograde"){
+
+            if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0)){
+                currentDirectionVector_ = currentPositiveDirectionVector;
+            }
+            else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0)){
+                currentDirectionVector_ = currentNegativeDirectionVector;
+            }
+            else if ((ApT1Positive < ApT0) and (PeT1Positive < PeT0)){
+                currentDirectionVector_ = currentPositiveDirectionVector;
+            }
+            else if ((ApT1Negative < ApT0) and (PeT1Negative < PeT0)){
+                currentDirectionVector_ = currentNegativeDirectionVector;
+            }
+            else{
+                currentDirectionVector_ = currentDirectionVectorNoThrust;
+                forceCurrentMagnitude = true;
+            }
+        }
+
+        else if (thrustDirectionConfig_ == "currentArbitraryVNV"){
+            currentDirectionVector_ = currentDirectionArbitraryVnV;
+        }
+
+        updateAllEnviro(simulationTime_, forceCurrentMagnitude);
+
+//        std::cout << "Current is: " << guidanceEnvironment_.getCurrent() << std::endl; // TODO: remove me
+        // Get thrust vector and normalise to use as guidance vector
+        thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
+        thrustDirection_ = thrustVector_.normalized();
+
+        // Convert inertial thrust vector to local vector for saving
+        thrustVectorLocal_ = gen::InertialToLvlh(thrustVector_, guidanceEnvironment_.getTheta());
 
         // Save simulation time and relevant data to save map
         simulationTime_ = simulationTime;
         saveParametersToMap();
+
     }
 
     void updateGuidanceSettings(){
@@ -138,6 +260,7 @@ public:
         thrustSaveVector_[6] = thrustVectorLocal_[2];
         thrustMap_.insert(std::pair<double, Eigen::VectorXd> (simulationTime_, thrustSaveVector_));
 
+
         // Save Current parameters TODO: TBF
         currentSaveVector_[0] = guidanceEnvironment_.getCurrentMagnitude();
         currentSaveVector_[1] = guidanceEnvironment_.getCurrent()[0];
@@ -148,13 +271,26 @@ public:
         currentSaveVector_[6] = velocityWrtMagField_[2];
         currentMap_.insert(std::pair<double, Eigen::VectorXd> (simulationTime_, currentSaveVector_));
 
-//        std::cout << ":: current save vector components: " << currentSaveVector_[0]
-//        << currentSaveVector_[1]
-//        << currentSaveVector_[2]
-//        << currentSaveVector_[3]
-//        << currentSaveVector_[4]
-//        << currentSaveVector_[5]
-//        << currentSaveVector_[6] << std::endl;
+        // Save current intermediary VNV data
+        currentVNVSaveVector_[0] = motionalEMF_;
+        currentVNVSaveVector_[1] = unitCurrent_;
+        currentVNVSaveVector_[2] = dimensionlessCurrentC_;
+        currentVNVSaveVector_[3] = dimensionlessVoltageA_;
+        currentVNVSaveVector_[4] = avgDimensionlessCurrent_;
+        currentVNVSaveVector_[5] = avgTrueCurrent_;
+        currentVNVSaveVector_[6] = guidanceEnvironment_.getCurrent()[0];
+        currentVNVSaveVector_[7] = guidanceEnvironment_.getCurrent()[1];
+        currentVNVSaveVector_[8] = guidanceEnvironment_.getCurrent()[2];
+        currentVNVSaveVector_[9] = trueCurrentC_;
+
+        currentVNVSaveVector_[10] = guidanceEnvironment_.getCurrentDirectionVector()[0];
+        currentVNVSaveVector_[11] = guidanceEnvironment_.getCurrentDirectionVector()[1];
+        currentVNVSaveVector_[12] = guidanceEnvironment_.getCurrentDirectionVector()[2];
+        currentVNVSaveVector_[13] = vehicleConfig_.getVehicleConductivity();
+        currentVNVSaveVector_[14] = vehicleConfig_.getXSecAreaConducting();
+        currentVNVSaveVector_[15] = vehicleConfig_.getTetherLength();
+        currentVNVMap_.insert(std::pair<double, Eigen::VectorXd> (simulationTime_, currentVNVSaveVector_));
+//        std::cout << "CURRENTVNV SAVE map;;;;;;; " << currentVNVSaveMap_ << std::endl; // TODO: remove me
 
         // Save body data
         bodyDataSaveVector_[0] = guidanceEnvironment_.getR();
@@ -164,17 +300,8 @@ public:
         bodyDataSaveVector_[4] = guidanceEnvironment_.getVehicleState()[3];
         bodyDataSaveVector_[5] = guidanceEnvironment_.getVehicleState()[4];
         bodyDataSaveVector_[6] = guidanceEnvironment_.getVehicleState()[5];
+//        bodyDataSaveVector_[7] =
         bodyDataMap_.insert(std::pair<double, Eigen::VectorXd> (simulationTime_, bodyDataSaveVector_));
-
-//        std::cout << "vehicle state: "
-//                  << guidanceEnvironment_.getVehicleState()[0] << " "
-//                  << guidanceEnvironment_.getVehicleState()[1] << " "
-//                  << guidanceEnvironment_.getVehicleState()[2] << " "
-//                  << guidanceEnvironment_.getVehicleState()[3] << " "
-//                  << guidanceEnvironment_.getVehicleState()[4] << " "
-//                  << guidanceEnvironment_.getVehicleState()[5]
-//                  << std::endl; //TODO:Remove me
-
 
     }
 
@@ -182,7 +309,7 @@ public:
 
     // Function to update current, different depending on EDT config
     void updateCurrentMagnitude(){
-        std::cout << "Config type: " << configType_ <<  std::endl; //TODO: Remove me
+//        std::cout << "Config type: " << configType_ <<  std::endl; //TODO: Remove me
         // For spacecraft using a bare tether concept
         if ( (configType_ == "CHB") or (configType_ == "AlMB") ){
 
@@ -190,13 +317,13 @@ public:
             velocityWrtMagField_ = guidanceEnvironment_.getVehicleVelocity(); // TODO: This just uses inertial velocity as relative velocity, make sure solar magfield is not moving (eg with solar wind)
             trueCurrentC_ = vehicleConfig_.getEmitterCurrent(); // TODO: Check emitter current can be the true current - ie check against ionosphere assumptions for intake current
 
-            std::cout<< "velocityWrtMagField_ : " << velocityWrtMagField_ << std::endl; // TODO: Remove me
-            std::cout<< "trueCurrentC_ : " << trueCurrentC_ << std::endl; // TODO: Remove me
-
-            std::cout<< "magfield: " << guidanceEnvironment_.getMagFieldInertial() << std::endl; // TODO: Remove me
-            std::cout << "currentDirectionVecotr: " << guidanceEnvironment_.getCurrentDirectionVector() << std::endl; // TODO: remove me
-            std::cout << "sigma: " << vehicleConfig_.getVehicleConductivity() << std::endl; // TODO: remove me
-            std::cout << "Area: " << vehicleConfig_.getXSecAreaConducting() << std::endl; // TODO: remove me
+//            std::cout<< "velocityWrtMagField_ : " << velocityWrtMagField_ << std::endl; // TODO: Remove me
+//            std::cout<< "trueCurrentC_ : " << trueCurrentC_ << std::endl; // TODO: Remove me
+//
+//            std::cout<< "magfield: " << guidanceEnvironment_.getMagFieldInertial() << std::endl; // TODO: Remove me
+//            std::cout << "currentDirectionVecotr: " << guidanceEnvironment_.getCurrentDirectionVector() << std::endl; // TODO: remove me
+//            std::cout << "sigma: " << vehicleConfig_.getVehicleConductivity() << std::endl; // TODO: remove me
+//            std::cout << "Area: " << vehicleConfig_.getXSecAreaConducting() << std::endl; // TODO: remove me
 
             // Calculate unit current, using sigma, Em and A
             motionalEMF_ = gen::getMotionalEMF(velocityWrtMagField_,
@@ -214,33 +341,35 @@ public:
 //            std::cout << "velocity wrt magfield components: " << velocityWrtMagField_[0] << " " << velocityWrtMagField_[1] << " " << velocityWrtMagField_[2] << std::endl; //TODO:Remove me
 //            std::cout << "magfield inertial components: " << guidanceEnvironment_.getMagFieldInertial()[0] << " " << guidanceEnvironment_.getMagFieldInertial()[1] << " " << guidanceEnvironment_.getMagFieldInertial()[2] << std::endl; //TODO:Remove me
 //            std::cout << "Current direction vector: " << guidanceEnvironment_.getCurrentDirectionVector()[0] << " " << guidanceEnvironment_.getCurrentDirectionVector()[1] << " " << guidanceEnvironment_.getCurrentDirectionVector()[2] << std::endl; //TODO:Remove me
-            std::cout<< "motionalEMF_ : " << motionalEMF_ << std::endl; // TODO: Remove me
+//            std::cout<< "motionalEMF_ : " << motionalEMF_ << std::endl; // TODO: Remove me
 
             unitCurrent_ = gen::getUnitCurrent(vehicleConfig_.getVehicleConductivity(),
                                                motionalEMF_,
                                                vehicleConfig_.getXSecAreaConducting());
 
-            std::cout<< "unitCUrrent_ : " << unitCurrent_ << std::endl; // TODO: Remove me
+//            std::cout<< "unitCUrrent_ : " << unitCurrent_ << std::endl; // TODO: Remove me
 
             // Calculate iavg, from ic, lambda_A and L
             dimensionlessCurrentC_ = gen::trueCurrentDimensionlessConvert(trueCurrentC_, unitCurrent_);
             dimensionlessVoltageA_ = gen::getDimensionlessVoltageA(dimensionlessCurrentC_);
             avgDimensionlessCurrent_ = gen::getAvgDimensionlessCurrent(vehicleConfig_.getTetherLength(), dimensionlessVoltageA_);
 
-            std::cout<< "dimensionlessCurrentC_ : " << dimensionlessCurrentC_ << std::endl; // TODO: Remove me
-            std::cout<< "dimensionlessVoltageA_ : " << dimensionlessVoltageA_ << std::endl; // TODO: Remove me
-            std::cout<< "avgDimensionlessCurrent_ : " << avgDimensionlessCurrent_ << std::endl; // TODO: Remove me
+//            std::cout<< "dimensionlessCurrentC_ : " << dimensionlessCurrentC_ << std::endl; // TODO: Remove me
+//            std::cout<< "dimensionlessVoltageA_ : " << dimensionlessVoltageA_ << std::endl; // TODO: Remove me
+//            std::cout<< "avgDimensionlessCurrent_ : " << avgDimensionlessCurrent_ << std::endl; // TODO: Remove me
 
             // Calculate final average true current, and set current magnitude to it
             avgTrueCurrent_ = gen::trueCurrentDimensionlessConvert(avgDimensionlessCurrent_, unitCurrent_, false);
-            currentMagnitude_ = avgTrueCurrent_;
+            currentMagnitude_ = std::abs(avgTrueCurrent_);
 
 
-            std::cout<< "avgTrueCurrent_ : " << avgTrueCurrent_ << std::endl; // TODO: Remove me
-            std::cout<< "currentMagnitude_ : " << currentMagnitude_ << std::endl; // TODO: Remove me
-            std::cout << std::endl; // TODO: remove me
+//            std::cout<< "avgTrueCurrent_ : " << avgTrueCurrent_ << std::endl; // TODO: Remove me
+//            std::cout<< "currentMagnitude_ : " << currentMagnitude_ << std::endl; // TODO: Remove me
+//            std::cout << std::endl; // TODO: remove me
 
         }
+
+
 
             // For spacecraft using a transient-current concept
         else if ( (configType_ == "CHTr") or (configType_ == "AlMTr") ){
@@ -250,7 +379,7 @@ public:
     }
 
     // Run all updaters (mostly from environment settings)
-    void updateAllEnviro(double simulationTime=0){
+    void updateAllEnviro(double simulationTime=0, bool forceZeroCurrentMagnitude=false){
 
 
         // Update body and magfield directly from guidanceEnvironment class
@@ -261,10 +390,17 @@ public:
 
 
         // Update current by updating and setting the magnitude and direction separately (note the direction was set by the thrust direction directly)
-        updateCurrentMagnitude();
+        if (forceZeroCurrentMagnitude){
+            currentMagnitude_ = 0;
+        }
+        else{
+            updateCurrentMagnitude();
+        }
+
         guidanceEnvironment_.setCurrentMagnitude(currentMagnitude_);
         guidanceEnvironment_.setCurrentDirectionVector(currentDirectionVector_);
         guidanceEnvironment_.setCurrent(currentMagnitude_ * currentDirectionVector_);
+
 
     }
 
@@ -334,6 +470,10 @@ public:
         return currentMap_;
     }
 
+    std::map < double, Eigen::VectorXd > getCurrentVNVMap(){
+        return currentVNVMap_;
+    }
+
     std::map<double, Eigen::VectorXd> getBodyDataMap(){
         return bodyDataMap_;
     }
@@ -390,6 +530,9 @@ protected:
     std::map < double, Eigen::VectorXd > currentMap_;
     Eigen::VectorXd currentSaveVector_;
 
+    std::map < double, Eigen::VectorXd > currentVNVMap_;
+    Eigen::VectorXd currentVNVSaveVector_;
+
     std::map < double, Eigen::VectorXd > bodyDataMap_;
     Eigen::VectorXd bodyDataSaveVector_;
 
@@ -416,6 +559,9 @@ protected:
 
 //    // Current factor, TODO: model properly!
 //    double currentFactor_ = 1*10E4; //
+
+    nlohmann::json simulationVariables_;
+    double SunMu_;
 
 };
 

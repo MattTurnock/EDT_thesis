@@ -9,7 +9,7 @@ import copy
 import re
 from scipy.interpolate import interp1d
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
 #######################################################################################################################
@@ -59,6 +59,10 @@ MarsInfoList = [2020.789, 780/365.25] # Info list contains [initial same side ti
 AU = 1.496e11
 c = 299792458
 W0 = 1367.0
+figSizeDefault = [16,9]
+year = 365.25*24*60*60
+day = 24*60*60
+nT=1E-9
 
 indicatorString_9004 = "SN      DecimalYear     F1Mag   ElevAng AzimAng F2Mag"
 indicatorString_0919 = " SC	Yr		DOY	  F1		   Br		   Bt		   Bn"
@@ -130,6 +134,38 @@ referenceParkerDataArray[:,1] = referenceParkerBsnT
 #######################################################################################################################
 ############################# Some useful functions ####################################################
 #######################################################################################################################
+
+# Function to convert from ecliptic to cartesian - input angles are in degrees
+def ecl2cart(r, bdeg, ldeg):
+    b = np.radians(bdeg)
+    l = np.radians(ldeg)
+
+    x = r*np.cos(b)*np.cos(l)
+    y = r*np.cos(b)*np.sin(l)
+    z = r*np.sin(b)
+
+    return np.array([x, y, z])
+
+t1 = (1977*year) + (252*day)
+r1 = 1.01*AU
+b1 = 0.1
+l1 = 347.30
+pos1 = ecl2cart(r1, b1, l1)
+
+t2 = (1977*year) + (253*day)
+r2 = 1.01*AU
+b2 = 0.1
+l2 = 348.6
+pos2 = ecl2cart(r2, b2, l2)
+
+tDiff = t2-t1
+posDiff = pos2-pos1
+
+V1 = posDiff/tDiff
+
+print("Initial Voyager 1 position: ", pos1)
+print("Initial Voyager 1 Velocity: ", V1)
+
 
 # Function to get true anomaly from a, e, r (NOTE: hyperbolic only, i think). Returns in degrees
 def getTA(a, e, r):
@@ -233,6 +269,7 @@ def print_full(x):
     pd.reset_option('display.max_rows')
 
     # Function to reshape arrays by interpolation. inputArray is the base data, reframeArray is the array of indices to reshape along. Must be on 0 column!
+    # NOTE!: reframe array is a one-dimensional array (ie times to reshape along)
 def interpolateArrays(inputArray, reframeArray):
 
 
@@ -284,6 +321,9 @@ def interpolateArrays(inputArray, reframeArray):
 
 
 
+
+
+
 def createModifiedJson(jsonTemplatePath, jsonSaveToDir, jsonSaveToFilename, listOfChangeKeys, listOfChangeValues):
 
     # Create save folder if not existing, and set path of save file
@@ -306,6 +346,10 @@ def createModifiedJson(jsonTemplatePath, jsonSaveToDir, jsonSaveToFilename, list
     # Make the relevant changes to each key here
     for i in range(len(listOfChangeKeys)):
         
+        # Make sure values are python type, not numpy type
+        if type(listOfChangeValues[i]) == np.int64:
+    	    listOfChangeValues[i] = int(listOfChangeValues[i])
+
         # If-else statements to change the value. Works up to a key nesting of 5
         tempKeys = listOfChangeKeys[i]
         keyNesting = len(tempKeys)
@@ -331,6 +375,12 @@ def createModifiedJson(jsonTemplatePath, jsonSaveToDir, jsonSaveToFilename, list
         f.close()
 
     return 0
+
+
+
+
+
+
 
 #Function to create name for a logfile using the time
 def createLogfileName(baseName):
@@ -368,6 +418,17 @@ logger = createLogger("", makeDummy=True)
 # Function for creating indices to resize a list logarithmically
 def getLogarithmicResizeIndices(inputList, newListLength):
     return np.geomspace(1, len(inputList), newListLength, dtype=int) - 1
+
+# Function to convert a decimal year to a datetime object
+def decimalYearToDatetimeObject(decimalYear):
+
+    year = int(decimalYear)
+    rem = decimalYear - year
+
+    base = datetime(year, 1, 1)
+    result = base + timedelta(seconds=(base.replace(year=base.year + 1) - base).total_seconds() * rem)
+
+    return result
 
 
 #######################################################################################################################
@@ -547,7 +608,7 @@ def getAllYearsGA(quickConfigs, GASubfolder):
     return outputTuple
 
 def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", yearSpacing=1, markerScale=10, legendSize=11,
-                   figsize=[16,9], saveFolder=None, savenameSuffix=None, scatterPointSize=1, scatterColour=None, scatterMarker=".", scatterLinewidths=None,
+                   figsize=figSizeDefault, saveFolder=None, savenameSuffix=None, scatterPointSize=1, scatterColour=None, scatterMarker=".", scatterLinewidths=None,
                    savenameOverride=None, plotLegend=True, TOFUnits="Years", removeDominated=True, plotParetoFront=False,
                    xlims=None, ylims=None, printMinDV=False):
     """
@@ -663,7 +724,7 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
 
 
 def porkchopPlot(directoryPath, baseFilename,
-                 fignumber=None, figsize=[16,9],
+                 fignumber=None, figsize=figSizeDefault,
                  contourCount=10, contourLinewidths=0.25, contourColormap=plt.cm.viridis,
                  xlabel="Departure Date", ylabel="Travel Time [%s]", cbarLabel="$\Delta$V [km/s]",
                  title="", EarthMarsCorrection=False, TOFUnit="Years",
@@ -847,7 +908,7 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
 
 def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
                       runPath=os.path.join(cppApplications_dir, "application_GA_calculator"),
-                      printSetting=0, fileIgnores=[]):
+                      printSetting=0, fileIgnores=[], runOnlyThisFile=None):
     """
     Runs all simulations within a json directory
     :param jsonSubDirectory:
@@ -861,6 +922,9 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
     jsonsToRunFilenames.sort()
     jsonsToRunPaths = []
     applicationName = os.path.basename(os.path.normpath(runPath))
+
+    if runOnlyThisFile is not None:
+        jsonsToRunFilenames = [runOnlyThisFile]
 
     for i in range(len(jsonsToRunFilenames)):
         jsonFilenameTemp = jsonsToRunFilenames[i]
@@ -884,11 +948,11 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
 
 
 #######################################################################################################################
-####################################### VNV Related functions #########################################################
+####################################### Magfield VNV Related functions #########################################################
 #######################################################################################################################
 
 def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation_output_dir, dataFilenamePortions=[],
-                            todoList=["bodyData", "currentData", "depVarData", "ionoData", "magData", "propData", "thrustData"]):
+                            todoList=["bodyData", "currentData", "currentVNVData", "depVarData", "ionoData", "magData", "propData", "thrustData"]):
 
     fullDataFilesDirectoryPath = os.path.join(simulation_output_dir, dataSubdirectory)
     dataToLoadFilenames = os.listdir(fullDataFilesDirectoryPath)
@@ -896,6 +960,7 @@ def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation
     # Make dummy variables in case not wanted to load
     bodyDataArray = np.array([0,0,0])
     currentDataArray = np.array([0,0,0])
+    currentVNVDataArray = np.array([0,0,0])
     depVarDataArray = np.array([0,0,0])
     ionoDataArray = np.array([0,0,0])
     magDataArray = np.array([0,0,0])
@@ -912,6 +977,10 @@ def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation
         elif ("currentData" in filename) and ("currentData" in todoList):
             currentDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             currentDataArray = np.genfromtxt(currentDataFilename, delimiter=",")
+
+        elif ("currentVNVData" in filename) and ("currentVNVData" in todoList):
+            currentVNVDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
+            currentVNVDataArray = np.genfromtxt(currentVNVDataFilename, delimiter=",")
 
         elif ("depVarData" in filename) and ("depVarData" in todoList):
             depVarDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
@@ -937,11 +1006,11 @@ def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation
             logger.info("Data file does not have recognised type (or is purposely being ignored), ignoring: %s" %filename)
 
 
-    return (bodyDataArray, currentDataArray, depVarDataArray, ionoDataArray, magDataArray, propDataArray, thrustDataArray)
+    return (bodyDataArray, currentDataArray, depVarDataArray, ionoDataArray, magDataArray, propDataArray, thrustDataArray, currentVNVDataArray)
 
 
 def plotMagData(magDataArray, arrayType="simulation", bodyDataArray=None, fignumber=None, plotType="time-magnitude", logScaleY=True, logScaleX=True,
-figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, scatter=False, scatterPointSize=1, legend=None, gridOn=False, color=None):
+figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, scatter=False, scatterPointSize=1, legend=None, gridOn=False, color=None):
 
     if arrayType == "simulation":
         times = magDataArray[:,0]
@@ -1031,44 +1100,107 @@ figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, scatter=
         checkFolderExist(saveFolder)
         plt.savefig(os.path.join(saveFolder, savename ))
 
-def plotTrajectoryData(bodyDataArray, fignumber=None, plotType="x-y", legendSize=11, plotSun=False,
-                       figsize=[16,9], saveFolder=None, savename=None, xlims=None, ylims=None, sameScale=False):
+def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plotType="x-y", legendSize=11, plotSun=False,
+                       figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, sameScale=False, planetsToPlot=[],
+                       plotOnlyTrajectory=False, trajectoryLabel="Spacecraft Trajectory", legendLabelsCustom=None, logScaleX=False, logScaleY=False):
 
-    times = bodyDataArray[:,0]
-    timesYears = times / (365.25 * 24 * 60 * 60)
-    radii = bodyDataArray[:, 1]
-    stateVector = bodyDataArray[:, 2:8]
-    stateVectorAU = stateVector / AU
+    if dataArrayType == "bodyData":
+        times = dataArray[:,0]
+        timesYears = times / (365.25 * 24 * 60 * 60)
+        years = timesYears + 2000
+        radii = dataArray[:, 1]
+        radiiAU = radii/AU
+        stateVector = dataArray[:, 2:8]
+        stateVectorAU = stateVector / AU
+
+    elif dataArrayType == "propData":
+        times = dataArray[:,0]
+        timesYears = times / (365.25 * 24 * 60 * 60)
+        years = timesYears + 2000
+        stateVector = dataArray[:, 1:]
+        stateVectorAU = stateVector/AU
+
+        radii = np.linalg.norm(stateVector[:,0:3], axis=1)
+        radiiAU = radii/AU
+
+        speed = np.linalg.norm(stateVector[:,3:6], axis=1)
+        speedKms = speed/1000
+
     legendLabels=[]
 
     plt.figure(fignumber, figsize=figsize)
+    fig=plt.gcf()
+    ax = fig.gca()
+
 
     if plotType == "x-y":
         xToPlot = stateVectorAU[:, 0]
         yToPlot = stateVectorAU[:, 1]
         xLabel = "X coordinate [AU]"
         yLabel = "Y coordinate [AU]"
-        legendLabels.append("Spacecraft trajectory")
+        legendLabels.append(trajectoryLabel)
+    elif plotType == "time-altitude":
+        # if dataArrayType != "bodyData":
+        #     logger.info("ERROR: Must use bodyData input for a time-altitude plot")
+        #     sys.exit()
+        xToPlot = years
+        yToPlot = radiiAU
+        xLabel = "Year"
+        yLabel = "Distance from Sun [AU]"
+    elif plotType == "time-speed":
+        xToPlot = years
+        yToPlot = speedKms
+        xLabel = "Year"
+        yLabel = "Spacecraft velocity [km/s]"
     else:
         logger.info("ERROR: Plot type not recognised, ending program")
         sys.exit()
 
-    if plotSun:
-        plt.scatter([0], [0], c="orange")
-        legendLabels.append("Sun")
-
     plt.plot(xToPlot, yToPlot)
-    plt.xlabel(xLabel)
-    plt.ylabel(yLabel)
-    plt.grid()
-    if sameScale: plt.axis('scaled')
-    plt.legend(legendLabels)
-    if xlims is not None: plt.xlim(xlims)
-    if ylims is not None: plt.ylim(ylims)
 
-    if saveFolder is not None:
-        checkFolderExist(saveFolder)
-        plt.savefig(os.path.join(saveFolder, savename ))
+    if not plotOnlyTrajectory:
+        if len(planetsToPlot) != 0:
+            for i in range(len(planetsToPlot)):
+                currentPlanet = planetsToPlot[i]
+                if currentPlanet == "Jupiter":
+                    circleRadius = 5.2
+                    circleColour = 'r'
+                    legendName = "Jupiter"
+                elif currentPlanet == "Earth":
+                    circleRadius = 1.0
+                    circleColour = 'g'
+                    legendName = "Earth"
+                elif currentPlanet == "Mercury":
+                    circleRadius = 0.4
+                    circleColour = 'brown'
+                    legendName = "Mercury"
+
+                circleToPlot = plt.Circle((0, 0), circleRadius, color=circleColour, fill=False)
+                ax.add_patch(circleToPlot)
+                legendLabels.append(legendName)
+
+        if plotSun:
+            plt.scatter([0], [0], c="orange")
+            legendLabels.append("Sun")
+
+        plt.xlabel(xLabel)
+        plt.ylabel(yLabel)
+        plt.grid(which="both")
+        if sameScale: plt.axis('scaled')
+        if logScaleX: plt.xscale("log")
+        if logScaleY: plt.yscale("log")
+        if legendLabelsCustom:
+            legendLabelsTodo = legendLabelsCustom
+        else:
+            legendLabelsTodo = legendLabels
+
+        plt.legend(legendLabelsTodo)
+        if xlims is not None: plt.xlim(xlims)
+        if ylims is not None: plt.ylim(ylims)
+
+        if saveFolder is not None:
+            checkFolderExist(saveFolder)
+            plt.savefig(os.path.join(saveFolder, savename ))
 
 # Function to load magfield data from voyager datafiles. load type is based on year coverage: can be "7789" or "9004"
 def loadVoyagerMagfieldData(dirPath, loadType="7789"):
@@ -1275,6 +1407,366 @@ def voyagerArrayToPlotArray(inputArray, inputType="7789", trajectoryDataArray=No
 
 
 
+#######################################################################################################################
+####################################### Current VNV Related functions #########################################################
+#######################################################################################################################
+
+# Some common variables to use for the verification cals, and to put into the relevant jsons
+baseJsonFilename = "testVariablesCurrentVnV_%s.json"
+
+V_1a = np.array([0, 30000, 0])
+B_1a = 1E-9*np.array([4.782, 4.420, 0])
+l_1a = np.array([0,0,1])
+sigma_1a = 4.86E7
+A_1a = 4.704E-4
+Ic_1a = 2E-3
+L_1a = 10
+jsonFilename_1a = baseJsonFilename %"1a"
+thrustDirectionConfig_1a = "nominalPrograde"
+baseVariables_1a = [V_1a, B_1a, l_1a, sigma_1a, A_1a, Ic_1a, L_1a, jsonFilename_1a, thrustDirectionConfig_1a]
+
+V_1b =V_1a
+B_1b = B_1a
+l_1b = np.array([0,0,-1])
+sigma_1b = sigma_1a
+A_1b = A_1a
+Ic_1b = Ic_1a
+L_1b = L_1a
+jsonFilename_1b = baseJsonFilename %"1b"
+thrustDirectionConfig_1b = "nominalRetrograde"
+baseVariables_1b = [V_1b, B_1b, l_1b, sigma_1b, A_1b, Ic_1b, L_1b, jsonFilename_1b, thrustDirectionConfig_1b]
+
+V_2a = 30000 * np.array([-0.106, 0.534, 0.623])
+B_2a = 6.51E-9*np.array([0.217, -0.173, -0.801])
+l_2a_temp = np.array([0.141, 0.702, -0.361])
+l_2a = l_2a_temp / np.linalg.norm(l_2a_temp)
+sigma_2a = 5.952E7
+A_2a = 5E-3
+Ic_2a = 37.2E-3
+L_2a = 531
+jsonFilename_2a = baseJsonFilename %"2a"
+thrustDirectionConfig_2a = "currentArbitraryVNV"
+baseVariables_2a = [V_2a, B_2a, l_2a, sigma_2a, A_2a, Ic_2a, L_2a, jsonFilename_2a, thrustDirectionConfig_2a]
+
+# SUPER TEMP, TODO: REMOVE ME WHEN DONE AND DO PROPERLY
+V_valid = np.array([0, 7350, 0])
+B_valid_mag = 17500E-9 # from https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#igrfwmm
+B_valid = B_valid_mag*np.array([0,0,-1]) # Note: magfield does in fact point DOWN
+l_valid = np.array([-1,0,0])
+sigma_valid =3.4014E7
+A_valid = 1.9635E-7
+Ic_valid = 0.01 #TODO: add me
+L_valid = 500
+
+baseVariables_valid = [V_valid, B_valid, l_valid, sigma_valid, A_valid, Ic_valid, L_valid, "oogabooga", "oogabooga2"]
+
+# Class to calculate current VNV stuff all in one go, using class functions and variables
+class currentVNVCalcs:
+
+    def __init__(self, baseVariablesList):
+        # initialise some self values
+        self.baseVariablesList = baseVariablesList
+        self.V = baseVariablesList[0]
+        self.B = baseVariablesList[1]
+        self.l = baseVariablesList[2]
+        self.sigma = baseVariablesList[3]
+        self.A = baseVariablesList[4]
+        self.Ic = baseVariablesList[5]
+        self.L = baseVariablesList[6]
+
+        # Create but do not set some values
+        self.Em = None
+        self.I0 = None
+        self.ic = None
+        self.lambdaA = None
+        self.iavg = None
+        self.Iavg = None
+        self.IavgVector = None
+        self.F = None
+        self.FMagnitude = None
+        self.outputVector = None
+
+        # Use functions to intialise and calculate all other values
+        self.updateAllValues()
+
+
+    def calculateEm(self):
+        cross = np.cross(self.V, self.B, axis=0)
+        dot = np.dot(cross, self.l) # TODO: Check this! Should be based on length somehwat?
+        return dot
+
+    def calculateI0(self):
+        return self.sigma * self.Em * self.A
+
+    def calculateic(self):
+        return self.Ic / self.I0
+
+    def calculatelambdaA(self):
+        term1 = 2*self.ic - self.ic**2
+        # print(term1)
+        term2 = abs(term1)**(2.0/3.0)
+        # print(term1**(2.0/3.0))
+        # print(term2)
+        return abs(term2)
+
+    def calculateiavg(self):
+        return - (1/(5*self.L))*self.lambdaA**(5.0/2.0) + 0.5*self.lambdaA**(3.0/2.0)
+
+    def calculateIavg(self):
+        return self.iavg * self.I0
+
+    def calculateIavgVector(self):
+        return abs(self.Iavg) * self.l
+
+    def calculateF(self):
+        return np.cross(self.IavgVector, self.B)
+
+    def calculateFMagnitude(self):
+        return np.linalg.norm(self.F)
+
+    def updateAllValues(self):
+        self.Em = self.calculateEm()
+        self.I0 = self.calculateI0()
+        self.ic = self.calculateic()
+        self.lambdaA = self.calculatelambdaA()
+        self.iavg = self.calculateiavg()
+        self.Iavg = self.calculateIavg()
+        self.IavgVector = self.calculateIavgVector()
+        self.F = self.calculateF()
+        self.FMagnitude = self.calculateFMagnitude()
+        self.outputVector = np.array([self.Em*1E5, self.I0, self.ic*1E4, self.lambdaA, self.iavg*1E4, self.Iavg, self.FMagnitude*1E11])
+
+    def printAllVNVValues(self, VNVString=""):
+
+        logger.info("========================================")
+        logger.info("===== Reference data output for VNV Type %s =====" %VNVString)
+        logger.info("========================================")
+
+        logger.info("---- Input values ----")
+        logger.info("V: "+ str(self.V))
+        logger.info("B: "+ str(self.B))
+        logger.info("l: "+ str(self.l))
+        logger.info("sigma: "+ str(self.sigma))
+        logger.info("A: "+ str(self.A))
+        logger.info("Ic: "+ str(self.Ic))
+        logger.info("L: "+ str(self.L) + "\n")
+
+        logger.info("---- Output values ----")
+        logger.info("Em: "+ str(self.Em))
+        logger.info("I0: "+ str(self.I0))
+        logger.info("ic: "+ str(self.ic))
+        logger.info("lambdaA: "+ str(self.lambdaA))
+        logger.info("iavg: "+ str(self.iavg))
+        logger.info("Iavg: "+ str(self.Iavg))
+        logger.info("IavgVector: "+ str(self.IavgVector))
+        logger.info("F: "+ str(self.F))
+        logger.info("F magnitude: "+ str(self.FMagnitude))
+
+        print("\n\n")
+
+
+
+def createCurrentVNVJsons(allBaseVariables,
+                          jsonTemplatePath=os.path.join(jsonInputs_dir, "testVariables.json"),
+                          jsonSaveToDir=os.path.join(jsonInputs_dir, "VnV")):
+
+    #### Set list of keys in json to be changed #####
+
+    listOfChangeKeys = [
+        # Imposed Magfield Settings
+        ["ImposedMagField", "imposingMagField"],
+        ["ImposedMagField", "B1_nT"],
+        ["ImposedMagField", "B2_nT"],
+        ["ImposedMagField", "B3_nT"],
+        # Termination settings
+        ["GuidanceConfigs", "terminationSettings", "terminationType"],
+        ["GuidanceConfigs", "terminationSettings", "timeTerminationYears"],
+        # Initial State
+        ["GuidanceConfigs", "initialStateType"],
+        ["GuidanceConfigs", "vehicleInitialCartesian", "x1_m"],
+        ["GuidanceConfigs", "vehicleInitialCartesian", "x2_m"],
+        ["GuidanceConfigs", "vehicleInitialCartesian", "x3_m"],
+        ["GuidanceConfigs", "vehicleInitialCartesian", "v1_ms"],
+        ["GuidanceConfigs", "vehicleInitialCartesian", "v2_ms"],
+        ["GuidanceConfigs", "vehicleInitialCartesian", "v3_ms"],
+        ["GuidanceConfigs", "integratorSettings", "initialTimeStep"],
+        ["GuidanceConfigs", "thrustMagnitudeConfig"],
+        ["GuidanceConfigs", "thrustDirectionConfig"],
+        # EDT Configs
+        ["EDTConfigs", "tetherLength"],
+        ["EDTConfigs", "emitterCurrentmA"],
+        ["EDTConfigs", "imposedAreaBool"],
+        ["EDTConfigs", "imposedArea"],
+        # Save Data Configs
+        ["saveDataConfigs", "outputSubFolder"],
+        ["saveDataConfigs", "baseFilename"],
+        ["saveDataConfigs", "dataTypesToSave", "propData"],
+        ["saveDataConfigs", "dataTypesToSave", "magneticField"],
+        ["saveDataConfigs", "dataTypesToSave", "ionosphere"],
+        ["saveDataConfigs", "dataTypesToSave", "thrust"],
+        ["saveDataConfigs", "dataTypesToSave", "current"],
+        ["saveDataConfigs", "dataTypesToSave", "currentVNV"],
+        ["saveDataConfigs", "dataTypesToSave", "bodyData"],
+        ["saveDataConfigs", "dataTypesToSave", "dependentVariables"],
+        # Material Properties
+        ["materialProperties", "imposedConductivityBool"],
+        ["materialProperties", "imposedConductivity"]
+    ]
+
+    ###### For each set of base variables, create a new json ########
+
+    for i in range(len(allBaseVariables)):
+        V, B, l, sigma, A, Ic, L, jsonFilename, thrustDirectionConfig = allBaseVariables[i]
+
+        outputSubFolderBase = "currentThrustVnV_%s"
+        baseFilenameBase = "currentThrustVnV_%s-"
+
+        if "1a" in jsonFilename:
+            namingInsert = "1a"
+        elif "1b" in jsonFilename:
+            namingInsert = "1b"
+        elif "2a" in jsonFilename:
+            namingInsert = "2a"
+        else:
+            logger.info("ERROR: type of current vnv not recognised")
+
+        #### Set values for list of key values to change, some common, some from base variables ########
+
+        listOfChangeValues = [
+            # Imposed Magfield Settings
+            True,
+            B[0]*1E9,
+            B[1]*1E9,
+            B[2]*1E9,
+            # Termination settings
+            "nominalTimeTermination",
+            0.000001,
+            # Initial State
+            "Cartesian",
+            1.496E11,
+            0,
+            0,
+            V[0],
+            V[1],
+            V[2],
+            1E-20,
+            "nominal",
+            thrustDirectionConfig,
+            # EDT Configs
+            L,
+            Ic*1E3,
+            True,
+            A,
+            # Save Data Configs
+            outputSubFolderBase %namingInsert,
+            baseFilenameBase %namingInsert,
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            True,
+            # Material Properties
+            True,
+            sigma
+        ]
+
+        createModifiedJson(jsonTemplatePath, jsonSaveToDir, jsonFilename, listOfChangeKeys, listOfChangeValues)
+
+
+def getCurrentVNVDataLine(VnVSubDirCurrent, VNVString, printing=True, savename="templateXX.txt"):
+
+    currentVNV_simulated_allData = getAllSimDataFromFolder(VnVSubDirCurrent)
+    currentVNV_simulated_currentVNVData = currentVNV_simulated_allData[7][1, :]
+    currentVNV_simulated_propData = currentVNV_simulated_allData[5][1, :]
+    currentVNV_simulated_magData = currentVNV_simulated_allData[4][1, :]
+
+    Em = currentVNV_simulated_currentVNVData[1]
+    I0 = currentVNV_simulated_currentVNVData[2]
+    ic = currentVNV_simulated_currentVNVData[3]
+    lambdaA = currentVNV_simulated_currentVNVData[4]
+    iavg = currentVNV_simulated_currentVNVData[5]
+    Iavg = currentVNV_simulated_currentVNVData[6]
+    IavgVector = currentVNV_simulated_currentVNVData[7:10]
+
+    currentVNV_simulated_thrustData = currentVNV_simulated_allData[6][1, :]
+    FMagnitude = currentVNV_simulated_thrustData[1]
+    F = currentVNV_simulated_thrustData[2:5]
+
+    V = currentVNV_simulated_propData[4:7]
+    B = currentVNV_simulated_magData[6:9]
+    l = currentVNV_simulated_currentVNVData[11:14]
+    sigma = currentVNV_simulated_currentVNVData[14]
+    A = currentVNV_simulated_currentVNVData[15]
+    Ic =currentVNV_simulated_currentVNVData[10]
+    L = currentVNV_simulated_currentVNVData[16]
+
+    outputVector = np.array([Em*1E5, I0, ic*1E4, lambdaA, iavg*1E4, Iavg, FMagnitude*1E11])
+    if printing:
+        logger.info("========================================")
+        logger.info("===== Simulation data output for VNV Type %s =====" %VNVString)
+        logger.info("========================================")
+
+        logger.info("---- Input values ----")
+        logger.info("V: "+ str(V))
+        logger.info("B: "+ str(B))
+        logger.info("l: "+ str(l))
+        logger.info("sigma: "+ str(sigma))
+        logger.info("A: "+ str(A))
+        logger.info("Ic: "+ str(Ic))
+        logger.info("L: "+ str(L) + "\n")
+
+        logger.info("---- Output values ----")
+        logger.info("Em: "+ str(Em))
+        logger.info("I0: "+ str(I0))
+        logger.info("ic: "+ str(ic))
+        logger.info("lambdaA: "+ str(lambdaA))
+        logger.info("iavg: "+ str(iavg))
+        logger.info("Iavg: "+ str(Iavg))
+        logger.info("IavgVector: "+ str(IavgVector))
+        logger.info("F: "+ str(F))
+        logger.info("F magnitude: "+ str(FMagnitude))
+        # np.savetxt(os.path.join(pyplots_dir, savename), outputVector, newline=" & ")
+        print("\n\n")
+
+    return outputVector
+
+# print(os.path.join(cppApplications_dir, "application_GA_calculator"))
+
+
+#######################################################################################################################
+####################################### Current VNV Related functions #########################################################
+#######################################################################################################################
+
+def rescaleAndSavePlot(fignumber, xlims, ylims, saveFolder, savename, figsize=figSizeDefault):
+
+    plt.figure(fignumber, figsize=figsize)
+
+    plt.xlim(xlims)
+    plt.ylim(ylims)
+
+    checkFolderExist(saveFolder)
+    plt.savefig(os.path.join(saveFolder, savename ))
+
+# Function to do the opposite of interpolation - a large array is mapped to the size of the small array, using values along the first column
+def reverseInterpolateArrays(smallArray, largeArray):
+    outputArray = np.zeros(np.shape(smallArray))
+
+    for i in range(len(smallArray)):
+        rawTime = smallArray[i, 0]
+
+        referenceClosestIndex = findNearestInArray(largeArray[:,0], rawTime)[1]
+
+        newReferenceRow = largeArray[referenceClosestIndex]
+        outputArray[i] = newReferenceRow
+
+    return outputArray
+
+#######################################################################################################################
+####################################### Final Simulation related functions #########################################################
+#######################################################################################################################
 
 
 

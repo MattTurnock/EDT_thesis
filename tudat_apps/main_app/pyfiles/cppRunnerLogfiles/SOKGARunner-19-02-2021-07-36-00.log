@@ -1,0 +1,45 @@
+2021-02-19 07:36:00,087 - 
+
+Running application application_simulation_SSO-CHB, with json SOKGA_init.json
+
+2021-02-19 07:36:00,092 - ===============Loading Variables From File==================
+2021-02-19 07:36:00,092 - ===============Prepping Sim==================
+2021-02-19 07:36:00,092 -  -- Loading spice kernels -- 
+2021-02-19 07:36:00,115 -  -- Creating environment class -- 
+2021-02-19 07:36:00,115 - B0 for year 2001.3 : 7.26651
+2021-02-19 07:36:00,115 -  -- Creating Config class -- 
+2021-02-19 07:36:00,115 -  -- Creating Guidance class -- 
+2021-02-19 07:36:00,115 - Updating guidance settings
+2021-02-19 07:36:00,115 -  -- Creating Propbodies class -- 
+2021-02-19 07:36:00,115 - Using bodies: 
+2021-02-19 07:36:00,115 - Sun
+2021-02-19 07:36:00,115 - Mercury
+2021-02-19 07:36:00,115 - Venus
+2021-02-19 07:36:00,115 - Earth
+2021-02-19 07:36:00,115 - Mars
+2021-02-19 07:36:00,115 - Jupiter
+2021-02-19 07:36:00,115 - Saturn
+2021-02-19 07:36:00,115 - Uranus
+2021-02-19 07:36:00,115 - Neptune
+2021-02-19 07:36:00,115 - Effective SRP radiation coefficient of vehicle: 0.5
+2021-02-19 07:36:00,115 - Effective SRP reference area of vehicle       : 2.4
+2021-02-19 07:36:00,115 - Spacecraft Mass                               : 100
+2021-02-19 07:36:00,116 -  -- Creating Propsettings class -- 
+2021-02-19 07:36:00,116 - INITIAL EPHEMERIS YEAR: 2000
+2021-02-19 07:36:00,116 - INITIAL EPHEMERIS TIME: 0
+2021-02-19 07:36:00,116 - ====================Propagating==========================
+2021-02-19 07:36:00,116 - Dependent variables being saved, output vectors contain: 
+2021-02-19 07:36:00,116 - Vector entry, Vector contents
+2021-02-19 07:36:00,116 - 0, Kepler elements of Vehicle w.r.t. Sun
+2021-02-19 07:36:00,116 - 6, Relative distance of Vehicle w.r.t. Sun
+2021-02-19 07:36:00,116 - 7, Single acceleration in inertial frame of type cannonball radiation pressure , acting on Vehicle, exerted by Sun
+2021-02-19 07:36:00,588 - ====================Saving Data==========================
+2021-02-19 07:36:00,589 - Saving propData
+2021-02-19 07:36:00,591 - Saving magneticFieldData
+2021-02-19 07:36:00,621 - Saving ionosphericData
+2021-02-19 07:36:00,635 - Saving thrustData
+2021-02-19 07:36:00,659 - Saving currentData
+2021-02-19 07:36:00,687 - Saving currentVNVData
+2021-02-19 07:36:00,729 - Saving bodyData
+2021-02-19 07:36:00,763 - Saving dependentVariableData
+2021-02-19 07:36:00,766 - Program finished 

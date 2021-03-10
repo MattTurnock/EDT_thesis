@@ -1,0 +1,90 @@
+2021-03-05 09:37:39,332 - 
+
+Running application application_simulation_SSO-CHB, with json InO_init.json
+
+2021-03-05 09:37:39,337 - ===============Loading Variables From File==================
+2021-03-05 09:37:39,337 - ===============Prepping Sim==================
+2021-03-05 09:37:39,337 -  -- Loading spice kernels -- 
+2021-03-05 09:37:39,363 -  -- Creating environment class -- 
+2021-03-05 09:37:39,363 - B0 for year 2001.3 : 7.26651
+2021-03-05 09:37:39,363 -  -- Creating Config class -- 
+2021-03-05 09:37:39,363 -  -- Creating Guidance class -- 
+2021-03-05 09:37:39,363 - Updating guidance settings
+2021-03-05 09:37:39,363 -  -- Creating Propbodies class -- 
+2021-03-05 09:37:39,363 - Using bodies: 
+2021-03-05 09:37:39,363 - Sun
+2021-03-05 09:37:39,363 - Mercury
+2021-03-05 09:37:39,363 - Venus
+2021-03-05 09:37:39,364 - Earth
+2021-03-05 09:37:39,364 - Mars
+2021-03-05 09:37:39,364 - Jupiter
+2021-03-05 09:37:39,364 - Saturn
+2021-03-05 09:37:39,364 - Uranus
+2021-03-05 09:37:39,364 - Neptune
+2021-03-05 09:37:39,364 - Effective SRP radiation coefficient of vehicle: 0.5
+2021-03-05 09:37:39,364 - Effective SRP reference area of vehicle       : 2.4
+2021-03-05 09:37:39,364 - Spacecraft Mass                               : 100
+2021-03-05 09:37:39,364 -  -- Creating Propsettings class -- 
+2021-03-05 09:37:39,364 - INITIAL EPHEMERIS YEAR: 2041.03
+2021-03-05 09:37:39,364 - INITIAL EPHEMERIS TIME: 1.29489e+09
+2021-03-05 09:37:39,364 - ====================Propagating==========================
+2021-03-05 09:37:39,364 - Dependent variables being saved, output vectors contain: 
+2021-03-05 09:37:39,364 - Vector entry, Vector contents
+2021-03-05 09:37:39,364 - 0, Kepler elements of Vehicle w.r.t. Sun
+2021-03-05 09:37:39,364 - 6, Relative distance of Vehicle w.r.t. Sun
+2021-03-05 09:37:39,364 - 7, Single acceleration in inertial frame of type cannonball radiation pressure , acting on Vehicle, exerted by Sun
+2021-03-05 09:37:41,888 - ====================Saving Data==========================
+2021-03-05 09:37:41,891 - Saving propData
+2021-03-05 09:37:41,903 - Saving magneticFieldData
+2021-03-05 09:37:42,065 - Saving ionosphericData
+2021-03-05 09:37:42,141 - Saving thrustData
+2021-03-05 09:37:42,286 - Saving currentData
+2021-03-05 09:37:42,447 - Saving currentVNVData
+2021-03-05 09:37:42,727 - Saving bodyData
+2021-03-05 09:37:42,893 - Saving dependentVariableData
+2021-03-05 09:37:42,909 - Program finished 
+2021-03-05 09:37:43,902 - 
+
+Running application application_simulation_SSO-CHB, with json InO_stage2.json
+
+2021-03-05 09:37:43,908 - ===============Loading Variables From File==================
+2021-03-05 09:37:43,908 - ===============Prepping Sim==================
+2021-03-05 09:37:43,908 -  -- Loading spice kernels -- 
+2021-03-05 09:37:43,930 -  -- Creating environment class -- 
+2021-03-05 09:37:43,930 - B0 for year 2001.3 : 7.26651
+2021-03-05 09:37:43,930 -  -- Creating Config class -- 
+2021-03-05 09:37:43,930 -  -- Creating Guidance class -- 
+2021-03-05 09:37:43,930 - Updating guidance settings
+2021-03-05 09:37:43,930 -  -- Creating Propbodies class -- 
+2021-03-05 09:37:43,931 - Using bodies: 
+2021-03-05 09:37:43,931 - Sun
+2021-03-05 09:37:43,931 - Mercury
+2021-03-05 09:37:43,931 - Venus
+2021-03-05 09:37:43,931 - Earth
+2021-03-05 09:37:43,931 - Mars
+2021-03-05 09:37:43,931 - Jupiter
+2021-03-05 09:37:43,931 - Saturn
+2021-03-05 09:37:43,931 - Uranus
+2021-03-05 09:37:43,931 - Neptune
+2021-03-05 09:37:43,931 - Effective SRP radiation coefficient of vehicle: 0.5
+2021-03-05 09:37:43,931 - Effective SRP reference area of vehicle       : 2.4
+2021-03-05 09:37:43,931 - Spacecraft Mass                               : 100
+2021-03-05 09:37:43,931 -  -- Creating Propsettings class -- 
+2021-03-05 09:37:43,931 - INITIAL EPHEMERIS YEAR: 2045.73
+2021-03-05 09:37:43,931 - INITIAL EPHEMERIS TIME: 1.44297e+09
+2021-03-05 09:37:43,931 - ====================Propagating==========================
+2021-03-05 09:37:43,931 - Dependent variables being saved, output vectors contain: 
+2021-03-05 09:37:43,931 - Vector entry, Vector contents
+2021-03-05 09:37:43,931 - 0, Kepler elements of Vehicle w.r.t. Sun
+2021-03-05 09:37:43,931 - 6, Relative distance of Vehicle w.r.t. Sun
+2021-03-05 09:37:43,931 - 7, Single acceleration in inertial frame of type cannonball radiation pressure , acting on Vehicle, exerted by Sun
+2021-03-05 09:38:44,026 - ====================Saving Data==========================
+2021-03-05 09:38:44,072 - Saving propData
+2021-03-05 09:38:44,209 - Saving magneticFieldData
+2021-03-05 09:38:48,069 - Saving ionosphericData
+2021-03-05 09:38:49,772 - Saving thrustData
+2021-03-05 09:38:53,096 - Saving currentData
+2021-03-05 09:38:56,691 - Saving currentVNVData
+2021-03-05 09:39:03,133 - Saving bodyData
+2021-03-05 09:39:06,900 - Saving dependentVariableData
+2021-03-05 09:39:07,109 - Program finished 

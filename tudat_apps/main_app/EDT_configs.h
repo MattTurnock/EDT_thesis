@@ -83,6 +83,12 @@ namespace EDTs {
                 // TODO: Add some stuff here if we use the other types
             }
 
+            if (imposedAreaBool_){
+                xSecAreaTotal_ = imposedArea_;
+                xSecAreaOuter_ = imposedArea_;
+                xSecAreaInner_ = 0;
+            }
+
             // Tether cross sectional areas
 //            xSecAreaTotal_ = gen::getCircleArea(tetherAreaOuter_); //TODO: make a function that calculates cross sectional area, depending on config type
 //            xSecAreaInner_ = gen::getCircleArea(tetherAreaInner_);
@@ -118,7 +124,11 @@ namespace EDTs {
                 resistivity_ = resistivityAl_;
             }
 
-            xSecAreaConducting_ = xSecAreaHoytetherPrimaryTotal_; // TODO: This assumes all designs use hoytether - ensure this is true in final sims!
+            if (imposedConductivityBool_){
+                resistivity_ = 1.0/imposedConductivity_;
+            }
+
+            xSecAreaConducting_ = xSecAreaTotal_;
             conductivity_ = resistivityToConductivity(resistivity_);
             EDTResistance_ = calculateResistance(resistivity_, length_, xSecAreaConducting_); // TODO: Check length correct
 
@@ -273,6 +283,8 @@ namespace EDTs {
         double length_ = configVariables_["tetherLength"];
         double tetherAreaInner_ = configVariables_["tetherAreaInner"];
         double tetherAreaOuter_ = configVariables_["tetherAreaOuter"];
+        bool imposedAreaBool_ = configVariables_["imposedAreaBool"];
+        double imposedArea_ = configVariables_["imposedArea"];
         double tetherDiameterInner_;
         double tetherDiameterOuter_; // Is set from the above areas, as is inner
 
@@ -324,6 +336,8 @@ namespace EDTs {
 
         // Create derived EDT properties - other
         nlohmann::json materialProperties_;
+        bool imposedConductivityBool_ = materialProperties_["imposedConductivityBool"];
+        double imposedConductivity_ = materialProperties_["imposedConductivity"];
         double resistivityAl_ = materialProperties_["resistivity"]["Al"];
         double resistivityCu_ = materialProperties_["resistivity"]["Cu"];
         double resistivity_;

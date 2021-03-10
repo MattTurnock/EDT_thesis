@@ -103,6 +103,7 @@ public:
                 // Convert local magfield to inertial and calculate magnitude
                 magField_ = gen::LvlhToInertial(magFieldLvlh_, theta_);
                 magFieldMagnitude_ = magFieldMaglocal_.norm();
+
 //            std::cout << "Magfield  B0 - phi0 - magnitude - R - R0: " << B0_ << " - " << phi0_ << " - " << magFieldMagnitude_ << " - " << R_ << " - " << R0_ << std::endl;
             }
 
@@ -140,6 +141,7 @@ public:
         // Update B0 using approximate sin relationship (need to convert to proper time, and result is in nT)
         simulationTimeYears_ = gen::tudatTime2DecimalYear(simulationTime);
         B0_ = gen::twoSines(simulationTimeYears_, B0EstimationParameters_);
+
     }
 
 

@@ -120,6 +120,8 @@ namespace gen {
     }
 
 
+
+
     ////////////////////////// Functions for GA related things ///////////////////////////////////////
 
     // Function to normalise or denormlaise deltaV or TOF, based on given bounds
@@ -353,8 +355,8 @@ namespace gen {
 
     // Function to get unit current I_0
     double getUnitCurrent(double conductivity, double motionalEMF, double tetherCrossSectionalArea){
-        std::cout << "Conductivity: " << conductivity << std::endl; // TODO:remove me
-        std::cout << "tetherCrossSectionalArea: " << tetherCrossSectionalArea << std::endl; // TODO:remove me
+//        std::cout << "Conductivity: " << conductivity << std::endl; // TODO:remove me
+//        std::cout << "tetherCrossSectionalArea: " << tetherCrossSectionalArea << std::endl; // TODO:remove me
         return conductivity * motionalEMF * tetherCrossSectionalArea;
     }
 
@@ -367,10 +369,10 @@ namespace gen {
     double getAvgDimensionlessCurrent(double tetherLength, double dimensionlessVoltageA){
         double term1 = -(1/(5*tetherLength))*pow(dimensionlessVoltageA, 5.0/2.0);
         double term2 = 0.5*pow(dimensionlessVoltageA, 3.0/2.0);
-        std::cout << "tetherLength: " << tetherLength << std::endl; // TODO: remove me
-        std::cout << "dimensionlessVoltageA: " << dimensionlessVoltageA << std::endl; // TODO: remove me
-        std::cout << "Term1: " << term1 << std::endl; // TODO: remove me
-        std::cout << "Term2: " << term2 << std::endl; // TODO: remove me
+//        std::cout << "tetherLength: " << tetherLength << std::endl; // TODO: remove me
+//        std::cout << "dimensionlessVoltageA: " << dimensionlessVoltageA << std::endl; // TODO: remove me
+//        std::cout << "Term1: " << term1 << std::endl; // TODO: remove me
+//        std::cout << "Term2: " << term2 << std::endl; // TODO: remove me
 
         return  term1 + term2;
     }
@@ -392,11 +394,11 @@ namespace gen {
 //            finalReturn = term2;
 //        }
 
-        std::cout << "IN FUNCTION ic: " << ic << std::endl; //TODO: remove me
-        std::cout << "IN FUNCTION term1: " << term1 << std::endl; //TODO: remove me
-        std::cout << "IN FUNCTION absTerm1: " << absTerm1 << std::endl; //TODO: remove me
-        std::cout << "IN FUNCTION term2: " << term2 << std::endl; //TODO: remove me
-//        std::cout << "IN FUNCTION finalReturn: " << finalReturn << std::endl; //TODO: remove me
+//        std::cout << "IN FUNCTION ic: " << ic << std::endl; //TODO: remove me
+//        std::cout << "IN FUNCTION term1: " << term1 << std::endl; //TODO: remove me
+//        std::cout << "IN FUNCTION absTerm1: " << absTerm1 << std::endl; //TODO: remove me
+//        std::cout << "IN FUNCTION term2: " << term2 << std::endl; //TODO: remove me
+
         return term2;
 //        return pow( (2*ic - pow(ic, 2)), 2/3 );
     }

@@ -1,0 +1,88 @@
+2020-12-18 11:45:42,003 - Ignoring file: testVariablesParkerReferenceVnV.json
+2020-12-18 11:45:42,003 - Ignoring file: testVariablesParkerVnV.json
+2020-12-18 11:45:42,003 - Ignoring file: testVariablesSRPNominalVnV.json
+2020-12-18 11:45:42,003 - Ignoring file: testVariablesSRPZeroAreaVnV.json
+2020-12-18 11:45:42,003 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_1a.json
+
+2020-12-18 11:45:42,008 - ===============Loading Variables From File==================
+2020-12-18 11:45:42,009 - ===============Prepping Sim==================
+2020-12-18 11:45:42,009 -  -- Loading spice kernels -- 
+2020-12-18 11:45:42,030 -  -- Creating environment class -- 
+2020-12-18 11:45:42,030 - B0 for year 2001.3 : 7.26651
+2020-12-18 11:45:42,030 -  -- Creating Config class -- 
+2020-12-18 11:45:42,030 -  -- Creating Guidance class -- 
+2020-12-18 11:45:42,030 - Updating guidance settings
+2020-12-18 11:45:42,030 -  -- Creating Propbodies class -- 
+2020-12-18 11:45:42,030 - Using bodies: 
+2020-12-18 11:45:42,031 - Sun
+2020-12-18 11:45:42,031 - Mercury
+2020-12-18 11:45:42,031 - Venus
+2020-12-18 11:45:42,031 - Earth
+2020-12-18 11:45:42,031 - Mars
+2020-12-18 11:45:42,031 - Jupiter
+2020-12-18 11:45:42,031 - Saturn
+2020-12-18 11:45:42,031 - Uranus
+2020-12-18 11:45:42,031 - Neptune
+2020-12-18 11:45:42,031 - thrust acceleration added to vehicle
+2020-12-18 11:45:42,031 - Effective SRP radiation coefficient of vehicle: 0.5
+2020-12-18 11:45:42,031 - Effective SRP reference area of vehicle       : 2.4
+2020-12-18 11:45:42,031 - Spacecraft Mass                               : 100
+2020-12-18 11:45:42,031 -  -- Creating Propsettings class -- 
+2020-12-18 11:45:42,119 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_1b.json
+
+2020-12-18 11:45:42,123 - ===============Loading Variables From File==================
+2020-12-18 11:45:42,123 - ===============Prepping Sim==================
+2020-12-18 11:45:42,123 -  -- Loading spice kernels -- 
+2020-12-18 11:45:42,145 -  -- Creating environment class -- 
+2020-12-18 11:45:42,146 - B0 for year 2001.3 : 7.26651
+2020-12-18 11:45:42,146 -  -- Creating Config class -- 
+2020-12-18 11:45:42,146 -  -- Creating Guidance class -- 
+2020-12-18 11:45:42,146 - Updating guidance settings
+2020-12-18 11:45:42,146 -  -- Creating Propbodies class -- 
+2020-12-18 11:45:42,146 - Using bodies: 
+2020-12-18 11:45:42,146 - Sun
+2020-12-18 11:45:42,146 - Mercury
+2020-12-18 11:45:42,146 - Venus
+2020-12-18 11:45:42,146 - Earth
+2020-12-18 11:45:42,146 - Mars
+2020-12-18 11:45:42,146 - Jupiter
+2020-12-18 11:45:42,146 - Saturn
+2020-12-18 11:45:42,146 - Uranus
+2020-12-18 11:45:42,146 - Neptune
+2020-12-18 11:45:42,146 - thrust acceleration added to vehicle
+2020-12-18 11:45:42,146 - Effective SRP radiation coefficient of vehicle: 0.5
+2020-12-18 11:45:42,146 - Effective SRP reference area of vehicle       : 2.4
+2020-12-18 11:45:42,146 - Spacecraft Mass                               : 100
+2020-12-18 11:45:42,147 -  -- Creating Propsettings class -- 
+2020-12-18 11:45:42,231 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_2a.json
+
+2020-12-18 11:45:42,236 - ===============Loading Variables From File==================
+2020-12-18 11:45:42,236 - ===============Prepping Sim==================
+2020-12-18 11:45:42,236 -  -- Loading spice kernels -- 
+2020-12-18 11:45:42,258 -  -- Creating environment class -- 
+2020-12-18 11:45:42,258 - B0 for year 2001.3 : 7.26651
+2020-12-18 11:45:42,258 -  -- Creating Config class -- 
+2020-12-18 11:45:42,258 -  -- Creating Guidance class -- 
+2020-12-18 11:45:42,258 - Updating guidance settings
+2020-12-18 11:45:42,258 -  -- Creating Propbodies class -- 
+2020-12-18 11:45:42,258 - Using bodies: 
+2020-12-18 11:45:42,258 - Sun
+2020-12-18 11:45:42,258 - Mercury
+2020-12-18 11:45:42,259 - Venus
+2020-12-18 11:45:42,259 - Earth
+2020-12-18 11:45:42,259 - Mars
+2020-12-18 11:45:42,259 - Jupiter
+2020-12-18 11:45:42,259 - Saturn
+2020-12-18 11:45:42,259 - Uranus
+2020-12-18 11:45:42,259 - Neptune
+2020-12-18 11:45:42,259 - thrust acceleration added to vehicle
+2020-12-18 11:45:42,259 - Effective SRP radiation coefficient of vehicle: 0.5
+2020-12-18 11:45:42,259 - Effective SRP reference area of vehicle       : 2.4
+2020-12-18 11:45:42,259 - Spacecraft Mass                               : 100
+2020-12-18 11:45:42,259 -  -- Creating Propsettings class -- 

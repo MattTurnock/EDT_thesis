@@ -5,6 +5,7 @@ import matplotlib
 from tudatApplications.EDT_thesis.tudat_apps.main_app.pyfiles import utils
 
 matplotlib.rcParams.update({'font.size': 20})
+nT = utils.nT
 
 ########################################################################################################################
 ##################### Regular Parker from simulation plots #############################################################
@@ -15,7 +16,7 @@ VnVReferenceSubDir = "ParkerReferenceVnV"
 VnVSaveFolder = os.path.join("pyplots", "VnV")
 showing=True
 doVoyager = True
-doVoyagerSims = False
+doVoyagerSims = True
 doVoyagerScatters = False
 doReference = False
 
@@ -34,11 +35,13 @@ if doVoyager:
     if doVoyagerSims:
         print("loading sim data")
         allSimData = utils.getAllSimDataFromFolder(VnVSubDir, todoList=["bodyData", "magData"])
-        magDataArray = allSimData[4]
+        magDataArray = allSimData[4] / nT
         bodyDataArray = allSimData[0]
 
-        plt.figure()
-        plt.plot(bodyDataArray[:, 0] / utils.AU, bodyDataArray[:, 1]/utils.AU)
+        plt.figure(1)
+        # plt.plot(bodyDataArray[:, 0] / utils.AU, bodyDataArray[:, 1]/utils.AU)
+        utils.plotTrajectoryData(bodyDataArray, "bodyData")
+        # plt.show()
 
 
         utils.plotMagData(magDataArray, bodyDataArray=bodyDataArray, plotType="radius-magnitude", fignumber=10)
@@ -126,11 +129,11 @@ if doReference:
     print("----- Doing Reference Data Plots -----")
     # Load and plot reference sim data
     allSimDataReference = utils.getAllSimDataFromFolder(VnVReferenceSubDir)
-    magDataArrayReference = allSimDataReference[4]
+    magDataArrayReference = allSimDataReference[4] / nT
     bodyDataArrayReference = allSimDataReference[0]
 
     # utils.plotMagData(magDataArray, logScaleX=False)
-    # utils.plotTrajectoryData(bodyDataArray, figsize=[10,10], plotSun=True)
+    # utils.plotTrajectoryData(bodyDataArray, figsize=[10,10], plotSun=True,fignumber=21)
     utils.plotMagData(magDataArrayReference, bodyDataArray=bodyDataArrayReference, plotType="radius-magnitude", fignumber=20)
 
     utils.plotMagData(utils.referenceParkerDataArray, scatter=False, arrayType="simple-radius-magnitude",

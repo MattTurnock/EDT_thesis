@@ -1,0 +1,83 @@
+2021-02-02 16:15:49,218 - Ignoring file: testVariablesCurrentVnV_1a.json
+2021-02-02 16:15:49,218 - Ignoring file: testVariablesCurrentVnV_1b.json
+2021-02-02 16:15:49,218 - Ignoring file: testVariablesCurrentVnV_2a.json
+2021-02-02 16:15:49,218 - Ignoring file: testVariablesIntegratorGA.json
+2021-02-02 16:15:49,218 - Ignoring file: testVariablesIntegratorGA_Reference.json
+2021-02-02 16:15:49,218 - Ignoring file: testVariablesIntegratorInner.json
+2021-02-02 16:15:49,219 - Ignoring file: testVariablesIntegratorInner_Reference.json
+2021-02-02 16:15:49,219 - Ignoring file: testVariablesParkerReferenceVnV_BACKUP.json
+2021-02-02 16:15:49,219 - Ignoring file: testVariablesParkerVnV_BACKUP.json
+2021-02-02 16:15:49,219 - Ignoring file: testVariablesSRPNominalVnV.json
+2021-02-02 16:15:49,219 - Ignoring file: testVariablesSRPZeroAreaVnV.json
+2021-02-02 16:15:49,219 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesParkerReferenceVnV.json
+
+2021-02-02 16:15:49,225 - ===============Loading Variables From File==================
+2021-02-02 16:15:49,225 - ===============Prepping Sim==================
+2021-02-02 16:15:49,225 -  -- Loading spice kernels -- 
+2021-02-02 16:15:49,248 -  -- Creating environment class -- 
+2021-02-02 16:15:49,248 - B0 for year 2001.3 : 5.83456
+2021-02-02 16:15:49,248 -  -- Creating Config class -- 
+2021-02-02 16:15:49,248 -  -- Creating Guidance class -- 
+2021-02-02 16:15:49,248 - Updating guidance settings
+2021-02-02 16:15:49,248 -  -- Creating Propbodies class -- 
+2021-02-02 16:15:49,249 - Using bodies: 
+2021-02-02 16:15:49,249 - Sun
+2021-02-02 16:15:49,249 - Effective SRP radiation coefficient of vehicle: 1e-20
+2021-02-02 16:15:49,249 - Effective SRP reference area of vehicle       : 2e-20
+2021-02-02 16:15:49,249 - Spacecraft Mass                               : 100
+2021-02-02 16:15:49,249 -  -- Creating Propsettings class -- 
+2021-02-02 16:15:49,249 - INITIAL EPHEMERIS YEAR: 1977
+2021-02-02 16:15:49,249 - INITIAL EPHEMERIS TIME: -7.25825e+08
+2021-02-02 16:15:49,249 - ====================Propagating==========================
+2021-02-02 16:15:49,249 - Dependent variables being saved, output vectors contain: 
+2021-02-02 16:15:49,249 - Vector entry, Vector contents
+2021-02-02 16:15:49,249 - 0, Kepler elements of Vehicle w.r.t. Sun
+2021-02-02 16:15:49,249 - 6, Relative distance of Vehicle w.r.t. Sun
+2021-02-02 16:15:49,249 - 7, Single acceleration in inertial frame of type cannonball radiation pressure , acting on Vehicle, exerted by Sun
+2021-02-02 16:15:49,289 - ====================Saving Data==========================
+2021-02-02 16:15:49,289 - Saving propData
+2021-02-02 16:15:49,290 - Saving magneticFieldData
+2021-02-02 16:15:49,309 - Ignoring ionosphericData
+2021-02-02 16:15:49,309 - Ignoring thrustData
+2021-02-02 16:15:49,309 - Ignoring currentData
+2021-02-02 16:15:49,309 - Ignoring currentVNVData
+2021-02-02 16:15:49,309 - Saving bodyData
+2021-02-02 16:15:49,326 - Ignoring dependentVariableData
+2021-02-02 16:15:49,326 - Program finished 
+2021-02-02 16:15:49,328 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesParkerVnV.json
+
+2021-02-02 16:15:49,332 - ===============Loading Variables From File==================
+2021-02-02 16:15:49,333 - ===============Prepping Sim==================
+2021-02-02 16:15:49,333 -  -- Loading spice kernels -- 
+2021-02-02 16:15:49,353 -  -- Creating environment class -- 
+2021-02-02 16:15:49,354 - B0 for year 2001.3 : 6.97219
+2021-02-02 16:15:49,354 -  -- Creating Config class -- 
+2021-02-02 16:15:49,354 -  -- Creating Guidance class -- 
+2021-02-02 16:15:49,354 - Updating guidance settings
+2021-02-02 16:15:49,354 -  -- Creating Propbodies class -- 
+2021-02-02 16:15:49,354 - Using bodies: 
+2021-02-02 16:15:49,354 - Sun
+2021-02-02 16:15:49,354 - Mercury
+2021-02-02 16:15:49,354 - Venus
+2021-02-02 16:15:49,354 - Earth
+2021-02-02 16:15:49,354 - Mars
+2021-02-02 16:15:49,354 - Jupiter
+2021-02-02 16:15:49,354 - Saturn
+2021-02-02 16:15:49,354 - Uranus
+2021-02-02 16:15:49,354 - Neptune
+2021-02-02 16:15:49,354 - Effective SRP radiation coefficient of vehicle: 1e-20
+2021-02-02 16:15:49,354 - Effective SRP reference area of vehicle       : 2e-20
+2021-02-02 16:15:49,354 - Spacecraft Mass                               : 100
+2021-02-02 16:15:49,354 -  -- Creating Propsettings class -- 
+2021-02-02 16:15:49,354 - INITIAL EPHEMERIS YEAR: 1977
+2021-02-02 16:15:49,354 - INITIAL EPHEMERIS TIME: -7.25825e+08
+2021-02-02 16:15:49,355 - ====================Propagating==========================
+2021-02-02 16:15:49,355 - Dependent variables being saved, output vectors contain: 
+2021-02-02 16:15:49,355 - Vector entry, Vector contents
+2021-02-02 16:15:49,355 - 0, Kepler elements of Vehicle w.r.t. Sun
+2021-02-02 16:15:49,355 - 6, Relative distance of Vehicle w.r.t. Sun
+2021-02-02 16:15:49,355 - 7, Single acceleration in inertial frame of type cannonball radiation pressure , acting on Vehicle, exerted by Sun

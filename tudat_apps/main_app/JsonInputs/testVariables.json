@@ -41,16 +41,16 @@
     "B3_nT": 0.0
   },
   "GuidanceConfigs": {
-    "thrustMagnitudeConfig": "constant",
+    "thrustMagnitudeConfig": "nominal",
     "thrustDirectionConfig": "nominalPrograde",
     "initialEphemerisYear": 2000,
     "integratorSettings": {
       "initialTimeStep": 1.0,
       "integrator": "RK87DP",
       "minimumStepSize": 1E-20,
-      "maximumStepSize": 86400,
-      "relativeErrorTolerance": 1E-10,
-      "absoluteErrorTolerance": 1E-10
+      "maximumStepSize": 1E20,
+      "relativeErrorTolerance": 1E-4,
+      "absoluteErrorTolerance": 1E-4
     },
     "integratorSettingsPerturbed": {
       "initialTimeStep": 1.0,
@@ -85,7 +85,7 @@
       "x3_m": 0,
       "v1_ms": 0,
       "v2_ms": 29784,
-      "v3_ma": 0
+      "v3_ms": 0
     }
   },
   "EDTConfigs": {
@@ -93,6 +93,8 @@
     "tetherLength": 10,
     "tetherAreaInner": 3.92E-5,
     "tetherAreaOuter": 3.92E-5,
+    "imposedAreaBool": false,
+    "imposedArea": 4.704E-4,
     "emitterCurrentmA": 2,
     "hoytether": {
       "tetherAreaInnerSecondary": 3.92E-5,
@@ -113,6 +115,7 @@
       "ionosphere": true,
       "thrust": true,
       "current": true,
+      "currentVNV": true,
       "bodyData": true,
       "dependentVariables": true
     }
@@ -127,6 +130,8 @@
     }
   },
   "materialProperties": {
+    "imposedConductivityBool": false,
+    "imposedConductivity": 4.86E7,
     "resistivity": {
       "Al": 2.65E-8,
       "Cu": 1.68E-8

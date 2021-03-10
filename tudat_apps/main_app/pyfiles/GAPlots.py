@@ -15,9 +15,11 @@ plotFolderBase = "pyplots/GA_%s_%s-%s"
 figNumberCount=1
 
 doingJupiter=True
-doingSaturn=True
-doingMars=True
+plotExampleJupiterTrajectory=True
+doingSaturn=False
+doingMars=False
 showing=True
+
 
 scatterMarkerPorkchops = "x"
 scatterLinewidthsPorkchops = 1
