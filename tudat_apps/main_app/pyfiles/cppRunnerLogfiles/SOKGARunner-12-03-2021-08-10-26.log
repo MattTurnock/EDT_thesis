@@ -1,0 +1,30 @@
+2021-03-12 08:10:26,797 - 
+
+Running application application_simulation_SSO-CHB, with json SOKGA_init.json
+
+2021-03-12 08:10:26,803 - ===============Loading Variables From File==================
+2021-03-12 08:10:26,803 - ===============Prepping Sim==================
+2021-03-12 08:10:26,803 -  -- Loading spice kernels -- 
+2021-03-12 08:10:26,830 -  -- Creating environment class -- 
+2021-03-12 08:10:26,831 - B0 for year 2001.3 : 7.26651
+2021-03-12 08:10:26,831 -  -- Creating Config class -- 
+2021-03-12 08:10:26,943 - 
+
+Running application application_simulation_SSO-CHB, with json SOKGA_stage2.json
+
+2021-03-12 08:10:26,949 - ===============Loading Variables From File==================
+2021-03-12 08:10:26,949 - ===============Prepping Sim==================
+2021-03-12 08:10:26,949 -  -- Loading spice kernels -- 
+2021-03-12 08:10:26,972 -  -- Creating environment class -- 
+2021-03-12 08:10:26,972 - B0 for year 2001.3 : 7.26651
+2021-03-12 08:10:26,972 -  -- Creating Config class -- 
+2021-03-12 08:10:27,071 - 
+
+Running application application_simulation_SSO-CHB, with json SOKGA_reference.json
+
+2021-03-12 08:10:27,075 - ===============Loading Variables From File==================
+2021-03-12 08:10:27,075 - ===============Prepping Sim==================
+2021-03-12 08:10:27,075 -  -- Loading spice kernels -- 
+2021-03-12 08:10:27,098 -  -- Creating environment class -- 
+2021-03-12 08:10:27,098 - B0 for year 2001.3 : 7.26651
+2021-03-12 08:10:27,098 -  -- Creating Config class -- 

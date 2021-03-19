@@ -42,7 +42,7 @@
   },
   "GuidanceConfigs": {
     "thrustMagnitudeConfig": "nominal",
-    "thrustDirectionConfig": "nominalRetrograde",
+    "thrustDirectionConfig": "nominalPrograde",
     "initialEphemerisYear": 2041.03262268973337,
     "integratorSettings": {
       "initialTimeStep": 1.0,
@@ -62,8 +62,8 @@
     },
     "terminationSettings": {
       "terminationType": "proximityTermination",
-      "timeTerminationYears": 70,
-      "absoluteTimeTerminationYear": 2650,
+      "timeTerminationYears": 9999,
+      "absoluteTimeTerminationYear": 2200,
       "proximityTerminationBody1": "Vehicle",
       "proximityTerminationBody2": "Jupiter",
       "proximityTerminationCutoffAU": 0.1,

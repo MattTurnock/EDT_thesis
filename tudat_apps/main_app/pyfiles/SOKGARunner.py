@@ -61,11 +61,11 @@ SOKGAChangeKeys = [ ["GuidanceConfigs", "thrustMagnitudeConfig"],
                     ["saveDataConfigs", "baseFilename"]]
 
 SOKGAChangeValues = [ "nominal",
-                      "nominalRetrograde",
+                      "nominalPrograde",
                       2000 + propData_SOKGA[-1, 0]/utils.year,
                       "nominalTimeTermination",
                       999999,
-                      2100,
+                      2200,
                       "Cartesian",
                       propData_SOKGA[-1, 1],
                       propData_SOKGA[-1, 2],
@@ -98,7 +98,7 @@ SOKGAReferenceChangeKeys = [ ["GuidanceConfigs", "terminationSettings", "termina
 
 SOKGAReferenceChangeValues = [ "nominalTimeTermination",
                                999999,
-                               2100,
+                               2200,
                                0,
                                "SOKGA-Reference/",
                                "SOKGA-Reference-"]

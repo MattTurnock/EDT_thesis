@@ -63,7 +63,7 @@
     "terminationSettings": {
       "terminationType": "nominalTimeTermination",
       "timeTerminationYears": 9999,
-      "absoluteTimeTerminationYear": 2100,
+      "absoluteTimeTerminationYear": 2200,
       "proximityTerminationBody1": "Vehicle",
       "proximityTerminationBody2": "Jupiter",
       "proximityTerminationCutoffAU": 1,

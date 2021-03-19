@@ -16,8 +16,9 @@ doingInO = True
 doingCompare = True
 
 
+
 DEFAULTSIZE = None
-SaveFolder = "pyplots/finalSimsTemp"
+SaveFolder = "pyplots/finalSimsTempv2"
 
 ##################### SSO ########################
 
@@ -187,5 +188,7 @@ if doingCompare:
     utils.plotTrajectoryData(propData_SOKGA_combined, fignumber=42, plotType="time-speed", plotOnlyTrajectory=True)
     utils.plotTrajectoryData(propData_SOKGA_reference, fignumber=42, plotType="time-speed", plotOnlyTrajectory=True)
     utils.plotTrajectoryData(propData_InO_Combined, fignumber=42, plotType="time-speed", plotOnlyTrajectory=False, logScaleY=True, legendLabelsCustom=customLegendTimeSpeedCombined, saveFolder=SaveFolder, savename="Compared-time-speeds.pdf")
+
+
 
 plt.show()
