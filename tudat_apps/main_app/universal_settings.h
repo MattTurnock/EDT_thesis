@@ -128,10 +128,6 @@ namespace univ {
                 bodyMap[ bodyToCreate ]->setGravityFieldModel( std::make_shared< GravityFieldModel >( gravitationalParameter ) );
             }
 
-//            // Create body objects. TODO: Remove me if new system works
-//            bodySettings_ = getDefaultBodySettings( bodiesToCreate_ );
-//            bodyMap = createBodies( bodySettings_ );
-
             // Add vehicle to bodyMap
             bodyMap["Vehicle"] = vehicleConfig.EDTBody;
 
@@ -155,11 +151,11 @@ namespace univ {
 
             // Add acceleration model for cannonball SRP
             SRPReferenceArea_ = vehicleConfig_.getEffectiveSRPArea();
-            SRPCoefficient_ = vehicleConfig_.getEffectiveSRPCoefficient();
+            SRPCoefficient_ = vehicleConfig_.getEffectiveRadiationPressureCoefficient();
 
-            std::cout << "Effective SRP radiation coefficient of vehicle: " << SRPCoefficient_ << std::endl;
-            std::cout << "Effective SRP reference area of vehicle       : " << SRPReferenceArea_ << std::endl;
-            std::cout << "Spacecraft Mass                               : " << vehicleConfig_.getVehicleMass() << std::endl;
+            std::cout << "Effective SRP radiation coefficient of vehicle: " << SRPCoefficient_ << std::endl; // TODO: remove me
+            std::cout << "Effective SRP reference area of vehicle       : " << SRPReferenceArea_ << std::endl; // TODO: remove me
+            std::cout << "Spacecraft Mass                               : " << vehicleConfig_.getVehicleMass() << std::endl; // TODO: remove me
 
             vehicleRadiationPressureSettings_ = std::make_shared< CannonBallRadiationPressureInterfaceSettings >(
                     "Sun", SRPReferenceArea_, SRPCoefficient_);

@@ -90,13 +90,20 @@ int main(int argc, char *argv[] )
     nlohmann::json configVariables = simulationVariables["EDTConfigs"];
     nlohmann::json SRPVariables = simulationVariables["scConfigs"]["SRP"];
     nlohmann::json materialProperties = simulationVariables["materialProperties"];
-    EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(configVariables, configType, SRPVariables, materialProperties);
+    EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(simulationVariables, configVariables, configType, SRPVariables, materialProperties);
 
 
     // Create EDT Guidance class
     std::cout<< " -- Creating Guidance class -- " << std::endl;
     std::string thrustMagnitudeConfig = simulationVariables["GuidanceConfigs"]["thrustMagnitudeConfig"];
     std::string thrustDirectionConfig = simulationVariables["GuidanceConfigs"]["thrustDirectionConfig"];
+    bool useThrust;
+    if (thrustMagnitudeConfig == "disabled") {
+        useThrust = false;
+    }
+    else {
+        useThrust = true;
+    }
 
     EDTGuidance CHBEDTGuidance = EDTGuidance(
             thrustMagnitudeConfig,
@@ -111,7 +118,8 @@ int main(int argc, char *argv[] )
     // Get universal class for propagation bodies
     std::cout<< " -- Creating Propbodies class -- " << std::endl;
 //    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"];
-    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, CHBEDTGuidance, baseBodyMap, simulationVariables, true);
+
+    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, CHBEDTGuidance, baseBodyMap, simulationVariables, useThrust);
 
     // Get universal class for propagation settings + set vehicle initial state
     std::cout<< " -- Creating Propsettings class -- " << std::endl;
@@ -222,6 +230,7 @@ int main(int argc, char *argv[] )
     bool saveBodyData = dataTypesToSave["bodyData"];
     bool saveDependentVariablesData = dataTypesToSave["dependentVariables"];
     bool saveCurrentVNVData = dataTypesToSave["currentVNV"];
+    bool saveConfigInfo = dataTypesToSave["configInfo"];
 
     // Check which data types to save, and save them
 
@@ -351,6 +360,65 @@ int main(int argc, char *argv[] )
     }
     else{
         std::cout << "Ignoring dependentVariableData" << std::endl;
+    }
+
+    ///// This portion saves all relevant info about the configuration including derived variables such as mass etc ////
+
+    // Initialise save map and vector
+    std::map < std::string, Eigen::VectorXd > configInfoMap;
+    Eigen::VectorXd configInfoVector;
+    configInfoVector.resize(31);
+//    std::string TEMPNAME = "Boop";
+    configInfoVector[0] = CHBEDTConfig.getResistivity();
+    configInfoVector[1] = CHBEDTConfig.getVehicleConductivity();
+    configInfoVector[2] = CHBEDTConfig.getEDTResistance();
+    configInfoVector[3] = CHBEDTConfig.getVehicleMass();
+    configInfoVector[4] = CHBEDTConfig.getTetherMass();
+    configInfoVector[5] = CHBEDTConfig.getCompositeMaterialDensity();
+    configInfoVector[6] = CHBEDTConfig.getTetherAreaInner();
+    configInfoVector[7] = CHBEDTConfig.getTetherAreaOuter();
+    configInfoVector[8] = CHBEDTConfig.getTetherAreaInnerSecondary();
+    configInfoVector[9] = CHBEDTConfig.getTetherAreaOuterSecondary();
+    configInfoVector[10] = CHBEDTConfig.getTetherDiameterInner();
+    configInfoVector[11] = CHBEDTConfig.getTetherDiameterOuter();
+    configInfoVector[12] = CHBEDTConfig.getTetherDiameterInnerSecondary();
+    configInfoVector[13] = CHBEDTConfig.getTetherDiameterOuterSecondary();
+    configInfoVector[14] = CHBEDTConfig.getXSecAreaTotal();
+    configInfoVector[15] = CHBEDTConfig.getXSecAreaInner();
+    configInfoVector[16] = CHBEDTConfig.getXSecAreaOuter();
+    configInfoVector[17] = CHBEDTConfig.getXSecAreaConducting();
+    configInfoVector[18] = CHBEDTConfig.getNoTetherSegments();
+    configInfoVector[19] = CHBEDTConfig.getNoPrimaryLinks();
+    configInfoVector[20] = CHBEDTConfig.getNoSecondaryLinks();
+    configInfoVector[21] = CHBEDTConfig.getTotalPrimaryLineLength();
+    configInfoVector[22] = CHBEDTConfig.getTotalSecondaryLineLength();
+    configInfoVector[23] = CHBEDTConfig.getPrimaryLineSeparation();
+    configInfoVector[24] = CHBEDTConfig.getPrimaryLineSegmentLength();
+    configInfoVector[25] = CHBEDTConfig.getSecondaryLineSegmentLength();
+    configInfoVector[26] = CHBEDTConfig.getTotalPrimarySRPArea();
+    configInfoVector[27] = CHBEDTConfig.getTotalSecondarySRPArea();
+    configInfoVector[28] = CHBEDTConfig.getEffectiveHoytetherSRPArea();
+    configInfoVector[29] = CHBEDTConfig.getEffectiveSRPArea();
+    configInfoVector[30] = CHBEDTConfig.getEffectiveRadiationPressureCoefficient();
+
+
+
+    configInfoMap.insert(std::pair<std::string, Eigen::VectorXd> (jsonName, configInfoVector));
+
+    if (saveConfigInfo) {
+        std::cout << "Saving configInfo" << std::endl;
+
+        // Write dependent variables to file
+        input_output::writeDataMapToTextFile(configInfoMap,
+                                             baseFilename + "configInfo.dat",
+                                             outputPath,
+                                             "",
+                                             std::numeric_limits<double>::digits10,
+                                             std::numeric_limits<double>::digits10,
+                                             ",");
+    }
+    else{
+        std::cout << "Ignoring configInfo" << std::endl;
     }
 
 

@@ -91,18 +91,18 @@
   "EDTConfigs": {
     "configType": "CHB",
     "tetherLength": 10000,
-    "tetherAreaInner": 3.92E-5,
-    "tetherAreaOuter": 3.92E-5,
+    "tetherDiameter": 1E-3,
+    "tetherAreaRatio": 1,
     "imposedAreaBool": true,
     "imposedArea": 500000000,
     "emitterCurrentmA": 2000000000,
     "hoytether": {
-      "tetherAreaInnerSecondary": 3.92E-5,
-      "tetherAreaOuterSecondary": 3.92E-5,
+      "tetherDiameterSecondary": 1E-3,
+      "tetherAreaRatioSecondary": 1,
       "noPrimaryLines": 6,
-      "primaryLineSegmentLength": 1.0,
+      "primaryLineSegmentLengthRatio": 1.0,
       "slackCoefficient": 1.005,
-      "primaryLineSeparation": 0.5,
+      "primaryLineSeparationRatio": 0.5,
       "occultationCoefficient": 0.7
     }
   },
@@ -127,7 +127,9 @@
       "endmassRadiationCoefficient": 0.5,
       "tetherRadiationCoefficient": 0.5,
       "rotationFactor": 0.7
-    }
+    },
+    "endmassMass1": 10,
+    "endmassMass2": 10
   },
   "materialProperties": {
     "imposedConductivityBool": false,
@@ -139,6 +141,9 @@
     "tempCoefficient": {
       "Al": 0.00429,
       "Cu": 0.0068
+    },"density": {
+      "Al": 2.780,
+      "Cu": 8.920
     }
   },
   "constants": {

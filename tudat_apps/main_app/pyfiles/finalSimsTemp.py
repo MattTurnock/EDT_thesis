@@ -11,9 +11,9 @@ year = 365*24*60*60
 AU = 1.496E11
 
 doingSSO = True
-doingSOKGA = True
-doingInO = True
-doingCompare = True
+doingSOKGA = False
+doingInO = False
+doingCompare = False
 
 
 

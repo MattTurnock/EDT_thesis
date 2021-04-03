@@ -41,7 +41,7 @@ public:
         ionosphereSaveVector_.resize(1);
         thrustSaveVector_.resize(7);
         currentSaveVector_.resize(7);
-        currentVNVSaveVector_.resize(16);
+        currentVNVSaveVector_.resize(17);
         bodyDataSaveVector_.resize(7);
 
         // Set configType_ from config class
@@ -50,6 +50,10 @@ public:
         // Do initialisation update of guidance settings
         std::cout << "Updating guidance settings" << std::endl;
         updateGuidanceSettings();
+
+        // Perihelion limiter
+        minimumPerihelionAU_ = simulationVariables_["GuidanceConfigs"]["minPeAU"];
+        minimumPerihelion_ = minimumPerihelionAU_ * AU;
     };
 
     /////////////////////// Update functions based on config settings for custom thrust ///////////////////////////////
@@ -124,7 +128,7 @@ public:
         currentDirectionArbitraryVnV <<  0.17583754,  0.87544648, -0.45019399;
 
         // Initialise boolean forcing current magnitude to 0, if thrusting should be disabled
-        bool forceCurrentMagnitude = false;
+        forceZeroCurrentMagnitude_ = false;
 
         // Grab spacecraft state at the current time and convert to keplerian, then calculate Ap and Pe for T0
         Eigen::Vector6d spacecraftStateCartesianT0 = guidanceEnvironment_.getVehicleState();
@@ -164,15 +168,15 @@ public:
             else if ((ApT1Negative > ApT0) and (PeT1Negative > PeT0)){
                 currentDirectionVector_ = currentNegativeDirectionVector;
             }
-            else if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0)){
+            else if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)){
                 currentDirectionVector_ = currentPositiveDirectionVector;
             }
-            else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0)){
+            else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)){
                 currentDirectionVector_ = currentNegativeDirectionVector;
             }
             else{
                 currentDirectionVector_ = currentDirectionVectorNoThrust;
-                forceCurrentMagnitude = true;
+                forceZeroCurrentMagnitude_ = true;
             }
         }
 
@@ -192,7 +196,7 @@ public:
             }
             else{
                 currentDirectionVector_ = currentDirectionVectorNoThrust;
-                forceCurrentMagnitude = true;
+                forceZeroCurrentMagnitude_ = true;
             }
         }
 
@@ -200,7 +204,8 @@ public:
             currentDirectionVector_ = currentDirectionArbitraryVnV;
         }
 
-        updateAllEnviro(simulationTime_, forceCurrentMagnitude);
+        std::cout << "Force current bool: " << forceZeroCurrentMagnitude_ << std::endl;
+        updateAllEnviro(simulationTime_, forceZeroCurrentMagnitude_);
 
 //        std::cout << "Current is: " << guidanceEnvironment_.getCurrent() << std::endl; // TODO: remove me
         // Get thrust vector and normalise to use as guidance vector
@@ -289,6 +294,7 @@ public:
         currentVNVSaveVector_[13] = vehicleConfig_.getVehicleConductivity();
         currentVNVSaveVector_[14] = vehicleConfig_.getXSecAreaConducting();
         currentVNVSaveVector_[15] = vehicleConfig_.getTetherLength();
+        currentVNVSaveVector_[16] = forceZeroCurrentMagnitude_;
         currentVNVMap_.insert(std::pair<double, Eigen::VectorXd> (simulationTime_, currentVNVSaveVector_));
 //        std::cout << "CURRENTVNV SAVE map;;;;;;; " << currentVNVSaveMap_ << std::endl; // TODO: remove me
 
@@ -509,6 +515,8 @@ protected:
     Eigen::Vector3d thrustVectorLocal_;
     double thrustMagnitude_;
     Eigen::Vector3d thrustDirection_;
+    double minimumPerihelionAU_;
+    double minimumPerihelion_;
 
     // Current vector used for thrust direction guidance
     Eigen::Vector3d currentDirectionVector_;
@@ -562,6 +570,8 @@ protected:
 
     nlohmann::json simulationVariables_;
     double SunMu_;
+
+    bool forceZeroCurrentMagnitude_;
 
 };
 

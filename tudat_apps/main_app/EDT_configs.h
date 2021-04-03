@@ -22,41 +22,48 @@ namespace EDTs {
 
         // Constructor
         EDTConfig(
+                nlohmann::json simulationVariables,
                 nlohmann::json configVariables,
                 std::string& configType,
                 nlohmann::json SRPVariables,
                 nlohmann::json materialProperties,
-                double vehicleMass=100,
-                double vehicleISP=9999,
                 double constantThrustAccel = 0.325E-3,
                 Eigen::Vector3d bodyFixedThrustDirection = {1, 0, 0}):
+                simulationVariables_(simulationVariables),
                 configVariables_(configVariables),
                 configType_(configType),
                 SRPVariables_(SRPVariables),
                 materialProperties_(materialProperties),
-                vehicleMass_(vehicleMass),
-                vehicleISP_(vehicleISP),
                 constantThrustAccel_(constantThrustAccel),
                 bodyFixedThrustDirection_(bodyFixedThrustDirection){
 
-            emitterCurrent_ = emitterCurrentmA_ / 1000;
+
 
             // Normalize body fixed thrust direction
             bodyFixedThrustDirection_.normalize();
 
-            // Set EDT constant bodyMass
-            EDTBody->setConstantBodyMass(vehicleMass);
+            // Set initial EDT properties
+            length_ = configVariables_["tetherLength"];
+            tetherDiameter_ = configVariables_["tetherDiameter"];
+            tetherAreaRatio_ = configVariables["tetherAreaRatio"];
+            imposedAreaBool_ = configVariables_["imposedAreaBool"];
+            imposedArea_ = configVariables_["imposedArea"];
+
+            tetherDiameterSecondary_ = hoytetherVariables_["tetherDiameterSecondary"];
+            tetherAreaRatioSecondary_ = hoytetherVariables_["tetherAreaRatioSecondary"];
+
+
 
             // Set and calculate hoytether variables from the hoytether variables json
-            tetherAreaInnerSecondary_ = hoytetherVariables_["tetherAreaInnerSecondary"];
-            tetherAreaOuterSecondary_ = hoytetherVariables_["tetherAreaOuterSecondary"];
             noPrimaryLines_ = hoytetherVariables_["noPrimaryLines"];
-            primaryLineSegmentLength_ = hoytetherVariables_["primaryLineSegmentLength"];
+            primaryLineSegmentLengthRatio_ = hoytetherVariables_["primaryLineSegmentLengthRatio"];
             slackCoefficient_ = hoytetherVariables_["slackCoefficient"];
-            primaryLineSeparation_ = hoytetherVariables_["primaryLineSeparation"];
+            primaryLineSeparationRatio_ = hoytetherVariables_["primaryLineSeparationRatio"];
             occultationCoefficient_ = hoytetherVariables_["occultationCoefficient"];
+            endmassMass1_ = simulationVariables_["scConfigs"]["endmassMass1"];
+            endmassMass2_ = simulationVariables_["scConfigs"]["endmassMass2"];
 
-            initialiseHoytetherProperties();
+
 
             // Set values for SRP variables from json
             endmassArea1_ = SRPVariables_["endmassArea1"];
@@ -65,8 +72,28 @@ namespace EDTs {
             tetherRadiationCoefficient_ = SRPVariables_["tetherRadiationCoefficient"];
             rotationCoefficient_ = SRPVariables_["rotationFactor"];
 
-            //////////////////////// Set diameters from Areas /////////////////////
+            // Set some material properties
+            imposedConductivityBool_ = materialProperties_["imposedConductivityBool"];
+            imposedConductivity_ = materialProperties_["imposedConductivity"];
+            resistivityAl_ = materialProperties_["resistivity"]["Al"];
+            resistivityCu_ = materialProperties_["resistivity"]["Cu"];
+            emitterCurrentmA_ = configVariables_["emitterCurrentmA"] ;
+            emitterCurrent_ = emitterCurrentmA_ / 1000;
 
+
+
+
+            //////////////////////// Set diameters and Areas /////////////////////
+            // Use overall diameter to find inner and outer areas
+            double TempArea = gen::calculateCircleArea(tetherDiameter_);
+            tetherAreaInner_ = TempArea * (1 - tetherAreaRatio_);
+            tetherAreaOuter_ = TempArea * tetherAreaRatio_;
+
+            double TempAreaSecondary = gen::calculateCircleArea(tetherDiameterSecondary_);
+            tetherAreaInnerSecondary_ = TempAreaSecondary * (1 - tetherAreaRatioSecondary_);
+            tetherAreaOuterSecondary_ = TempAreaSecondary * tetherAreaRatioSecondary_;
+
+            // Use inner and outer areas to calculate relevant diameters
             tetherDiameterOuter_ = gen::calculateCircleDiameter(tetherAreaInner_ + tetherAreaOuter_);
             tetherDiameterInner_ = gen::calculateCircleDiameter(tetherAreaInner_);
             tetherDiameterOuterSecondary_ = gen::calculateCircleDiameter(tetherAreaInnerSecondary_ + tetherAreaOuterSecondary_);
@@ -75,9 +102,16 @@ namespace EDTs {
             /////////////////////// Calculate geometric variables based on config /////////////////////////
 
             if ( (configType_ == "CHB") or (configType_ == "CHTr")){
+
+                // Hoytether based solutions have their properties initialised, and other derived properties calculated
+                initialiseHoytetherProperties();
                 xSecAreaTotal_ = xSecAreaHoytetherPrimaryTotal_;
                 xSecAreaInner_ = xSecAreaHoytetherPrimaryInnerTotal_;
                 xSecAreaOuter_ = xSecAreaHoytetherPrimaryOuterTotal_;
+
+
+
+
             }
             else{
                 // TODO: Add some stuff here if we use the other types
@@ -115,7 +149,7 @@ namespace EDTs {
             }
 
 
-            ///////////////////////// Set current-based parameters (based on config type) ///////////////////////
+            ///////////////////////// Set current-based parameters, and other physical parameters (based on config type) ///////////////////////
             if ( (configType_ == "CHB") or (configType_ == "CHTr") ) {
                 resistivity_ = calculateCompositeResistivity(length_, resistivityAl_, resistivityCu_, xSecAreaOuter_,
                                                              xSecAreaInner_);
@@ -124,6 +158,7 @@ namespace EDTs {
                 resistivity_ = resistivityAl_;
             }
 
+
             if (imposedConductivityBool_){
                 resistivity_ = 1.0/imposedConductivity_;
             }
@@ -131,8 +166,15 @@ namespace EDTs {
             xSecAreaConducting_ = xSecAreaTotal_;
             conductivity_ = resistivityToConductivity(resistivity_);
             EDTResistance_ = calculateResistance(resistivity_, length_, xSecAreaConducting_); // TODO: Check length correct
+            std::cout << "Vehicle conducting area: " << xSecAreaConducting_ << std::endl;
+            std::cout << "Hoytether area primary total (should be same as above) : " << xSecAreaHoytetherPrimaryTotal_ << std::endl;
 
 
+            // Calculate and set EDT constant bodyMass
+            vehicleMass_ = tetherMass_ + endmassMass1_ + endmassMass2_;
+            EDTBody->setConstantBodyMass(vehicleMass_);
+//            EDTBody->setConstantBodyMass(100);
+            std::cout << "Vehicle masses (total, endmass1, endmass2, tether mass): " << vehicleMass_ << ", " << endmassMass1_ << ", " << endmassMass2_ << ", " << tetherMass_ << std::endl;
 
         }
 
@@ -140,12 +182,14 @@ namespace EDTs {
 
         void initialiseHoytetherProperties(){
             // Calculate number of tether segments h
+            primaryLineSegmentLength_ = length_ * primaryLineSegmentLengthRatio_;
             noTetherSegments_ = length_/primaryLineSegmentLength_;
 
             // Calculate number of secondary tether links m
             noSecondaryLinks_ = 2 * noPrimaryLines_ * noTetherSegments_;
 
             // Calculate secondary line segment length ls
+            primaryLineSeparation_ = length_ * primaryLineSeparationRatio_;
             secondaryLineSegmentLength_ = slackCoefficient_ * sqrt( pow(primaryLineSeparation_, 2) + pow(primaryLineSegmentLength_, 2));
 
             // Calculate number of primary links nl
@@ -165,7 +209,22 @@ namespace EDTs {
             xSecAreaHoytetherPrimaryOuterTotal_  = noPrimaryLines_ * tetherAreaOuter_;
             xSecAreaHoytetherPrimaryTotal_ = xSecAreaHoytetherPrimaryInnerTotal_ + xSecAreaHoytetherPrimaryOuterTotal_;
 
-            // For use in EDT stuff
+            double xSecAreaHoytetherSecondaryInnerTotal = noSecondaryLinks_ * tetherAreaInner_;
+            double xSecAreaHoytetherSecondaryOuterTotal  = noSecondaryLinks_ * tetherAreaOuter_;
+            double xSecAreaHoytetherSecondaryTotal = xSecAreaHoytetherSecondaryInnerTotal + xSecAreaHoytetherSecondaryOuterTotal;
+
+
+            // Mass calculation
+            double AlDensity = materialProperties_["density"]["Al"];
+            double CuDensity = materialProperties_["density"]["Cu"];
+            compositeMaterialDensity_ = calculateCompositeDensity(AlDensity, CuDensity, tetherAreaOuter_, tetherAreaInner_);
+
+            double volumeHoytetherPrimaryTotal = xSecAreaHoytetherPrimaryTotal_ * length_;
+            double volumeHoytetherSecondaryTotal = xSecAreaHoytetherSecondaryTotal * secondaryLineSegmentLength_;
+            double totalMaterialVolume = volumeHoytetherPrimaryTotal + volumeHoytetherSecondaryTotal;
+
+            tetherMass_ = totalMaterialVolume * compositeMaterialDensity_;
+//            std::cout << "Hoytether area conducting: " << xSecAreaConducting_ << std::endl;
 
         }
 
@@ -226,6 +285,13 @@ namespace EDTs {
             return 1/resistivity;
         }
 
+        // Function to calculate composite density for a cable
+        double calculateCompositeDensity(double material1Density, double material2Density, double material1Area, double material2Area){
+            double compositeDensity = (material1Density*material1Area + material2Density*material2Area)/(material1Area + material2Area);
+
+            return compositeDensity;
+        }
+
         /////////////////////////// Get-set functions /////////////////////////////////////////////////////////////////////
         Eigen::Vector3d getBodyFixedThrustDirection( )
         {
@@ -240,7 +306,7 @@ namespace EDTs {
             return totalEffectiveSRPArea_;
         }
 
-        double getEffectiveSRPCoefficient(){
+        double getEffectiveRadiationPressureCoefficient(){
             return totalEffectiveRadiationPressureCoefficient_;
         }
 
@@ -268,30 +334,139 @@ namespace EDTs {
             return length_;
         }
 
+        /// Newly added ones for config saving ///
+        double getResistivity(){
+            return resistivity_;
+        }
+
+        double getEDTResistance(){
+            return EDTResistance_;
+        }
+
+        double getTetherMass(){
+            return tetherMass_;
+        }
+
+        double getCompositeMaterialDensity(){
+            return compositeMaterialDensity_;
+        }
+
+        double getTetherAreaInner(){
+            return tetherAreaInner_;
+        }
+
+        double getTetherAreaOuter(){
+            return tetherAreaOuter_;
+        }
+
+        double getTetherAreaInnerSecondary(){
+            return tetherAreaInnerSecondary_;
+        }
+
+        double getTetherAreaOuterSecondary(){
+            return tetherAreaOuterSecondary_;
+        }
+
+        double getTetherDiameterInner(){
+            return tetherDiameterInner_;
+        }
+
+        double getTetherDiameterOuter(){
+            return tetherDiameterOuter_;
+        }
+
+        double getTetherDiameterInnerSecondary(){
+            return tetherDiameterInnerSecondary_;
+        }
+
+        double getTetherDiameterOuterSecondary(){
+            return tetherDiameterOuterSecondary_;
+        }
+
+        double getXSecAreaTotal(){
+            return xSecAreaTotal_;
+        }
+
+        double getXSecAreaInner(){
+            return xSecAreaInner_;
+        }
+
+        double getXSecAreaOuter(){
+            return xSecAreaOuter_;
+        }
+
+        double getNoTetherSegments(){
+            return noTetherSegments_;
+        }
+
+        double getNoPrimaryLinks(){
+            return noPrimaryLinks_;
+        }
+
+        double getNoSecondaryLinks(){
+            return noSecondaryLinks_;
+        }
+
+        double getTotalPrimaryLineLength(){
+            return totalPrimaryLineLength_;
+        }
+
+        double getTotalSecondaryLineLength(){
+            return totalSecondaryLineLength_;
+        }
+
+        double getPrimaryLineSeparation(){
+            return primaryLineSeparation_;
+        }
+
+        double getPrimaryLineSegmentLength(){
+            return primaryLineSegmentLength_;
+        }
+
+        double getSecondaryLineSegmentLength(){
+            return secondaryLineSegmentLength_;
+        }
+
+        double getTotalPrimarySRPArea(){
+            return totalPrimarySRPArea_;
+        }
+
+        double getTotalSecondarySRPArea(){
+            return totalSecondarySRPArea_;
+        }
+
+        double getEffectiveHoytetherSRPArea(){
+            return effectiveHoytetherSRPArea_;
+        }
+
+
+
     protected:
 
         /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
 
         // Config variables from the main json file
         nlohmann::json configVariables_;
+        nlohmann::json simulationVariables_;
 
         // Guidance class and config type
 //        EDTGuidance& guidanceClass_;
         std::string& configType_;
 
         // Create initial variables for EDT properties
-        double length_ = configVariables_["tetherLength"];
-        double tetherAreaInner_ = configVariables_["tetherAreaInner"];
-        double tetherAreaOuter_ = configVariables_["tetherAreaOuter"];
-        bool imposedAreaBool_ = configVariables_["imposedAreaBool"];
-        double imposedArea_ = configVariables_["imposedArea"];
+        double length_;
+        double tetherDiameter_;
+        double tetherAreaRatio_;
+        double tetherAreaInner_;
+        double tetherAreaOuter_;
+        bool imposedAreaBool_;
+        double imposedArea_;
         double tetherDiameterInner_;
         double tetherDiameterOuter_; // Is set from the above areas, as is inner
 
 
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
         double vehicleMass_;
-        double vehicleISP_; // TODO: Remove me
         double constantThrustAccel_;
 
 
@@ -308,13 +483,17 @@ namespace EDTs {
 
         // Create json hoytether EDT properties
         nlohmann::json hoytetherVariables_ = configVariables_["hoytether"];
+        double tetherDiameterSecondary_;
+        double tetherAreaRatioSecondary_;
         double tetherAreaInnerSecondary_;
         double tetherAreaOuterSecondary_;
         double tetherDiameterInnerSecondary_;
         double tetherDiameterOuterSecondary_;
         double noPrimaryLines_;
+        double primaryLineSegmentLengthRatio_;
         double primaryLineSegmentLength_;
         double slackCoefficient_;
+        double primaryLineSeparationRatio_;
         double primaryLineSeparation_;
         double occultationCoefficient_;
 
@@ -336,15 +515,20 @@ namespace EDTs {
 
         // Create derived EDT properties - other
         nlohmann::json materialProperties_;
-        bool imposedConductivityBool_ = materialProperties_["imposedConductivityBool"];
-        double imposedConductivity_ = materialProperties_["imposedConductivity"];
-        double resistivityAl_ = materialProperties_["resistivity"]["Al"];
-        double resistivityCu_ = materialProperties_["resistivity"]["Cu"];
+        bool imposedConductivityBool_;
+        double imposedConductivity_;
+        double resistivityAl_;
+        double resistivityCu_;
         double resistivity_;
         double conductivity_;
         double EDTResistance_;
-        double emitterCurrentmA_ = configVariables_["emitterCurrentmA"] ; // Corresponds to Ic, the current from the e- emitter
+        double emitterCurrentmA_; // Corresponds to Ic, the current from the e- emitter
         double emitterCurrent_ ;
+        double compositeMaterialDensity_;
+        double tetherMass_;
+        double endmassMass1_;
+        double endmassMass2_;
+
 
         // Create json object and regular variables for SRP properties
         nlohmann::json SRPVariables_;

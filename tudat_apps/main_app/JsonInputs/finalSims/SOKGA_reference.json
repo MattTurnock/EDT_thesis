@@ -63,7 +63,7 @@
         "terminationSettings": {
             "terminationType": "nominalTimeTermination",
             "timeTerminationYears": 999999,
-            "absoluteTimeTerminationYear": 2200,
+            "absoluteTimeTerminationYear": 2500,
             "proximityTerminationBody1": "Vehicle",
             "proximityTerminationBody2": "Jupiter",
             "proximityTerminationCutoffAU": 0.1,
@@ -90,19 +90,19 @@
     },
     "EDTConfigs": {
         "configType": "CHB",
-        "tetherLength": 10000,
-        "tetherAreaInner": 3.92e-05,
-        "tetherAreaOuter": 3.92e-05,
+        "tetherLength": 100000,
+        "tetherDiameter": 1E-3,
+        "tetherAreaRatio": 1,
         "imposedAreaBool": true,
-        "imposedArea": 500000000,
+        "imposedArea": 1,
         "emitterCurrentmA": 0,
         "hoytether": {
-            "tetherAreaInnerSecondary": 3.92e-05,
-            "tetherAreaOuterSecondary": 3.92e-05,
+            "tetherDiameterSecondary": 1E-3,
+            "tetherAreaRatioSecondary": 1,
             "noPrimaryLines": 6,
-            "primaryLineSegmentLength": 1.0,
+            "primaryLineSegmentLengthRatio": 1.0,
             "slackCoefficient": 1.005,
-            "primaryLineSeparation": 0.5,
+            "primaryLineSeparationRatio": 0.5,
             "occultationCoefficient": 0.7
         }
     },
@@ -124,10 +124,12 @@
         "SRP": {
             "endmassArea1": 1.2,
             "endmassArea2": 1.2,
-            "endmassRadiationCoefficient": 0.5,
-            "tetherRadiationCoefficient": 0.5,
+            "endmassRadiationCoefficient": 0,
+            "tetherRadiationCoefficient": 0,
             "rotationFactor": 0.7
-        }
+        },
+        "endmassMass1": 50,
+        "endmassMass2": 50
     },
     "materialProperties": {
         "imposedConductivityBool": false,
@@ -139,6 +141,10 @@
         "tempCoefficient": {
             "Al": 0.00429,
             "Cu": 0.0068
+        },
+        "density": {
+            "Al": 0.01,
+            "Cu": 0.01
         }
     },
     "constants": {

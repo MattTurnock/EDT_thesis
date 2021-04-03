@@ -406,7 +406,7 @@ namespace gen {
     /// FOllowing for general tethers ///
 
     // Calculate circle area TODO: Remove me
-    double getCircleArea(double diameter){
+    double calculateCircleArea(double diameter){
         double radius = 0.5*diameter;
         double area =  PI * std::pow(radius, 2);
 
@@ -415,8 +415,8 @@ namespace gen {
 
     // Calculate donut area (of 2 circles) TODO: Remove me
     double getDonutArea(double diameterInner, double diameterOuter){
-        double areaInner = gen::getCircleArea(diameterInner);
-        double areaOuter = gen::getCircleArea(diameterOuter);
+        double areaInner = gen::calculateCircleArea(diameterInner);
+        double areaOuter = gen::calculateCircleArea(diameterOuter);
         double donutArea = areaOuter - areaInner;
 
         return donutArea;

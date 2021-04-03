@@ -65,7 +65,7 @@ SOKGAChangeValues = [ "nominal",
                       2000 + propData_SOKGA[-1, 0]/utils.year,
                       "nominalTimeTermination",
                       999999,
-                      2200,
+                      2500,
                       "Cartesian",
                       propData_SOKGA[-1, 1],
                       propData_SOKGA[-1, 2],
@@ -73,7 +73,7 @@ SOKGAChangeValues = [ "nominal",
                       propData_SOKGA[-1, 4],
                       propData_SOKGA[-1, 5],
                       propData_SOKGA[-1, 6],
-                      2000000000,
+                      1000,
                       "SOKGA-Stage2/",
                       "SOKGA-Stage2-"]
 
@@ -98,14 +98,14 @@ SOKGAReferenceChangeKeys = [ ["GuidanceConfigs", "terminationSettings", "termina
 
 SOKGAReferenceChangeValues = [ "nominalTimeTermination",
                                999999,
-                               2200,
+                               2500,
                                0,
                                "SOKGA-Reference/",
                                "SOKGA-Reference-"]
 
 utils.createModifiedJson(initJson, jsonSaveDir, SOKGAReferenceJsonSavename, SOKGAReferenceChangeKeys, SOKGAReferenceChangeValues)
 
-#### Run second stage SOKGA powered trajectory #######
+#### Run reference SOKGA powered trajectory #######
 
 utils.runAllSimulations(SOKGAJsonSubDir, printSetting=printSetting, runPath=simulationRunPath, runOnlyThisFile="SOKGA_reference.json")
 

@@ -3,14 +3,14 @@
     "customKernelName": "de430.bsp",
     "bodiesToInclude": {
       "Sun": 1,
-      "Mercury": 1,
-      "Venus": 1,
-      "Earth": 1,
-      "Mars": 1,
-      "Jupiter": 1,
-      "Saturn": 1,
-      "Uranus": 1,
-      "Neptune": 1
+      "Mercury": 0,
+      "Venus": 0,
+      "Earth": 0,
+      "Mars": 0,
+      "Jupiter": 0,
+      "Saturn": 0,
+      "Uranus": 0,
+      "Neptune": 0
     }
   },
   "ParkerMagField": {
@@ -36,13 +36,14 @@
   },
   "ImposedMagField": {
     "imposingMagField": false,
-    "B1_nT": 4.78,
-    "B2_nT": 4.42,
+    "B1_nT": 1000,
+    "B2_nT": 1000,
     "B3_nT": 0.0
   },
   "GuidanceConfigs": {
     "thrustMagnitudeConfig": "nominal",
     "thrustDirectionConfig": "nominalPrograde",
+    "minPeAU": 0.1,
     "initialEphemerisYear": 2041.03262268973337,
     "integratorSettings": {
       "initialTimeStep": 1.0,
@@ -51,14 +52,6 @@
       "maximumStepSize": 1E20,
       "relativeErrorTolerance": 1E-4,
       "absoluteErrorTolerance": 1E-4
-    },
-    "integratorSettingsPerturbed": {
-      "initialTimeStep": 1.0,
-      "integrator": "RK87DP",
-      "minimumStepSize": 1E-20,
-      "maximumStepSize": 31536000,
-      "relativeErrorTolerance": 1E-6,
-      "absoluteErrorTolerance":1E-6
     },
     "terminationSettings": {
       "terminationType": "nominalTimeTermination",
@@ -90,19 +83,19 @@
   },
   "EDTConfigs": {
     "configType": "CHB",
-    "tetherLength": 10000,
-    "tetherAreaInner": 3.92E-5,
-    "tetherAreaOuter": 3.92E-5,
+    "tetherLength": 1000,
+    "tetherDiameter": 1E-3,
+    "tetherAreaRatio": 0.5,
     "imposedAreaBool": true,
     "imposedArea": 500000000,
     "emitterCurrentmA": 2000000000,
     "hoytether": {
-      "tetherAreaInnerSecondary": 3.92E-5,
-      "tetherAreaOuterSecondary": 3.92E-5,
+      "tetherDiameterSecondary": 1E-3,
+      "tetherAreaRatioSecondary": 0.5,
       "noPrimaryLines": 6,
-      "primaryLineSegmentLength": 1.0,
+      "primaryLineSegmentLengthRatio": 0.1,
       "slackCoefficient": 1.005,
-      "primaryLineSeparation": 0.5,
+      "primaryLineSeparationRatio": 5E-6,
       "occultationCoefficient": 0.7
     }
   },
@@ -117,17 +110,20 @@
       "current": true,
       "currentVNV": true,
       "bodyData": true,
-      "dependentVariables": true
+      "dependentVariables": true,
+      "configInfo": true
     }
   },
   "scConfigs": {
     "SRP": {
       "endmassArea1": 1.2,
       "endmassArea2": 1.2,
-      "endmassRadiationCoefficient": 0.5,
-      "tetherRadiationCoefficient": 0.5,
+      "endmassRadiationCoefficient": 0,
+      "tetherRadiationCoefficient": 0,
       "rotationFactor": 0.7
-    }
+    },
+    "endmassMass1": 1,
+    "endmassMass2": 1
   },
   "materialProperties": {
     "imposedConductivityBool": false,
@@ -139,6 +135,10 @@
     "tempCoefficient": {
       "Al": 0.00429,
       "Cu": 0.0068
+    },
+    "density": {
+      "Al": 2780,
+      "Cu": 8920
     }
   },
   "constants": {
