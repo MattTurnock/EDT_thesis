@@ -97,13 +97,7 @@ int main(int argc, char *argv[] )
     std::cout<< " -- Creating Guidance class -- " << std::endl;
     std::string thrustMagnitudeConfig = simulationVariables["GuidanceConfigs"]["thrustMagnitudeConfig"];
     std::string thrustDirectionConfig = simulationVariables["GuidanceConfigs"]["thrustDirectionConfig"];
-    bool useThrust;
-    if (thrustMagnitudeConfig == "disabled") {
-        useThrust = false;
-    }
-    else {
-        useThrust = true;
-    }
+
 
     EDTGuidance CHBEDTGuidance = EDTGuidance(
             thrustMagnitudeConfig,
@@ -119,7 +113,7 @@ int main(int argc, char *argv[] )
     std::cout<< " -- Creating Propbodies class -- " << std::endl;
 //    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"];
 
-    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, CHBEDTGuidance, baseBodyMap, simulationVariables, useThrust);
+    univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, CHBEDTGuidance, baseBodyMap, simulationVariables);
 
     // Get universal class for propagation settings + set vehicle initial state
     std::cout<< " -- Creating Propsettings class -- " << std::endl;
@@ -232,8 +226,16 @@ int main(int argc, char *argv[] )
     bool saveCurrentVNVData = dataTypesToSave["currentVNV"];
     bool saveConfigInfo = dataTypesToSave["configInfo"];
 
-    // Check which data types to save, and save them
+//    std::cout << integrationResult[1294891093.79353] << std::endl;
+////    std::cout << integrationResult.find(1294891093.79353)->second << std::endl;
+////    // Remove unwanted rows from the custom save maps
+//    std::map<double, Eigen::VectorXd> newMap;
+//    for (std::map<double, Eigen::VectorXd>::iterator i=integrationResult.begin(); i!=integrationResult.end(); i++ ){
+//        double time = i->first;
+//        newMap[time] = CHBEDTGuidance.getMagFieldMap()[time];
+//    }
 
+    // Check which data types to save, and save them
     if (savePropData) {
         std::cout << "Saving propData" << std::endl;
 
@@ -253,8 +255,18 @@ int main(int argc, char *argv[] )
     if (saveMagneticFieldData) {
         std::cout << "Saving magneticFieldData" << std::endl;
 
+        // Make custom map conform to regular timestep saving
+        std::map<double, Eigen::VectorXd> magFieldMap = CHBEDTGuidance.getMagFieldMap();
+        std::map<double, Eigen::VectorXd> newMagFieldMap;
+
+        for (std::map<double, Eigen::VectorXd>::iterator i=integrationResult.begin(); i!=integrationResult.end(); i++ ){
+            double time = i->first;
+            newMagFieldMap[time] = magFieldMap[time];
+        }
+
+
         // Write magField history to file.
-        input_output::writeDataMapToTextFile(CHBEDTGuidance.getMagFieldMap(),
+        input_output::writeDataMapToTextFile(newMagFieldMap,
                                              baseFilename + "magData.dat",
                                              outputPath,
                                              "",
@@ -269,8 +281,16 @@ int main(int argc, char *argv[] )
     if (saveIonosphereData) {
         std::cout << "Saving ionosphericData" << std::endl;
 
+        // Make custom map conform to regular timestep saving
+        std::map<double, Eigen::VectorXd> ionosphereMap = CHBEDTGuidance.getIonosphereMap();
+        std::map<double, Eigen::VectorXd> newIonosphereMap;
+        for (std::map<double, Eigen::VectorXd>::iterator i=integrationResult.begin(); i!=integrationResult.end(); i++ ){
+            double time = i->first;
+            newIonosphereMap[time] = ionosphereMap[time];
+        }
+
         // Write ionosphere history to file.
-        input_output::writeDataMapToTextFile(CHBEDTGuidance.getIonosphereMap(),
+        input_output::writeDataMapToTextFile(newIonosphereMap,
                                              baseFilename + "ionoData.dat",
                                              outputPath,
                                              "",
@@ -285,8 +305,16 @@ int main(int argc, char *argv[] )
     if (saveThrustData) {
         std::cout << "Saving thrustData" << std::endl;
 
+        // Make custom map conform to regular timestep saving
+        std::map<double, Eigen::VectorXd> thrustMap = CHBEDTGuidance.getThrustMap();
+        std::map<double, Eigen::VectorXd> newThrustMap;
+        for (std::map<double, Eigen::VectorXd>::iterator i=integrationResult.begin(); i!=integrationResult.end(); i++ ){
+            double time = i->first;
+            newThrustMap[time] = thrustMap[time];
+        }
+
         // Write thrust history to file.
-        input_output::writeDataMapToTextFile(CHBEDTGuidance.getThrustMap(),
+        input_output::writeDataMapToTextFile(newThrustMap,
                                              baseFilename + "thrustData.dat",
                                              outputPath,
                                              "",
@@ -301,8 +329,16 @@ int main(int argc, char *argv[] )
     if (saveCurrentData) {
         std::cout << "Saving currentData" << std::endl;
 
+        // Make custom map conform to regular timestep saving
+        std::map<double, Eigen::VectorXd> currentMap = CHBEDTGuidance.getCurrentMap();
+        std::map<double, Eigen::VectorXd> newCurrentMap;
+        for (std::map<double, Eigen::VectorXd>::iterator i=integrationResult.begin(); i!=integrationResult.end(); i++ ){
+            double time = i->first;
+            newCurrentMap[time] = currentMap[time];
+        }
+
         // Write current history to file.
-        input_output::writeDataMapToTextFile(CHBEDTGuidance.getCurrentMap(),
+        input_output::writeDataMapToTextFile(newCurrentMap,
                                              baseFilename + "currentData.dat",
                                              outputPath,
                                              "",
@@ -317,8 +353,16 @@ int main(int argc, char *argv[] )
     if (saveCurrentVNVData) {
         std::cout << "Saving currentVNVData" << std::endl;
 
+        // Make custom map conform to regular timestep saving
+        std::map<double, Eigen::VectorXd> currentVNVMap = CHBEDTGuidance.getCurrentVNVMap();
+        std::map<double, Eigen::VectorXd> newCurrentVNVMap;
+        for (std::map<double, Eigen::VectorXd>::iterator i=integrationResult.begin(); i!=integrationResult.end(); i++ ){
+            double time = i->first;
+            newCurrentVNVMap[time] = currentVNVMap[time];
+        }
+
         // Write dependent variables to file
-        input_output::writeDataMapToTextFile(CHBEDTGuidance.getCurrentVNVMap(),
+        input_output::writeDataMapToTextFile(newCurrentVNVMap,
                                              baseFilename + "currentVNVData.dat",
                                              outputPath,
                                              "",
@@ -333,8 +377,16 @@ int main(int argc, char *argv[] )
     if (saveBodyData) {
         std::cout << "Saving bodyData" << std::endl;
 
+        // Make custom map conform to regular timestep saving
+        std::map<double, Eigen::VectorXd> bodyDataMap = CHBEDTGuidance.getBodyDataMap();
+        std::map<double, Eigen::VectorXd> newBodyDataMap;
+        for (std::map<double, Eigen::VectorXd>::iterator i=integrationResult.begin(); i!=integrationResult.end(); i++ ){
+            double time = i->first;
+            newBodyDataMap[time] = bodyDataMap[time];
+        }
+
         // Write bodyData history to files
-        input_output::writeDataMapToTextFile(CHBEDTGuidance.getBodyDataMap(),
+        input_output::writeDataMapToTextFile(newBodyDataMap,
                                              baseFilename + "bodyData.dat",
                                              outputPath,
                                              "",

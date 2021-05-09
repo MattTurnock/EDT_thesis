@@ -60,15 +60,21 @@ public:
     // TODO: Consider updating environment differently (currently done in both magnitude and direction functions)
     // Function to update thrust magnitude based on time and the config used
     void updateThrustMagnitude(const double simulationTime){
-        if (thrustMagnitudeConfig_ == "constant"){
-            thrustMagnitude_ = thrustMagnitudeConstant_;
+        updateAllEnviro(simulationTime_);
+        if (forceZeroCurrentMagnitude_ or (thrustDirectionConfig_ == "disabled")){
+            thrustMagnitude_ = 0;
         }
-        else if (thrustMagnitudeConfig_ == "nominal") {
-            updateAllEnviro(simulationTime_);
-            thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
-            thrustMagnitude_ = thrustVector_.norm();
+        else{
+            if (thrustMagnitudeConfig_ == "constant"){
+                thrustMagnitude_ = thrustMagnitudeConstant_;
+            }
+            else if (thrustMagnitudeConfig_ == "nominal") {
+
+                thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
+                thrustMagnitude_ = thrustVector_.norm();
+            }
         }
-//        std::cout << "Thrust magnitude: " << thrustMagnitude_ <<  std::endl; \\TODO: remove me
+//        std::cout << "Thrust magnitude: " << thrustMagnitude_ <<  std::endl; //TODO: remove me
 //        std::cout << "Thrust vector: " << thrustVector_ <<  std::endl;\\TODO: remove me
 //        std::cout << "Thrust vector local: " << thrustVectorLocal_ <<  std::endl;\\TODO: remove me
         // Save simulation time and relevant data to save map
@@ -158,9 +164,18 @@ public:
         double ApT1Negative = spacecraftStateKeplerianT1Negative[0] * (1 + spacecraftStateKeplerianT1Negative[1]);
         double PeT1Negative = spacecraftStateKeplerianT1Negative[0] * (1 - spacecraftStateKeplerianT1Negative[1]);
 
+        // Thrust logic only used at lower altitudes, ie when altitude less than 10 AU
+        bool useThrustLogic;
+        double altitude = guidanceEnvironment_.getVehiclePosition().norm();
+        if (altitude > 10*AU){
+            useThrustLogic = false;
+        }
+        else{
+            useThrustLogic = true;
+        }
 
         // For whether using nominalPrograde or nominalRetrograde, apply the relevant logic to achieve a final thrust direction
-        if (thrustDirectionConfig_ == "nominalPrograde"){
+        if ((thrustDirectionConfig_ == "nominalPrograde") and (useThrustLogic) ){
 
             if ((ApT1Positive > ApT0) and (PeT1Positive > PeT0)){
                 currentDirectionVector_ = currentPositiveDirectionVector;
@@ -180,18 +195,18 @@ public:
             }
         }
 
-        else if (thrustDirectionConfig_ == "nominalRetrograde"){
+        else if ((thrustDirectionConfig_ == "nominalRetrograde") and (useThrustLogic)){
 
-            if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0)){
+            if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)){
                 currentDirectionVector_ = currentPositiveDirectionVector;
             }
-            else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0)){
+            else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)){
                 currentDirectionVector_ = currentNegativeDirectionVector;
             }
-            else if ((ApT1Positive < ApT0) and (PeT1Positive < PeT0)){
+            else if ((ApT1Positive < ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)){
                 currentDirectionVector_ = currentPositiveDirectionVector;
             }
-            else if ((ApT1Negative < ApT0) and (PeT1Negative < PeT0)){
+            else if ((ApT1Negative < ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)){
                 currentDirectionVector_ = currentNegativeDirectionVector;
             }
             else{
@@ -204,7 +219,7 @@ public:
             currentDirectionVector_ = currentDirectionArbitraryVnV;
         }
 
-        std::cout << "Force current bool: " << forceZeroCurrentMagnitude_ << std::endl;
+//        std::cout << "Force current bool: " << forceZeroCurrentMagnitude_ << std::endl;
         updateAllEnviro(simulationTime_, forceZeroCurrentMagnitude_);
 
 //        std::cout << "Current is: " << guidanceEnvironment_.getCurrent() << std::endl; // TODO: remove me

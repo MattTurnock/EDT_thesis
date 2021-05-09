@@ -37,13 +37,11 @@ namespace univ {
                 EDTs::EDTConfig& vehicleConfig,
                 EDTGuidance& guidanceClass,
                 NamedBodyMap& baseBodyMap,
-                nlohmann::json jsonSimulationVariables,
-                bool useThrust = true) :
+                nlohmann::json jsonSimulationVariables) :
                 vehicleConfig_(vehicleConfig),
                 guidanceClass_(guidanceClass),
                 bodyMap(baseBodyMap),
-                jsonSimulationVariables_(jsonSimulationVariables),
-                useThrust_(useThrust)
+                jsonSimulationVariables_(jsonSimulationVariables)
                 {
 
             // Constructor
@@ -138,12 +136,11 @@ namespace univ {
 
             ///////////////// Create bodies acceleration map (includes perturbations) ///////////////////////
             // Add acceleration model settings for vehicle - ie thrust guidance settings. Uses boolean for creating acceleration map without vehicle thrust if wanted
-            if (useThrust_) {
-                accelerationsOfVehicle_["Vehicle"].push_back(
-                        std::make_shared<ThrustAccelerationSettings>(guidanceClass.thrustDirectionGuidanceSettings,
-                                                                     guidanceClass.thrustMagnitudeSettings));
+            accelerationsOfVehicle_["Vehicle"].push_back(
+                    std::make_shared<ThrustAccelerationSettings>(guidanceClass.thrustDirectionGuidanceSettings,
+                                                                 guidanceClass.thrustMagnitudeSettings));
 //                std::cout << "thrust acceleration added to vehicle" << std::endl; //TODO: remove me
-            }
+
             // Add acceleration model settings for celestials using for loop
             for(std::size_t i=0; i<bodiesToCreate_.size(); ++i){
                 accelerationsOfVehicle_[bodiesToCreate_[i]].push_back(std::make_shared< AccelerationSettings >( central_gravity ) );
@@ -205,7 +202,7 @@ namespace univ {
         nlohmann::json jsonBodiesToInclude_;
 
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
-        bool useThrust_;
+
         /////////////////////////// Other set parameters ///////////////////////////////
         // simulation variables (from json)
         nlohmann::json jsonSimulationVariables_;

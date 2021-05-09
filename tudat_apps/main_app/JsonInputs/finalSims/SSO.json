@@ -3,14 +3,14 @@
     "customKernelName": "de430.bsp",
     "bodiesToInclude": {
       "Sun": 1,
-      "Mercury": 0,
-      "Venus": 0,
-      "Earth": 0,
-      "Mars": 0,
-      "Jupiter": 0,
-      "Saturn": 0,
-      "Uranus": 0,
-      "Neptune": 0
+      "Mercury": 1,
+      "Venus": 1,
+      "Earth": 1,
+      "Mars": 1,
+      "Jupiter": 1,
+      "Saturn": 1,
+      "Uranus": 1,
+      "Neptune": 1
     }
   },
   "ParkerMagField": {
@@ -83,16 +83,16 @@
   },
   "EDTConfigs": {
     "configType": "CHB",
-    "tetherLength": 1000,
+    "tetherLength": 10000,
     "tetherDiameter": 1E-3,
-    "tetherAreaRatio": 0.5,
-    "imposedAreaBool": true,
+    "tetherAreaRatio": 10,
+    "imposedAreaBool": false,
     "imposedArea": 500000000,
-    "emitterCurrentmA": 2000000000,
+    "emitterCurrentmA": 100,
     "hoytether": {
       "tetherDiameterSecondary": 1E-3,
-      "tetherAreaRatioSecondary": 0.5,
-      "noPrimaryLines": 6,
+      "tetherAreaRatioSecondary": 10,
+      "noPrimaryLines": 10,
       "primaryLineSegmentLengthRatio": 0.1,
       "slackCoefficient": 1.005,
       "primaryLineSeparationRatio": 5E-6,

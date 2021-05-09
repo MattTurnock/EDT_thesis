@@ -16,13 +16,18 @@ SaveFolder = "pyplots/finalSimsTemp"
 
 # Plot the base case
 dataSubDir_SSO = "SSO"
+dataSubDir_SSO = "SSO-Configs-Sensitivity/SSO-currents-20"
 allSimData_SSO = utils.getAllSimDataFromFolder(dataSubDir_SSO)
 propData_SSO = allSimData_SSO[5]
+speed = np.linalg.norm(propData_SSO[:, 4:7], axis=1)
+print("speed: ", speed)
 # bodyData_SSO = allSimData_SSO[0]
 
 propDataTimes = propData_SSO[:,0]
 
-# thrustData_SSO = allSimData_SSO[6]
+thrustData_SSO = allSimData_SSO[6]
+magData_SSO = allSimData_SSO[4]
+currentVNVData_SSO = allSimData_SSO[7]
 # thrustLocal = thrustData_SSO[:,5:8]
 # timesThrust = thrustData_SSO[:,0]/year
 # altitudes = bodyData_SSO[:, 1]/AU
@@ -37,6 +42,17 @@ utils.plotTrajectoryData(propData_SSO, sameScale=True, planetsToPlot=["Earth"], 
 
 newtimes = np.linspace(propDataTimes[0], propDataTimes[-1], 2*len(propDataTimes))
 propData_SSO_Interpolated = utils.interpolateArrays(propData_SSO, newtimes)
+
+thrustData_SSO_Interpolated = utils.interpolateArrays(thrustData_SSO, newtimes)
+thrustVectorX = thrustData_SSO[:,2]
+thrustVectorY = thrustData_SSO[:,3]
+thrustMagnitude = thrustData_SSO[:,1]
+
+magData_SSO_Interpolated = utils.interpolateArrays(magData_SSO, newtimes)
+magDataX = magData_SSO[:,6]
+print(magDataX)
+magDataY = magData_SSO[:,7]
+thetaData = np.rad2deg(magData_SSO[:,2])
 
 utils.plotTrajectoryData(propData_SSO_Interpolated, sameScale=True, planetsToPlot=["Earth"], plotSun=True, fignumber=2, plotOnlyTrajectory=False, trajectoryLabel="SSO Spacecraft")#, saveFolder=SaveFolder, savename="SSO-test.png")
 
@@ -115,7 +131,7 @@ utils.plotTrajectoryData(propData_SOKGA_reference_Interpolated,  sameScale=True,
 
 
 fignumber = 5
-figsize = utils.figSizeDefault
+figsize = [20,20]
 plotSun = True
 saveFolder = None
 savename = None
@@ -143,6 +159,8 @@ axtext.axis("off")
 # place the text to the other axes
 time = axtext.text(0.5,0.5, str(0), ha="left", va="top")
 
+
+
 # create the parametric curve
 # t=np.arange(0, 2*np.pi, 2*np.pi/100)
 nummer = int(len(propData_SOKGA_Interpolated)*0)
@@ -150,8 +168,16 @@ nummer2 = int(len(propData_SOKGA_Interpolated)*0.5)
 x=propData_SOKGA_Interpolated[nummer:nummer2,1] / AU
 y=propData_SOKGA_Interpolated[nummer:nummer2,2] / AU
 timeList = (propData_SOKGA_Interpolated[nummer:, 0] / year) + 2000
+timeList = (propData_SSO_Interpolated[:, 0] / year) + 2000
 # z=t/(2.*np.pi)
 
+x = propData_SSO_Interpolated[:,1] / AU
+y = propData_SSO_Interpolated[:,2] / AU
+
+x = propData_SSO[:,1] / AU
+y = propData_SSO[:,2] / AU
+
+timeList = (propData_SSO[:,0]/year) + 2000
 # create the first plot
 point, = ax.plot([x[0]], [y[0]], 'o')
 line, = ax.plot(x, y, label='SOKGA Nominal')
@@ -161,6 +187,33 @@ ax.axis("scaled")
 ax.set_xlabel("X coordinate [AU]")
 ax.set_ylabel("Y coordinate [AU]")
 ax.grid()
+ax.set_xlim([-10,10])
+ax.set_ylim([-10,10])
+
+############### ADD AN ARROW INTO THE MIX ##################
+xCoords = x
+yCoords = y
+Qx = xCoords[:, None]
+Qy = yCoords[:, None]
+
+
+UCoords = thrustVectorX * 3
+VCoords = thrustVectorY * 3
+
+# scaleFactor = (1/magDataX[0])/50
+# UCoords = magDataX * scaleFactor
+# VCoords = magDataY * scaleFactor
+U = UCoords[:, None]
+V = VCoords[:, None]
+
+# For frame 1, plot the 0th set of arrows
+s = np.s_[0, :]
+qax = ax.quiver(Qx[s], Qy[s], U[s], V[s],
+                facecolor="red", scale=10)
+
+print(UCoords)
+print(VCoords)
+
 
 if len(planetsToPlot) != 0:
     for i in range(len(planetsToPlot)):
@@ -194,19 +247,56 @@ ax.legend()
 # time.set_text("reeeeee")
 # second option - move the point position at every frame
 
-timeStringBase = "Date: %s"
+Ems = currentVNVData_SSO[:, 1]
+I0s = currentVNVData_SSO[:,2]
+ics = currentVNVData_SSO[:,3]
+Iavg = currentVNVData_SSO[:, 6]
 
+timeStringBase = "Date: %s\n" \
+                 "Theta: %s\n" \
+                 "Thrust [N]: %s\n" \
+                 "Speed: [km/s]: %s\n" \
+                 "EMs: %s\n" \
+                 "I0s: %s\n" \
+                 "ics: %s\n" \
+                 "Iavg: %s"
+print(speed)
+
+decimalRounding = 3
 def update_point(n, x, y):
     point.set_data(np.array([x[n], y[n]]))
     # point.set_3d_properties(z[n], 'z')
     currentYear = timeList[n]
     currentDate = (utils.decimalYearToDatetimeObject(currentYear)).date()
-    time.set_text(timeStringBase %str(currentDate))
-    return point, time
+    theta = thetaData[n]
+
+
+    time.set_text(timeStringBase %(np.around(currentYear, decimals=decimalRounding),
+                                       np.around(theta, decimals=decimalRounding),
+                                       np.around(thrustMagnitude[n], decimals=decimalRounding),
+                                       np.around(speed[n]/1000, decimals=decimalRounding),
+                                       np.around(Ems[n], decimals=decimalRounding),
+                                       np.around(I0s[n], decimals=decimalRounding),
+                                       np.around(ics[n], decimals=decimalRounding),
+                                       np.around(Iavg[n], decimals=decimalRounding)))
+    # return point, time
+
+
+    ### ARROW ANIMATION ###
+    # Update to frame i
+    s = np.s_[n, :]
+    # Change direction of arrows
+    qax.set_UVC(U[s], V[s])
+    # Change base position of arrows
+    qax.set_offsets(np.c_[Qx[s].flatten(), Qy[s].flatten()])
 
 interval = (runtime / len(x))*1000
 
+
+
 ani=animation.FuncAnimation(fig, update_point, frames=len(x), fargs=(x, y), interval=interval, repeat=False, blit=False)
-ani.save("test.mp4")
+# ani.save("test.mp4")
 
 plt.show()
+
+

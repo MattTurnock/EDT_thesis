@@ -90,8 +90,10 @@ namespace gen {
         double YLvlh = LvlhVector[1];
         double ZLvlh = LvlhVector[2];
 
-        double Xinertial = XLvlh * sin(rotationAngle) + YLvlh * cos(rotationAngle);
-        double Yinertial = XLvlh * cos(rotationAngle) - YLvlh * sin(rotationAngle);
+//        double Xinertial = XLvlh * sin(rotationAngle) + YLvlh * cos(rotationAngle);
+//        double Yinertial = XLvlh * cos(rotationAngle) - YLvlh * sin(rotationAngle);
+        double Xinertial = XLvlh * cos(rotationAngle) - YLvlh * sin(rotationAngle);
+        double Yinertial = XLvlh * sin(rotationAngle) + YLvlh * cos(rotationAngle);
         double Zinertial = 0;
 
         Eigen::Vector3d inertialVector;

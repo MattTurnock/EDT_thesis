@@ -1,0 +1,44 @@
+2021-04-05 21:57:08,809 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_Base.json
+
+2021-04-05 21:57:10,885 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_areaRatios-1.json
+
+2021-04-05 21:57:13,406 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_currents-1.json
+
+2021-04-05 21:57:15,414 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_diameters-1.json
+
+2021-04-05 21:57:17,462 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_endmassMasses-1.json
+
+2021-04-05 21:57:19,438 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_lengthRatios-1.json
+
+2021-04-05 21:57:19,468 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_lengths-1.json
+
+2021-04-05 21:57:21,460 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_lineSeparationCoefficients-1.json
+
+2021-04-05 21:57:23,402 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_noLines-1.json
+
+2021-04-05 21:57:25,433 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_occultationCoefficients-1.json
+
+2021-04-05 21:57:27,546 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_slackCoefficients-1.json
+

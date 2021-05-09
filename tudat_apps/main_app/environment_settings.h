@@ -97,14 +97,17 @@ public:
                 double BzLocal = 0;
                 magFieldMaglocal_ << BR, Bphi, BzLocal;
 
-                // Convert magnetic standard local magnetic field to lvlh
-                magFieldLvlh_ = gen::MaglocalToLvlh(magFieldMaglocal_);
-
-                // Convert local magfield to inertial and calculate magnitude
-                magField_ = gen::LvlhToInertial(magFieldLvlh_, theta_);
+//                // Convert magnetic standard local magnetic field to lvlh
+//                magFieldLvlh_ = gen::MaglocalToLvlh(magFieldMaglocal_);
+//
+//                // Convert local magfield to inertial and calculate magnitude
+//                magField_ = gen::LvlhToInertial(magFieldLvlh_, theta_);
+//                magFieldMagnitude_ = magFieldMaglocal_.norm();
+                magField_ = gen::LvlhToInertial(magFieldMaglocal_, theta_);
                 magFieldMagnitude_ = magFieldMaglocal_.norm();
 
-//            std::cout << "Magfield  B0 - phi0 - magnitude - R - R0: " << B0_ << " - " << phi0_ << " - " << magFieldMagnitude_ << " - " << R_ << " - " << R0_ << std::endl;
+
+
             }
 
             else if (magFieldRegion_ == "Transitional"){

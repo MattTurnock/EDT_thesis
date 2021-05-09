@@ -11,6 +11,7 @@ from scipy.interpolate import interp1d
 import pandas as pd
 from datetime import datetime, timedelta
 import logging
+import natsort
 
 #######################################################################################################################
 ############################## Set various project directories ############################################
@@ -59,7 +60,7 @@ MarsInfoList = [2020.789, 780/365.25] # Info list contains [initial same side ti
 AU = 1.496e11
 c = 299792458
 W0 = 1367.0
-figSizeDefault = [16,9]
+figSizeDefault = np.array([16,9])
 year = 365.25*24*60*60
 day = 24*60*60
 nT=1E-9
@@ -130,6 +131,27 @@ referenceParkerDataArray = np.zeros( (len(referenceParkerBsnT), 2) )
 referenceParkerDataArray[:,0] = referenceParkerRsAU
 referenceParkerDataArray[:,1] = referenceParkerBsnT
 
+
+#######################################################################################################################
+############################# Set constant values for simulation running ####################################################
+#######################################################################################################################
+
+importantRunsNumber = 100
+minorRunsNumber = 100
+
+lengths_m = np.logspace(3, 5, importantRunsNumber, endpoint=True )
+diameters_m = np.logspace(-4, -1, importantRunsNumber, endpoint=True )
+currents_mA = np.logspace(-2, 0, importantRunsNumber, endpoint=True )
+areaRatios = np.linspace(0, 1, importantRunsNumber, endpoint=True )
+noLinesRange = np.linspace(1, 100, minorRunsNumber, endpoint=True )
+lengthRatios = np.linspace(0, 1, minorRunsNumber, endpoint=True)
+slackCoefficients =np.linspace(1, 1.1, minorRunsNumber, endpoint=True)
+lineSeparationRatios = np.logspace(-7, -5, minorRunsNumber, endpoint=True)
+occultationCoefficients = np.linspace(0.1, 1, minorRunsNumber, endpoint=True)
+endmassMasses = np.logspace(0, 2, minorRunsNumber, endpoint=True)
+
+configSensitivityRunnerValues = (lengths_m, diameters_m, currents_mA, areaRatios, noLinesRange, lengthRatios, slackCoefficients,
+                                 lineSeparationRatios, occultationCoefficients, endmassMasses)
 
 #######################################################################################################################
 ############################# Some useful functions ####################################################
@@ -246,7 +268,8 @@ def list_files(directory, extension=None, sort=True, exceptions=None):
                 fileList.append(file)
 
     if sort:
-        fileList.sort()
+        fileList = natsort.natsorted(fileList)
+        # fileList.sort()
 
     if exceptions is not None:
         newFileList = []
@@ -576,7 +599,8 @@ def getAllYearsGA(quickConfigs, GASubfolder):
     endYears=[]
 
     subFoldersToRun = os.listdir(os.path.join(simulation_output_dir, GASubfolder))
-    subFoldersToRun.sort()
+    subFoldersToRun = natsort.natsorted(subFoldersToRun)
+    # subFoldersToRun.sort()
 
     for i in range(len(subFoldersToRun)):
         # startYear = startYears[i]
@@ -919,7 +943,8 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
     """
 
     jsonsToRunFilenames = os.listdir(os.path.join(jsonInputsDir, jsonSubDirectory))
-    jsonsToRunFilenames.sort()
+    jsonsToRunFilenames = natsort.natsorted(jsonsToRunFilenames)
+    # jsonsToRunFilenames.sort()
     jsonsToRunPaths = []
     applicationName = os.path.basename(os.path.normpath(runPath))
 
@@ -952,61 +977,111 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
 #######################################################################################################################
 
 def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation_output_dir, dataFilenamePortions=[],
-                            todoList=["bodyData", "currentData", "currentVNVData", "depVarData", "ionoData", "magData", "propData", "thrustData"]):
+                            todoList=["bodyData", "currentData", "currentVNVData", "depVarData", "ionoData", "magData", "propData", "thrustData", "configInfo"],
+                            jsonFilePath = None, useCompressed=False, printInfo=True):
 
     fullDataFilesDirectoryPath = os.path.join(simulation_output_dir, dataSubdirectory)
     dataToLoadFilenames = os.listdir(fullDataFilesDirectoryPath)
 
     # Make dummy variables in case not wanted to load
-    bodyDataArray = np.array([0,0,0])
-    currentDataArray = np.array([0,0,0])
-    currentVNVDataArray = np.array([0,0,0])
-    depVarDataArray = np.array([0,0,0])
-    ionoDataArray = np.array([0,0,0])
-    magDataArray = np.array([0,0,0])
-    propDataArray = np.array([0,0,0])
-    thrustDataArray = np.array([0,0,0])
+    ignoreArray = np.array([[0,0,0],[0,0,0]])
+    bodyDataArray = ignoreArray
+    currentDataArray = ignoreArray
+    currentVNVDataArray = ignoreArray
+    depVarDataArray = ignoreArray
+    ionoDataArray = ignoreArray
+    magDataArray = ignoreArray
+    propDataArray = ignoreArray
+    thrustDataArray = ignoreArray
+    configInfoArray = ignoreArray
+    jsonDataDict = {}
+
+    # Set keywords to look for if compressed or not compressed
+    if useCompressed:
+        bodyDataKeyword = "bodyData-Compressed"
+        currentDataKeyword = "currentData-Compressed"
+        currentVNVDataKeyword = "currentVNVData-Compressed"
+        depVarDataKeyword = "depVarData-Compressed"
+        ionoDataKeyword = "ionoData-Compressed"
+        magDataKeyword = "magData-Compressed"
+        propDataKeyword = "propData-Compressed"
+        thrustDataKeyword = "thrustData-Compressed"
+    else:
+        bodyDataKeyword = "bodyData.dat"
+        currentDataKeyword = "currentData.dat"
+        currentVNVDataKeyword = "currentVNVData.dat"
+        depVarDataKeyword = "depVarData.dat"
+        ionoDataKeyword = "ionoData.dat"
+        magDataKeyword = "magData.dat"
+        propDataKeyword = "propData.dat"
+        thrustDataKeyword = "thrustData.dat"
+
 
     for i in range(len(dataToLoadFilenames)):
         filename = dataToLoadFilenames[i]
 
-        if ("bodyData" in filename) and ("bodyData" in todoList):
+        if (bodyDataKeyword in filename) and ("bodyData" in todoList):
             bodyDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             bodyDataArray = np.genfromtxt(bodyDataFilename, delimiter=",")
 
-        elif ("currentData" in filename) and ("currentData" in todoList):
+        elif (currentDataKeyword in filename) and ("currentData" in todoList):
             currentDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             currentDataArray = np.genfromtxt(currentDataFilename, delimiter=",")
 
-        elif ("currentVNVData" in filename) and ("currentVNVData" in todoList):
+        elif (currentVNVDataKeyword in filename) and ("currentVNVData" in todoList):
             currentVNVDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             currentVNVDataArray = np.genfromtxt(currentVNVDataFilename, delimiter=",")
 
-        elif ("depVarData" in filename) and ("depVarData" in todoList):
+        elif (depVarDataKeyword in filename) and ("depVarData" in todoList):
             depVarDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             depVarDataArray = np.genfromtxt(depVarDataFilename, delimiter=",")
 
-        elif ("ionoData" in filename) and ("ionoData" in todoList):
+        elif (ionoDataKeyword in filename) and ("ionoData" in todoList):
             ionoDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             ionoDataArray = np.genfromtxt(ionoDataFilename, delimiter=",")
 
-        elif ("magData" in filename) and ("magData" in todoList):
+        elif (magDataKeyword in filename) and ("magData" in todoList):
             magDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             magDataArray = np.genfromtxt(magDataFilename, delimiter=",")
 
-        elif ("propData" in filename) and ("propData" in todoList):
+        elif (propDataKeyword in filename) and ("propData" in todoList):
             propDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             propDataArray = np.genfromtxt(propDataFilename, delimiter=",")
 
-        elif ("thrustData" in filename) and ("thrustData" in todoList):
+        elif (thrustDataKeyword in filename) and ("thrustData" in todoList):
             thrustDataFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             thrustDataArray = np.genfromtxt(thrustDataFilename, delimiter=",")
 
+        elif ("configInfo" in filename) and ("configInfo" in todoList):
+            configInfoFilename = os.path.join(fullDataFilesDirectoryPath, filename)
+            configInfoArray = np.genfromtxt(configInfoFilename, delimiter=",")
+
+        elif (jsonFilePath is not None):
+            with open(jsonFilePath) as jsonFile:
+                jsonDataDict = json.load(jsonFile)
+
+
         else:
-            logger.info("Data file does not have recognised type (or is purposely being ignored), ignoring: %s" %filename)
+            if printInfo:
+                logger.info("Data file does not have recognised type (or is purposely being ignored), ignoring: %s" %filename)
 
 
-    return (bodyDataArray, currentDataArray, depVarDataArray, ionoDataArray, magDataArray, propDataArray, thrustDataArray, currentVNVDataArray)
+    return (bodyDataArray, currentDataArray, depVarDataArray, ionoDataArray, magDataArray, propDataArray, thrustDataArray, currentVNVDataArray, configInfoArray, jsonDataDict)
+
+# Similar to getAllSimDataFromFolder, but instead of choosing specific folders, simply select a json file and load all of their data, using specified save location in the json
+def getAllSimDataFromJson(JsonPath, useCompressed=False, printInfo=True, simulationDataDirectory=simulation_output_dir,
+                          todoList=["bodyData", "currentData", "currentVNVData", "depVarData", "ionoData", "magData", "propData", "thrustData", "configInfo"]):
+
+    with open(JsonPath) as jsonFile:
+        jsonDataDict = json.load(jsonFile)
+
+    dataSubDirectory = jsonDataDict["saveDataConfigs"]["outputSubFolder"]
+
+    allData = getAllSimDataFromFolder(dataSubDirectory, jsonFilePath=JsonPath, useCompressed=useCompressed,
+                                      printInfo=printInfo, simulationDataDirectory=simulationDataDirectory, todoList=todoList)
+
+    return allData
+
 
 
 def plotMagData(magDataArray, arrayType="simulation", bodyDataArray=None, fignumber=None, plotType="time-magnitude", logScaleY=True, logScaleX=True,
@@ -1102,7 +1177,8 @@ figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, 
 
 def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plotType="x-y", legendSize=11, plotSun=False,
                        figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, sameScale=False, planetsToPlot=[],
-                       plotOnlyTrajectory=False, trajectoryLabel="Spacecraft Trajectory", legendLabelsCustom=None, logScaleX=False, logScaleY=False):
+                       plotOnlyTrajectory=False, trajectoryLabel="Spacecraft Trajectory", legendLabelsCustom=None, logScaleX=False, logScaleY=False,
+                       scatter=False):
 
     if dataArrayType == "bodyData":
         times = dataArray[:,0]
@@ -1152,11 +1228,19 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
         yToPlot = speedKms
         xLabel = "Year"
         yLabel = "Spacecraft velocity [km/s]"
+    elif plotType == "altitude-speed":
+        xToPlot = radiiAU
+        yToPlot = speedKms
+        xLabel = "Distance from Sun [AU]"
+        yLabel = "Spacecraft velocity [km/s]"
     else:
         logger.info("ERROR: Plot type not recognised, ending program")
         sys.exit()
 
-    plt.plot(xToPlot, yToPlot)
+    if scatter:
+        plt.scatter(xToPlot, yToPlot)
+    else:
+        plt.plot(xToPlot, yToPlot)
 
     if not plotOnlyTrajectory:
         if len(planetsToPlot) != 0:
@@ -1765,9 +1849,45 @@ def reverseInterpolateArrays(smallArray, largeArray):
     return outputArray
 
 #######################################################################################################################
-####################################### Final Simulation related functions #########################################################
+####################################### Animation related functions #########################################################
 #######################################################################################################################
 
+# Function to interpolate data from simulation environment to have same timestep
+def interpolateAllDataArrays(allSimData, dataRange = [0,1], forcedArrayLength=None):
+
+
+
+    newDataList = []
+
+    for i in range(len(allSimData)):
+
+        ithDataArray = allSimData[i]
+
+        # Make sure to ignore config info file, since not time based
+        if i != 8:
+            # if i == 5:
+
+            ithDataArrayTimes = ithDataArray[:, 0]
+
+            lowerIndex = int(dataRange[0] * len(ithDataArrayTimes))
+            upperIndex = int(dataRange[1] * len(ithDataArrayTimes)) - 1
+            if forcedArrayLength is not None:
+                newArrayLength = forcedArrayLength
+            else:
+                newArrayLength =2*(upperIndex - lowerIndex)
+
+
+            newtimes = np.linspace(ithDataArrayTimes[lowerIndex], ithDataArrayTimes[upperIndex], newArrayLength)
+            # newtimes = np.linspace(ithDataArrayTimes[0], ithDataArrayTimes[-1], 100)
+            ithData_Interpolated = interpolateArrays(ithDataArray, newtimes)
+
+            newDataList.append(ithData_Interpolated)
+        else:
+            newDataList.append(ithDataArray)
+
+    newDataTuple = tuple(newDataList)
+
+    return newDataTuple
 
 
 
