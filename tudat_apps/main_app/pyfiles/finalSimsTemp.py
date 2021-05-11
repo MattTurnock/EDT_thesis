@@ -12,10 +12,10 @@ year = 365*24*60*60
 AU = 1.496E11
 
 doingSSO = False
-doingSOKGA = False
+doingSOKGA = True
 doingInO = False
 doingCompare = False
-doingSSOSensitivity = True
+doingSSOSensitivity = False
 
 fullLoadTodoList = ["bodyData", "propData", "thrustData", "currentVNVData"]
 

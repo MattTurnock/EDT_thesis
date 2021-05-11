@@ -43,7 +43,8 @@
     "GuidanceConfigs": {
         "thrustMagnitudeConfig": "nominal",
         "thrustDirectionConfig": "nominalPrograde",
-        "initialEphemerisYear": 2041.0326226897334,
+        "minPeAU": 0.1,
+        "initialEphemerisYear": 2023.5313145353351,
         "integratorSettings": {
             "initialTimeStep": 1.0,
             "integrator": "RK87DP",
@@ -80,12 +81,12 @@
             "ta_deg": 0
         },
         "vehicleInitialCartesian": {
-            "x1_m": -66418213517.66,
-            "x2_m": 134847243555.793,
-            "x3_m": -88214138.9547689,
-            "v1_ms": -36444.3905210388,
-            "v2_ms": -12309.566384518,
-            "v3_ms": -56.7075922445254
+            "x1_m": 55270860322.0263,
+            "x2_m": -141672767206.028,
+            "x3_m": 8766308.57018541,
+            "v1_ms": 62986.9837571733,
+            "v2_ms": 24662.6717510164,
+            "v3_ms": -103.834831535722
         }
     },
     "EDTConfigs": {
@@ -96,6 +97,7 @@
         "imposedAreaBool": true,
         "imposedArea": 1,
         "emitterCurrentmA": 0,
+        "generalRotationCoefficient": 0.7,
         "hoytether": {
             "tetherDiameterSecondary": 1E-3,
             "tetherAreaRatioSecondary": 1,
@@ -103,7 +105,7 @@
             "primaryLineSegmentLengthRatio": 1.0,
             "slackCoefficient": 1.005,
             "primaryLineSeparationRatio": 0.5,
-            "occultationCoefficient": 0.7
+            "SRPOccultationCoefficient": 0.7
         }
     },
     "saveDataConfigs": {
@@ -117,7 +119,8 @@
             "current": true,
             "currentVNV": true,
             "bodyData": true,
-            "dependentVariables": true
+            "dependentVariables": true,
+            "configInfo": true
         }
     },
     "scConfigs": {
@@ -126,7 +129,7 @@
             "endmassArea2": 1.2,
             "endmassRadiationCoefficient": 0,
             "tetherRadiationCoefficient": 0,
-            "rotationFactor": 0.7
+            "SRPRotationCoefficient": 0.7
         },
         "endmassMass1": 50,
         "endmassMass2": 50

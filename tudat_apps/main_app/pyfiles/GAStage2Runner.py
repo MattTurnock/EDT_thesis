@@ -75,8 +75,8 @@ utils.createGARunnerJsons(utils.quickConfigsMars, outputSubFolderBaseMarsGlobal,
 
 runSims = True
 runJupiter = True
-runSaturn = False
-runMars = False
+runSaturn = True
+runMars = True
 printSetting=2
 if runSims:
     if runJupiter: utils.runAllSimulations(jsonSaveSubDirJupiter, printSetting=printSetting)

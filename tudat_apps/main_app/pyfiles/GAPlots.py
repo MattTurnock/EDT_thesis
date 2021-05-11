@@ -15,10 +15,46 @@ plotFolderBase = "pyplots/GA_%s_%s-%s"
 figNumberCount=1
 
 doingJupiter=True
-plotExampleJupiterTrajectory=True
 doingSaturn=False
 doingMars=False
+doingTitles = False
 showing=True
+
+plotTitles = {"Jupiter_DVTOFS_Syn": None,
+              "Jupiter_yearsTOFS_Syn": None,
+              "Jupiter_DVTOFS_Glob": None,
+              "Jupiter_yearsTOFS_Glob": None,
+              "Jupiter_porkchop_Glob": None,
+              "Jupiter_porkchop_Syn": None,
+              "Jupiter_porkchopClose_Glob": None,
+
+              "Saturn_DVTOFS_Syn": None,
+              "Saturn_yearsTOFS_Syn": None,
+              "Saturn_DVTOFS_Glob": None,
+              "Saturn_yearsTOFS_Glob": None,
+              "Saturn_porkchop_Glob": None,
+              "Saturn_porkchop_Syn": None,
+              "Saturn_porkchopClose_Glob": None,
+              }
+
+if doingTitles:
+    plotTitles["Jupiter_DVTOFS_Syn"] = "Jupiter DV-TOF Synodic"
+    plotTitles["Jupiter_yearsTOFS_Syn"] = "Jupiter Launch Year-TOF Synodic"
+    plotTitles["Jupiter_DVTOFS_Glob"] = "Jupiter DV-TOF Global"
+    plotTitles["Jupiter_yearsTOFS_Glob"] = "Jupiter Launch Year-TOF Global"
+    plotTitles["Jupiter_porkchop_Glob"] = "Jupiter Porkchop Plot Global"
+    plotTitles["Jupiter_porkchop_Syn"] = "Jupiter Porkchop Plot Synodic"
+    plotTitles["Jupiter_porkchopClose_Glob"] = "Jupiter Porkchop Plot Global Close-Up"
+
+    plotTitles["Saturn_DVTOFS_Syn"] = "Saturn DV-TOF Synodic"
+    plotTitles["Saturn_yearsTOFS_Syn"] = "Saturn Launch Year-TOF Synodic"
+    plotTitles["Saturn_DVTOFS_Glob"] = "Saturn DV-TOF Global"
+    plotTitles["Saturn_yearsTOFS_Glob"] = "Saturn Launch Year-TOF Global"
+    plotTitles["Saturn_porkchop_Glob"] = "Saturn Porkchop Plot Global"
+    plotTitles["Saturn_porkchop_Syn"] = "Saturn Porkchop Plot Synodic"
+    plotTitles["Saturn_porkchopClose_Glob"] = "Saturn Porkchop Plot Global Close-Up"
+
+
 
 
 scatterMarkerPorkchops = "x"
@@ -39,9 +75,9 @@ if doingJupiter:
     allYearsJupiterDataSynodic = utils.getAllYearsGA(quickConfigsJupiter, JupiterSubfolderSynodic)
     fitnessFileDVsJupiterSynodic, fitnessFileTOFSJupiterSynodic, launchYearsJupiterSynodic, arrivalYearsJupiterSynodic, startYearsJupiterSynodic, endYearsJupiterSynodic = allYearsJupiterDataSynodic[0:6]
 
-    utils.plotManyDataGA(allYearsJupiterDataSynodic, figNumberCount, quickConfigsJupiter, plotType="DV-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Synodic")
+    utils.plotManyDataGA(allYearsJupiterDataSynodic, figNumberCount, quickConfigsJupiter, plotType="DV-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Synodic", plotTitle=plotTitles["Jupiter_DVTOFS_Syn"])
     figNumberCount += 1
-    utils.plotManyDataGA(allYearsJupiterDataSynodic, figNumberCount, quickConfigsJupiter, plotType="launchYears-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Synodic")
+    utils.plotManyDataGA(allYearsJupiterDataSynodic, figNumberCount, quickConfigsJupiter, plotType="launchYears-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Synodic", plotTitle=plotTitles["Jupiter_yearsTOFS_Syn"])
     figNumberCount += 1
 
     # Set Jupiter-specific parameters
@@ -54,9 +90,9 @@ if doingJupiter:
     allYearsJupiterDataGlobal = utils.getAllYearsGA(quickConfigsJupiter, JupiterSubfolderGlobal)
     fitnessFileDVsJupiterGlobal, fitnessFileTOFSJupiterGlobal, launchYearsJupiterGlobal, arrivalYearsJupiterGlobal, startYearsJupiterGlobal, endYearsJupiterGlobal = allYearsJupiterDataGlobal[0:6]
 
-    utils.plotManyDataGA(allYearsJupiterDataGlobal, figNumberCount, quickConfigsJupiter, plotType="DV-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Global")
+    utils.plotManyDataGA(allYearsJupiterDataGlobal, figNumberCount, quickConfigsJupiter, plotType="DV-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Global", plotTitle=plotTitles["Jupiter_DVTOFS_Glob"])
     figNumberCount += 1
-    utils.plotManyDataGA(allYearsJupiterDataGlobal, figNumberCount, quickConfigsJupiter, plotType="launchYears-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Global")
+    utils.plotManyDataGA(allYearsJupiterDataGlobal, figNumberCount, quickConfigsJupiter, plotType="launchYears-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Global", plotTitle=plotTitles["Jupiter_yearsTOFS_Glob"])
     figNumberCount += 1
 
     jupiterPorkchopPathList = os.listdir(os.path.join(utils.simulation_output_dir, JupiterSubfolderGlobal))
@@ -81,7 +117,7 @@ if doingJupiter:
                        xlims=[2020, 2050])
     utils.plotManyDataGA(allYearsJupiterDataGlobal, figNumberCount, utils.quickConfigsJupiter, plotType="launchYears-TOFS", scatterPointSize=scatterPointSizePorkchops,
                          saveFolder=JupiterPorkchopSaveDirectory, savenameOverride=JupiterPorkchopSavenameGlobal, plotLegend=False,
-                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=scatterColorPorkchops)
+                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=scatterColorPorkchops, plotTitle=plotTitles["Jupiter_porkchop_Glob"])
     figNumberCount += 1
 
     # Full porkchop synodic opt
@@ -91,7 +127,7 @@ if doingJupiter:
                        xlims=[2020, 2050])
     utils.plotManyDataGA(allYearsJupiterDataSynodic, figNumberCount, utils.quickConfigsJupiter, plotType="launchYears-TOFS", scatterPointSize=scatterPointSizePorkchops,
                          saveFolder=JupiterPorkchopSaveDirectory, savenameOverride=JupiterPorkchopSavenameSynodic, plotLegend=False,
-                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=None)
+                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=None, plotTitle=plotTitles["Jupiter_porkchop_Syn"])
     figNumberCount += 1
 
     # Closeup porkchop global opt
@@ -101,7 +137,7 @@ if doingJupiter:
                        xlims=[2029, 2033])
     utils.plotManyDataGA(allYearsJupiterDataGlobal, figNumberCount, utils.quickConfigsJupiter, plotType="launchYears-TOFS", scatterPointSize=scatterPointSizePorkchops,
                          saveFolder=JupiterPorkchopSaveDirectory, savenameOverride=JupiterPorkchopSavenameGlobalClose, plotLegend=False,
-                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=scatterColorPorkchops)
+                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=scatterColorPorkchops, plotTitle=plotTitles["Jupiter_porkchopClose_Glob"])
     figNumberCount += 1
 
 if doingSaturn:
@@ -116,9 +152,9 @@ if doingSaturn:
     allYearsSaturnDataSynodic = utils.getAllYearsGA(utils.quickConfigsSaturn, SaturnSubfolderSynodic)
     fitnessFileDVsSaturnSynodic, fitnessFileTOFSSaturnSynodic, launchYearsSaturnSynodic, arrivalYearsSaturnSynodic, startYearsSaturnSynodic, endYearsSaturnSynodic = allYearsSaturnDataSynodic[0:6]
 
-    utils.plotManyDataGA(allYearsSaturnDataSynodic, figNumberCount, utils.quickConfigsSaturn, plotType="DV-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Synodic")
+    utils.plotManyDataGA(allYearsSaturnDataSynodic, figNumberCount, utils.quickConfigsSaturn, plotType="DV-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Synodic", plotTitle=plotTitles["Saturn_DVTOFS_Syn"])
     figNumberCount += 1
-    utils.plotManyDataGA(allYearsSaturnDataSynodic, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Synodic")
+    utils.plotManyDataGA(allYearsSaturnDataSynodic, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Synodic", plotTitle=plotTitles["Saturn_yearsTOFS_Syn"])
     figNumberCount += 1
 
     # Set Saturn-specific parameters
@@ -129,9 +165,9 @@ if doingSaturn:
     allYearsSaturnDataGlobal = utils.getAllYearsGA(utils.quickConfigsSaturn, SaturnSubfolderGlobal)
     fitnessFileDVsSaturnGlobal, fitnessFileTOFSSaturnGlobal, launchYearsSaturnGlobal, arrivalYearsSaturnGlobal, startYearsSaturnGlobal, endYearsSaturnGlobal = allYearsSaturnDataGlobal[0:6]
 
-    utils.plotManyDataGA(allYearsSaturnDataGlobal, figNumberCount, utils.quickConfigsSaturn, plotType="DV-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Global")
+    utils.plotManyDataGA(allYearsSaturnDataGlobal, figNumberCount, utils.quickConfigsSaturn, plotType="DV-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Global", plotTitle=plotTitles["Saturn_DVTOFS_Glob"])
     figNumberCount += 1
-    utils.plotManyDataGA(allYearsSaturnDataGlobal, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Global")
+    utils.plotManyDataGA(allYearsSaturnDataGlobal, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Global", plotTitle=plotTitles["Saturn_yearsTOFS_Glob"])
     figNumberCount += 1
 
     SaturnPorkchopPathList = os.listdir(os.path.join(utils.simulation_output_dir, SaturnSubfolderGlobal))
@@ -149,7 +185,7 @@ if doingSaturn:
                        xlims=[2020, 2050])
     utils.plotManyDataGA(allYearsSaturnDataGlobal, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", scatterPointSize=scatterPointSizePorkchops,
                          saveFolder=SaturnPorkchopSaveDirectory, savenameOverride=SaturnPorkchopSavenameGlobal, plotLegend=False,
-                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=scatterColorPorkchops)
+                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=scatterColorPorkchops, plotTitle=plotTitles["Saturn_porkchop_Glob"])
     figNumberCount += 1
 
     # Full porkchop synodic opt
@@ -159,7 +195,7 @@ if doingSaturn:
                        xlims=[2020, 2050])
     utils.plotManyDataGA(allYearsSaturnDataSynodic, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", scatterPointSize=scatterPointSizePorkchops,
                          saveFolder=SaturnPorkchopSaveDirectory, savenameOverride=SaturnPorkchopSavenameSynodic, plotLegend=False,
-                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=None)
+                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=None, plotTitle=plotTitles["Saturn_porkchop_Syn"])
     figNumberCount += 1
 
     # Closeup porkchop global opt
@@ -169,7 +205,7 @@ if doingSaturn:
                        xlims=[2028, 2034])
     utils.plotManyDataGA(allYearsSaturnDataGlobal, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", scatterPointSize=scatterPointSizePorkchops,
                          saveFolder=SaturnPorkchopSaveDirectory, savenameOverride=SaturnPorkchopSavenameGlobalClose, plotLegend=False,
-                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=scatterColorPorkchops)
+                         scatterMarker=scatterMarkerPorkchops, scatterLinewidths=scatterLinewidthsPorkchops, scatterColour=scatterColorPorkchops, plotTitle=plotTitles["Saturn_porkchopClose_Glob"])
     figNumberCount += 1
 
 if doingMars:

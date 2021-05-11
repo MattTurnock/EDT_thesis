@@ -634,7 +634,7 @@ def getAllYearsGA(quickConfigs, GASubfolder):
 def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", yearSpacing=1, markerScale=10, legendSize=11,
                    figsize=figSizeDefault, saveFolder=None, savenameSuffix=None, scatterPointSize=1, scatterColour=None, scatterMarker=".", scatterLinewidths=None,
                    savenameOverride=None, plotLegend=True, TOFUnits="Years", removeDominated=True, plotParetoFront=False,
-                   xlims=None, ylims=None, printMinDV=False):
+                   xlims=None, ylims=None, printMinDV=False, plotTitle=None):
     """
     Function to plot multiple data sets to the same plot, using all data and the spacing
     :param allYearsGAData:
@@ -649,6 +649,8 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
     generation = quickConfigs[3]
 
     plt.figure(fignumber, figsize=figsize)
+    if plotTitle is not None:
+        plt.title(plotTitle)
     figLabels=[]
 
     for i in range(len(fitnessFileDVsAll)):
@@ -867,10 +869,12 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
         # Create list of possible starting years, running from far in the past to far in the future
         possibleStartYears = np.arange(knownOpposingYear - 100*synodicPeriod, 3000, synodicPeriod)
 
+
         # Find value in possible years nearest to the one wanted, and create list of actual start years to run with
         value, index = findNearestInArray(possibleStartYears, inputStartYearsRange[0])
         startYearsToRun = np.round(np.arange(possibleStartYears[index], inputStartYearsRange[1], infoList[1] ), 2)
         endYearsToRun = np.round( startYearsToRun + synodicPeriod, 2)
+        # print(startYearsToRun)
     else:
         startYearsToRun = [inputStartYearsRange[0]]
         endYearsToRun = [inputStartYearsRange[1]]
@@ -895,8 +899,8 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
         f.close()
 
 
-
     for i in range(len(startYearsToRun)):
+
         startYear = startYearsToRun[i]
         endYear = endYearsToRun[i]
         outputSubFolder = outputSubFolderBase + "_%s_%s-%s" %(planetName, startYear, endYear)
@@ -920,7 +924,7 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
             jsonInfoTemp["AlgorithmConfigs"]["includeArrivalDV"] = algorithmConfigs[7]
 
         jsonPathTemp = jsonPathBase %(planetName, startYear, endYear)
-
+        # print(startYear)
         # Dump new data into a json file
         with open(jsonPathTemp, 'w+') as f:
             f.seek(0)
@@ -928,7 +932,7 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
             f.truncate()
             f.close()
 
-        return 0
+    return 0
 
 def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
                       runPath=os.path.join(cppApplications_dir, "application_GA_calculator"),

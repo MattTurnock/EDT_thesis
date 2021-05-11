@@ -36,6 +36,9 @@ public:
         // Set Sun gravitation parameter
         SunMu_ = simulationVariables_["constants"]["gravitationalParameters"]["Sun"];
 
+        // Set rotation coefficient used to factor the thrust
+        generalRotationCoefficient_ = simulationVariables_["EDTConfigs"]["generalRotationCoefficient"];
+
         // Set sizes for save vectors
         magFieldSaveVector_.resize(9);
         ionosphereSaveVector_.resize(1);
@@ -48,7 +51,7 @@ public:
         configType_ = vehicleConfig_.getConfigType();
 
         // Do initialisation update of guidance settings
-        std::cout << "Updating guidance settings" << std::endl;
+//        std::cout << "Updating guidance settings" << std::endl;
         updateGuidanceSettings();
 
         // Perihelion limiter
@@ -71,7 +74,7 @@ public:
             else if (thrustMagnitudeConfig_ == "nominal") {
 
                 thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
-                thrustMagnitude_ = thrustVector_.norm();
+                thrustMagnitude_ = generalRotationCoefficient_ * thrustVector_.norm();
             }
         }
 //        std::cout << "Thrust magnitude: " << thrustMagnitude_ <<  std::endl; //TODO: remove me
@@ -394,8 +397,10 @@ public:
 
             // For spacecraft using a transient-current concept
         else if ( (configType_ == "CHTr") or (configType_ == "AlMTr") ){
-            // TODO: Add an update function for transient-current type spacecraft
-            std::cout << "No calculation for transient-current made yet" << std::endl;
+
+            // Simply set the average current directly from the json emitter current (even though there would be no emitter)
+            currentMagnitude_ = std::abs(vehicleConfig_.getEmitterCurrent());
+
         }
     }
 
@@ -532,6 +537,7 @@ protected:
     Eigen::Vector3d thrustDirection_;
     double minimumPerihelionAU_;
     double minimumPerihelion_;
+    double generalRotationCoefficient_;
 
     // Current vector used for thrust direction guidance
     Eigen::Vector3d currentDirectionVector_;

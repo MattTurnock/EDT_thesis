@@ -25,6 +25,7 @@
 
 #include "Tudat/Astrodynamics/Ephemerides/approximatePlanetPositions.h"
 #include "Tudat/Astrodynamics/TrajectoryDesign/trajectory.h"
+#include "Tudat/Astrodynamics/TrajectoryDesign/exportTrajectory.h"
 #include <random>
 
 #include "pagmo/island.hpp"
@@ -43,6 +44,8 @@ using namespace tudat::transfer_trajectories;
 using namespace tudat;
 using namespace pagmo;
 
+
+
 /*!
  *  The class defined in this file is to be used in a Pagmo optimization. It defines the objective function for an
  *  Earth-Jupiter or Earth-Saturn two-burn impulsive transfer (although other flyby sequences are supported), using a
@@ -53,6 +56,38 @@ using namespace pagmo;
  *
  *  The problem minimized the TOF, and bounds the problem to an upper DV
  */
+
+namespace matt_trajectories{
+
+    // Just the sun's gravitational parameter
+    const double sunGravitationalParameter = 1.32712428e20;
+
+    // Function to return number of legs in a trajectory
+    int getNumberOfLegs(std::vector< int > flybySequence);
+
+    // Function to get the leg type vector - says whether each leg is departure, intermediate, or end. Uses number of legs to do it
+    std::vector< TransferLegType > getLegTypeVector(int numberOfLegs);
+
+    // Function to return the target planet index - used for the type of semi-major axis / eccentricity target
+    int getTargetPlanetIndex(std::vector< int > flybySequence, int numberOfLegs);
+
+    // Function to modify ephemeris vector, gravitation parameter vector, and minimum pericenter radii vectors in place using pointers
+    void set_Ephemerides_GravitationParameters_MinPeRadii(std::vector< ephemerides::EphemerisPointer >& ephemerisVector,
+                                                          Eigen::VectorXd& gravitationalParameterVector,
+                                                          Eigen::VectorXd& minimumPericenterRadii,
+                                                          std::vector< int > flybySequence,
+                                                          int numberOfLegs);
+
+    // Function to set semiMajorAxes and eccentricities vectors by modifying in-place
+    void set_SMAs_Eccentricities(Eigen::VectorXd& semiMajorAxes,
+                                 Eigen::VectorXd& eccentricities,
+                                 int targetPlanetIndex);
+
+
+
+};
+
+
 
 //! Function almost identical to MultipleGravityAssist, adjusted to alter fitness etc
 struct EarthPlanetTransfer
@@ -65,7 +100,8 @@ struct EarthPlanetTransfer
                            std::vector< int > flybySequence,
                            bool normaliseValues,
                            bool includeDeaprtureDV,
-                           bool includeArrivalDV);
+                           bool includeArrivalDV,
+                           std::string outputSubFolder);
 
     // Calculates the fitness
     std::vector< double > fitness( const std::vector< double > &x ) const;
@@ -95,6 +131,7 @@ struct EarthPlanetTransfer
     Eigen::VectorXd getEccentricities() const;
     Eigen::VectorXd getMinimumPericenterRadii() const;
 
+
 private:
 
     const std::vector< std::vector< double > > problemBounds_;
@@ -110,11 +147,12 @@ private:
     Eigen::VectorXd eccentricities_;
     Eigen::VectorXd minimumPericenterRadii_;
 
-    // CUSTOM ADD-IN FOR DV BOUNDS (and normalisation bool)
+    // CUSTOM ADD-IN FOR DV BOUNDS (and normalisation bool, and outputsubfolder)
     std::vector< double > deltaVBounds_;
     bool normaliseValues_;
     bool includeDepartureDV_;
     bool includeArrivalDV_;
+    std::string outputSubFolder_;
 };
 
 

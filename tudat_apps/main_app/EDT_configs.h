@@ -59,7 +59,7 @@ namespace EDTs {
             primaryLineSegmentLengthRatio_ = hoytetherVariables_["primaryLineSegmentLengthRatio"];
             slackCoefficient_ = hoytetherVariables_["slackCoefficient"];
             primaryLineSeparationRatio_ = hoytetherVariables_["primaryLineSeparationRatio"];
-            occultationCoefficient_ = hoytetherVariables_["occultationCoefficient"];
+            SRPOccultationCoefficient_ = hoytetherVariables_["SRPOccultationCoefficient"];
             endmassMass1_ = simulationVariables_["scConfigs"]["endmassMass1"];
             endmassMass2_ = simulationVariables_["scConfigs"]["endmassMass2"];
 
@@ -70,7 +70,7 @@ namespace EDTs {
             endmassArea2_ = SRPVariables_["endmassArea2"];
             endmassRadiationCoefficient_ = SRPVariables_["endmassRadiationCoefficient"];
             tetherRadiationCoefficient_ = SRPVariables_["tetherRadiationCoefficient"];
-            rotationCoefficient_ = SRPVariables_["rotationFactor"];
+            SRPRotationCoefficient_ = SRPVariables_["SRPRotationCoefficient"];
 
             // Set some material properties
             imposedConductivityBool_ = materialProperties_["imposedConductivityBool"];
@@ -166,15 +166,15 @@ namespace EDTs {
             xSecAreaConducting_ = xSecAreaTotal_;
             conductivity_ = resistivityToConductivity(resistivity_);
             EDTResistance_ = calculateResistance(resistivity_, length_, xSecAreaConducting_); // TODO: Check length correct
-            std::cout << "Vehicle conducting area: " << xSecAreaConducting_ << std::endl;
-            std::cout << "Hoytether area primary total (should be same as above) : " << xSecAreaHoytetherPrimaryTotal_ << std::endl;
+//            std::cout << "Vehicle conducting area: " << xSecAreaConducting_ << std::endl;
+//            std::cout << "Hoytether area primary total (should be same as above) : " << xSecAreaHoytetherPrimaryTotal_ << std::endl;
 
 
             // Calculate and set EDT constant bodyMass
             vehicleMass_ = tetherMass_ + endmassMass1_ + endmassMass2_;
             EDTBody->setConstantBodyMass(vehicleMass_);
 //            EDTBody->setConstantBodyMass(100);
-            std::cout << "Vehicle masses (total, endmass1, endmass2, tether mass): " << vehicleMass_ << ", " << endmassMass1_ << ", " << endmassMass2_ << ", " << tetherMass_ << std::endl;
+//            std::cout << "Vehicle masses (total, endmass1, endmass2, tether mass): " << vehicleMass_ << ", " << endmassMass1_ << ", " << endmassMass2_ << ", " << tetherMass_ << std::endl;
 
         }
 
@@ -202,7 +202,7 @@ namespace EDTs {
             // Calculate total primary and secondary SRP areas Ap and As, as well as effective SRP area Aeff
             totalPrimarySRPArea_ = tetherDiameterOuter_ * totalPrimaryLineLength_;
             totalSecondarySRPArea_ = tetherDiameterOuterSecondary_ * totalSecondaryLineLength_;
-            effectiveHoytetherSRPArea_ = rotationCoefficient_ * occultationCoefficient_ * (totalPrimarySRPArea_ + totalSecondarySRPArea_);
+            effectiveHoytetherSRPArea_ = SRPRotationCoefficient_ * SRPOccultationCoefficient_ * (totalPrimarySRPArea_ + totalSecondarySRPArea_);
 
             // Calculate the total cross sectional areas of primary and secondary lines
             xSecAreaHoytetherPrimaryInnerTotal_ = noPrimaryLines_ * tetherAreaInner_;
@@ -244,7 +244,7 @@ namespace EDTs {
 
         void setSRPForSingleLine(){
             // Set total effective SRP area
-            effectiveSingleLineSRPArea_ = rotationCoefficient_ * length_ * tetherAreaOuter_;
+            effectiveSingleLineSRPArea_ = SRPRotationCoefficient_ * length_ * tetherAreaOuter_;
             totalEffectiveSRPArea_ = endmassArea1_ + endmassArea2_ + effectiveSingleLineSRPArea_;
 
             // Set total effective radiation pressure coefficient, using a weighted sum
@@ -495,7 +495,7 @@ namespace EDTs {
         double slackCoefficient_;
         double primaryLineSeparationRatio_;
         double primaryLineSeparation_;
-        double occultationCoefficient_;
+        double SRPOccultationCoefficient_;
 
         // Create derived EDT properties - hoytether stuff
         double noSecondaryLinks_;
@@ -536,7 +536,7 @@ namespace EDTs {
         double endmassArea2_;
         double endmassRadiationCoefficient_;
         double tetherRadiationCoefficient_;
-        double rotationCoefficient_;
+        double SRPRotationCoefficient_;
 
         // Create derived SRP properties, for direct use in cannonball radiation pressure
         double totalEffectiveSRPArea_;

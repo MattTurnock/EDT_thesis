@@ -42,10 +42,11 @@ int main(int argc, char *argv[] )
     }
     else{
 //        jsonName = "VnV/testVariablesCurrentVnV_2a.json"; // TODO: change to nominal test variables
-        jsonName = "finalSims/SSO.json"; // TODO: change to nominal test variables
+//        jsonName = "finalSims/SSO.json"; // TODO: change to nominal test variables
 //        jsonName = "finalSims/InO.json"; // TODO: change to nominal test variables
 //        jsonName = "VnV/testVariablesIntegratorGA_Reference.json"; // TODO: Make python file to run all variants as needed
 //        jsonName = "testVariables.json";
+        jsonName = "finalSims/SOKGA_reference.json";
     }
     nlohmann::json simulationVariables = gen::readJson(jsonName);
 
@@ -82,7 +83,7 @@ int main(int argc, char *argv[] )
 
     nlohmann::json ISMFVariables = simulationVariables["InterstellarMagField"];
     double testYear = 2001.3;
-    std::cout << "B0 for year " << testYear << " : " << gen::twoSines(testYear, twoSinePars) << std::endl;
+//    std::cout << "B0 for year " << testYear << " : " << gen::twoSines(testYear, twoSinePars) << std::endl;
     EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, simulationVariables);
 
     // Create EDT config class and set constant thrust in guidance class

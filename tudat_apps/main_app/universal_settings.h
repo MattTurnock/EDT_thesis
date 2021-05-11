@@ -75,7 +75,7 @@ namespace univ {
             for(std::size_t i=0; i<bodiesToCreate_.size(); ++i){
                 // Set string for body being used
                 std::string bodyToCreate = bodiesToCreate_[i];
-                std::cout << bodyToCreate << std::endl;
+                std::cout << bodyToCreate << ", ";
 
                 // Create variable for target body, and set observer body. Also set ref frame name
                 std::string targetBodyName;
@@ -125,6 +125,7 @@ namespace univ {
                 // Set gravitational parameter for new body
                 bodyMap[ bodyToCreate ]->setGravityFieldModel( std::make_shared< GravityFieldModel >( gravitationalParameter ) );
             }
+            std::cout << std::endl;
 
             // Add vehicle to bodyMap
             bodyMap["Vehicle"] = vehicleConfig.EDTBody;
@@ -150,9 +151,9 @@ namespace univ {
             SRPReferenceArea_ = vehicleConfig_.getEffectiveSRPArea();
             SRPCoefficient_ = vehicleConfig_.getEffectiveRadiationPressureCoefficient();
 
-            std::cout << "Effective SRP radiation coefficient of vehicle: " << SRPCoefficient_ << std::endl; // TODO: remove me
-            std::cout << "Effective SRP reference area of vehicle       : " << SRPReferenceArea_ << std::endl; // TODO: remove me
-            std::cout << "Spacecraft Mass                               : " << vehicleConfig_.getVehicleMass() << std::endl; // TODO: remove me
+//            std::cout << "Effective SRP radiation coefficient of vehicle: " << SRPCoefficient_ << std::endl; // TODO: remove me
+//            std::cout << "Effective SRP reference area of vehicle       : " << SRPReferenceArea_ << std::endl; // TODO: remove me
+//            std::cout << "Spacecraft Mass                               : " << vehicleConfig_.getVehicleMass() << std::endl; // TODO: remove me
 
             vehicleRadiationPressureSettings_ = std::make_shared< CannonBallRadiationPressureInterfaceSettings >(
                     "Sun", SRPReferenceArea_, SRPCoefficient_);
@@ -276,8 +277,8 @@ namespace univ {
 
             // Create vehicle initial state from position and velocities (also time)
             initialEphemerisTime_ = gen::year2MJDSeconds(initialEphemerisYear_);
-            std::cout << "INITIAL EPHEMERIS YEAR: " << initialEphemerisYear_ << std::endl;
-            std::cout << "INITIAL EPHEMERIS TIME: " << initialEphemerisTime_ << std::endl;
+//            std::cout << "INITIAL EPHEMERIS YEAR: " << initialEphemerisYear_ << std::endl;
+//            std::cout << "INITIAL EPHEMERIS TIME: " << initialEphemerisTime_ << std::endl;
             vehicleInitialState_ << vehicleInitialPosition_, vehicleInitialVelocity_;
 
             /////////////// Termination Setttings ///////////////////////
@@ -361,7 +362,7 @@ namespace univ {
 
             // Finalise dependent variables to save
             dependentVariablesToSave_ =
-                    std::make_shared< DependentVariableSaveSettings >( dependentVariablesList );
+                    std::make_shared< DependentVariableSaveSettings >( dependentVariablesList, false );
 
 
             /////////////// Finalise propagation settings ///////////////////////
