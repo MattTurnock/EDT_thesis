@@ -64,7 +64,7 @@ public:
     // Function to update thrust magnitude based on time and the config used
     void updateThrustMagnitude(const double simulationTime){
         updateAllEnviro(simulationTime_);
-        if (forceZeroCurrentMagnitude_ or (thrustDirectionConfig_ == "disabled")){
+        if (forceZeroCurrentMagnitude_ or (thrustMagnitudeConfig_ == "disabled")){
             thrustMagnitude_ = 0;
         }
         else{
@@ -73,7 +73,7 @@ public:
             }
             else if (thrustMagnitudeConfig_ == "nominal") {
 
-                thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
+                thrustVector_ = vehicleConfig_.getTetherLength() * (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
                 thrustMagnitude_ = generalRotationCoefficient_ * thrustVector_.norm();
             }
         }
@@ -218,6 +218,15 @@ public:
             }
         }
 
+        // System is also able to specify whether to thrust only in "positive" or "negative" directions the whole time
+        else if (thrustDirectionConfig_ == "justPositiveCurrent"){
+            currentDirectionVector_ = currentPositiveDirectionVector;
+        }
+
+        else if (thrustDirectionConfig_ == "justNegativeCurrent"){
+            currentDirectionVector_ = currentNegativeDirectionVector;
+        }
+
         else if (thrustDirectionConfig_ == "currentArbitraryVNV"){
             currentDirectionVector_ = currentDirectionArbitraryVnV;
         }
@@ -352,7 +361,7 @@ public:
             // Calculate unit current, using sigma, Em and A
             motionalEMF_ = gen::getMotionalEMF(velocityWrtMagField_,
                                                guidanceEnvironment_.getMagFieldInertial(),
-                                               guidanceEnvironment_.getCurrentDirectionVector()); // Note: EDT unit vector is the same as the current unit vector, therefore can use it directly for the final variable
+                                               guidanceEnvironment_.getCurrentDirectionVector());
 
 //            std::cout << "vehicle state: "
 //                    << guidanceEnvironment_.getVehicleState()[0] << " "

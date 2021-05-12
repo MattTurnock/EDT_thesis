@@ -33,7 +33,7 @@ int main(int argc, char *argv[] )
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////             SIMULATION PREP            ////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    std::cout<< "===============Loading Variables From File==================" << std::endl;
+
 
     // Read json file for general use (name of json is passed as first argument, or default set here)
     std::string jsonName;
@@ -45,14 +45,20 @@ int main(int argc, char *argv[] )
 //        jsonName = "finalSims/SSO.json"; // TODO: change to nominal test variables
 //        jsonName = "finalSims/InO.json"; // TODO: change to nominal test variables
 //        jsonName = "VnV/testVariablesIntegratorGA_Reference.json"; // TODO: Make python file to run all variants as needed
-//        jsonName = "testVariables.json";
-        jsonName = "finalSims/SOKGA_reference.json";
+        jsonName = "testVariables.json";
+//        jsonName = "finalSims/SOKGA_reference.json";
+//        jsonName = "testCase_Guidance.json";
+//        jsonName = "testCase_NoGuidance.json";
+//        jsonName = "testCase_NoGuidanceNeg.json";
     }
     nlohmann::json simulationVariables = gen::readJson(jsonName);
+    bool verbosity = simulationVariables["saveDataConfigs"]["verbosity"];
 
-
-    std::cout<< "===============Prepping Sim==================" << std::endl;
-    std::cout<< " -- Loading spice kernels -- " << std::endl;
+    if (verbosity) {
+        std::cout<< "===============Loaded Variables From File==================" << std::endl;
+        std::cout << "===============Prepping Sim==================" << std::endl;
+        std::cout << " -- Loading spice kernels -- " << std::endl;
+    }
 
     // Get spice path for merged spice kernels and load them
     std::string customKernelName = simulationVariables["Spice"]["customKernelName"];
@@ -61,7 +67,7 @@ int main(int argc, char *argv[] )
     spice_interface::loadStandardSpiceKernels( spicePathVector );
 
     // Create EDT Environment class
-    std::cout<< " -- Creating environment class -- " << std::endl;
+    if (verbosity) {std::cout<< " -- Creating environment class -- " << std::endl;}
     // Create base body map to be built on by other classes + give initial numbers for magfield data
     NamedBodyMap baseBodyMap;
 
@@ -87,7 +93,7 @@ int main(int argc, char *argv[] )
     EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, simulationVariables);
 
     // Create EDT config class and set constant thrust in guidance class
-    std::cout<< " -- Creating Config class -- " << std::endl;
+    if (verbosity) {std::cout<< " -- Creating Config class -- " << std::endl;}
     nlohmann::json configVariables = simulationVariables["EDTConfigs"];
     nlohmann::json SRPVariables = simulationVariables["scConfigs"]["SRP"];
     nlohmann::json materialProperties = simulationVariables["materialProperties"];
@@ -95,7 +101,7 @@ int main(int argc, char *argv[] )
 
 
     // Create EDT Guidance class
-    std::cout<< " -- Creating Guidance class -- " << std::endl;
+    if (verbosity) {std::cout<< " -- Creating Guidance class -- " << std::endl;}
     std::string thrustMagnitudeConfig = simulationVariables["GuidanceConfigs"]["thrustMagnitudeConfig"];
     std::string thrustDirectionConfig = simulationVariables["GuidanceConfigs"]["thrustDirectionConfig"];
 
@@ -111,13 +117,13 @@ int main(int argc, char *argv[] )
 
 
     // Get universal class for propagation bodies
-    std::cout<< " -- Creating Propbodies class -- " << std::endl;
+    if (verbosity) {std::cout<< " -- Creating Propbodies class -- " << std::endl;}
 //    nlohmann::json jsonBodiesToInclude = simulationVariables["Spice"]["bodiesToInclude"];
 
     univ::propBodies SSOPropBodies = univ::propBodies(CHBEDTConfig, CHBEDTGuidance, baseBodyMap, simulationVariables);
 
     // Get universal class for propagation settings + set vehicle initial state
-    std::cout<< " -- Creating Propsettings class -- " << std::endl;
+    if (verbosity) {std::cout<< " -- Creating Propsettings class -- " << std::endl;}
 
 
     // Set vehicle state either directly from cartesian elements, or via keplerian elements, depending which stateType is specified
@@ -193,7 +199,7 @@ int main(int argc, char *argv[] )
     ///////////////////////             PROPAGATE ORBIT            ////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    std::cout<< "====================Propagating==========================" << std::endl;
+    if (verbosity) {std::cout<< "====================Propagating==========================" << std::endl;}
 
     // Create simulation object and propagate dynamics.
     SingleArcDynamicsSimulator< > dynamicsSimulator(
@@ -205,7 +211,7 @@ int main(int argc, char *argv[] )
     /////////////////////             SAVE DATA                  ////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    std::cout<< "====================Saving Data==========================" << std::endl;
+    if (verbosity) {std::cout<< "====================Saving Data==========================" << std::endl;}
 
     // Set output folder and base data title for all data
     std::string outputSubFolder = simulationVariables["saveDataConfigs"]["outputSubFolder"];
@@ -238,7 +244,7 @@ int main(int argc, char *argv[] )
 
     // Check which data types to save, and save them
     if (savePropData) {
-        std::cout << "Saving propData" << std::endl;
+        if (verbosity) {std::cout << "Saving propData" << std::endl;}
 
         // Write satellite propagation history to file.
         input_output::writeDataMapToTextFile(integrationResult,
@@ -250,11 +256,11 @@ int main(int argc, char *argv[] )
                                              ",");
     }
     else{
-        std::cout << "Ignoring propData" << std::endl;
+        if (verbosity) {std::cout << "Ignoring propData" << std::endl;}
     }
 
     if (saveMagneticFieldData) {
-        std::cout << "Saving magneticFieldData" << std::endl;
+        if (verbosity) {std::cout << "Saving magneticFieldData" << std::endl;}
 
         // Make custom map conform to regular timestep saving
         std::map<double, Eigen::VectorXd> magFieldMap = CHBEDTGuidance.getMagFieldMap();
@@ -276,11 +282,11 @@ int main(int argc, char *argv[] )
                                              ",");
     }
     else{
-        std::cout << "Ignoring magneticFieldData" << std::endl;
+        if (verbosity) {std::cout << "Ignoring magneticFieldData" << std::endl;}
     }
 
     if (saveIonosphereData) {
-        std::cout << "Saving ionosphericData" << std::endl;
+        if (verbosity) {std::cout << "Saving ionosphericData" << std::endl;}
 
         // Make custom map conform to regular timestep saving
         std::map<double, Eigen::VectorXd> ionosphereMap = CHBEDTGuidance.getIonosphereMap();
@@ -300,11 +306,11 @@ int main(int argc, char *argv[] )
                                              ",");
     }
     else{
-        std::cout << "Ignoring ionosphericData" << std::endl;
+        if (verbosity) {std::cout << "Ignoring ionosphericData" << std::endl;}
     }
 
     if (saveThrustData) {
-        std::cout << "Saving thrustData" << std::endl;
+        if (verbosity) {std::cout << "Saving thrustData" << std::endl;}
 
         // Make custom map conform to regular timestep saving
         std::map<double, Eigen::VectorXd> thrustMap = CHBEDTGuidance.getThrustMap();
@@ -324,11 +330,11 @@ int main(int argc, char *argv[] )
                                              ",");
     }
     else{
-        std::cout << "Ignoring thrustData" << std::endl;
+        if (verbosity) {std::cout << "Ignoring thrustData" << std::endl;}
     }
 
     if (saveCurrentData) {
-        std::cout << "Saving currentData" << std::endl;
+        if (verbosity) {std::cout << "Saving currentData" << std::endl;}
 
         // Make custom map conform to regular timestep saving
         std::map<double, Eigen::VectorXd> currentMap = CHBEDTGuidance.getCurrentMap();
@@ -348,11 +354,11 @@ int main(int argc, char *argv[] )
                                              ",");
     }
     else{
-        std::cout << "Ignoring currentData" << std::endl;
+        if (verbosity) {std::cout << "Ignoring currentData" << std::endl;}
     }
 
     if (saveCurrentVNVData) {
-        std::cout << "Saving currentVNVData" << std::endl;
+        if (verbosity) {std::cout << "Saving currentVNVData" << std::endl;}
 
         // Make custom map conform to regular timestep saving
         std::map<double, Eigen::VectorXd> currentVNVMap = CHBEDTGuidance.getCurrentVNVMap();
@@ -372,11 +378,11 @@ int main(int argc, char *argv[] )
                                              ",");
     }
     else{
-        std::cout << "Ignoring currentVNVData" << std::endl;
+        if (verbosity) {std::cout << "Ignoring currentVNVData" << std::endl;}
     }
 
     if (saveBodyData) {
-        std::cout << "Saving bodyData" << std::endl;
+        if (verbosity) {std::cout << "Saving bodyData" << std::endl;}
 
         // Make custom map conform to regular timestep saving
         std::map<double, Eigen::VectorXd> bodyDataMap = CHBEDTGuidance.getBodyDataMap();
@@ -396,11 +402,11 @@ int main(int argc, char *argv[] )
                                              ",");
     }
     else{
-        std::cout << "Ignoring bodyData" << std::endl;
+        if (verbosity) {std::cout << "Ignoring bodyData" << std::endl;}
     }
 
     if (saveDependentVariablesData) {
-        std::cout << "Saving dependentVariableData" << std::endl;
+        if (verbosity) {std::cout << "Saving dependentVariableData" << std::endl;}
 
         // Write dependent variables to file
         input_output::writeDataMapToTextFile(dependentVariableResult,
@@ -412,7 +418,7 @@ int main(int argc, char *argv[] )
                                              ",");
     }
     else{
-        std::cout << "Ignoring dependentVariableData" << std::endl;
+        if (verbosity) {std::cout << "Ignoring dependentVariableData" << std::endl;}
     }
 
     ///// This portion saves all relevant info about the configuration including derived variables such as mass etc ////
@@ -459,7 +465,7 @@ int main(int argc, char *argv[] )
     configInfoMap.insert(std::pair<std::string, Eigen::VectorXd> (jsonName, configInfoVector));
 
     if (saveConfigInfo) {
-        std::cout << "Saving configInfo" << std::endl;
+        if (verbosity) {std::cout << "Saving configInfo" << std::endl;}
 
         // Write dependent variables to file
         input_output::writeDataMapToTextFile(configInfoMap,
@@ -471,7 +477,7 @@ int main(int argc, char *argv[] )
                                              ",");
     }
     else{
-        std::cout << "Ignoring configInfo" << std::endl;
+        if (verbosity) {std::cout << "Ignoring configInfo" << std::endl;}
     }
 
 
@@ -479,5 +485,5 @@ int main(int argc, char *argv[] )
 //    std::cout << "Program ran for " << integrationResult[0] << std::endl;
 
 
-    std::cout << "Program finished " << std::endl;
+    std::cout << "Task failed successfully" << std::endl;
 }

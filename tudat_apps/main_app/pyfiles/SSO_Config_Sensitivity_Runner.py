@@ -5,26 +5,28 @@ from tudatApplications.EDT_thesis.tudat_apps.main_app.pyfiles import utils
 import copy
 import sys
 import glob
-
+import shutil
 
 
 # # Set logfile
 logfileDir = utils.pythonRunnerLogfilesDir
 utils.checkFolderExist(logfileDir)
-logfilePath = os.path.join(logfileDir, utils.createLogfileName("InORunner"))
+logfilePath = os.path.join(logfileDir, utils.createLogfileName("ConfigSensitivityRunner"))
 utils.logger = utils.createLogger(logfilePath)
 
 ########################### General info #############################################
 
 runSimulations = True
+deleteOutputs = True
 
 
 simulationRunPath = os.path.join(utils.cppApplications_dir, "application_simulation_SSO-CHB")
 SSOJsonSubDir = os.path.join("finalSims", "SSO_Config_Sensitivity")
 
-
+# Set json directory and create if not existing
 initJson = os.path.join(utils.jsonInputs_dir, SSOJsonSubDir, "SSO_Base.json")
 jsonSaveDir = os.path.join(utils.jsonInputs_dir, SSOJsonSubDir)
+utils.checkFolderExist(jsonSaveDir)
 
 # Delete all old jsons:
 fileList = glob.glob(jsonSaveDir + "/*")
@@ -37,11 +39,26 @@ for filePath in fileList:
 # SEE UTILS FOR THE CREATION DATA
 lengths_m, diameters_m, currents_mA, areaRatios, noLinesRange, lengthRatios, slackCoefficients, lineSeparationRatios, occultationCoefficients, endmassMasses = utils.configSensitivityRunnerValues
 
-
+# Specifies changelist and changenames
 changesList = [lengths_m, diameters_m, currents_mA, areaRatios, noLinesRange, lengthRatios, slackCoefficients, lineSeparationRatios, occultationCoefficients, endmassMasses]
 changeNames = ["lengths", "diameters", "currents", "areaRatios", "noLines", "lengthRatios", "slackCoefficients", "lineSeparationCoefficients", "occultationCoefficients", "endmassMasses"]
 
+## Specifies base values for json and output filenames and directories
 SSOConfigsSavenameBase = "SSO_%s-%s.json"
+
+SSOSubdir = "SSO-Configs-Sensitivity/"
+SSOSavenameBase = "SSO-%s-%s"
+
+
+
+if deleteOutputs:
+    # Deletes all folders and files in the output directory too
+    SSOOutputPath = os.path.join(utils.simulation_output_dir, SSOSubdir)
+    dirListOutput = glob.glob(SSOOutputPath + "/*")
+    for filePath in dirListOutput:
+        shutil.rmtree(filePath)
+
+
 
 for i in range(len(changesList)):
 
@@ -112,34 +129,45 @@ for i in range(len(changesList)):
         else:
             utils.logger.info("Change name %s not recognised" %changeName)
 
+        # Specifies the output folder and filename for this run case, to use in changeValues, and also the json
 
+        SSOJsonSavenameTemp = SSOConfigsSavenameBase %(changeName, nameIndex)
+
+        thisOutputSubFolder = SSOSubdir + SSOSavenameBase %(changeName, nameIndex) + "/"
+        thisBaseFilename = SSOSavenameBase %(changeName, nameIndex)
+
+
+
+        # # Creates folder if not existing, and also empties it so that all values are new. Output only
+        # utils.checkFolderExist(os.path.join(utils.jsonInputs_dir))
 
         if (changeName == "diameters") or (changeName == "areaRatios"):
             SSOChangeValuesTemp = [currentChangeList[j],
                                    currentChangeList[j],
-                                   "SSO-Configs-Sensitivity/SSO-%s-%s/" %(changeName, nameIndex),
-                                   "SSO-%s-%s-" %(changeName, nameIndex)]
+                                   thisOutputSubFolder,
+                                   thisBaseFilename]
 
         elif changeName == "endmassMasses":
             SSOChangeValuesTemp = [currentChangeList[j],
                                    currentChangeList[j],
                                    currentChangeList[j],
                                    currentChangeList[j],
-                                   "SSO-Configs-Sensitivity/SSO-%s-%s/" %(changeName, nameIndex),
-                                   "SSO-%s-%s-" %(changeName, nameIndex)]
+                                   thisOutputSubFolder,
+                                   thisBaseFilename]
 
         else:
             SSOChangeValuesTemp = [currentChangeList[j],
-                               "SSO-Configs-Sensitivity/SSO-%s-%s/" %(changeName, nameIndex),
-                               "SSO-%s-%s-" %(changeName, nameIndex)]
+                               thisOutputSubFolder,
+                               thisBaseFilename]
 
-        SSOJsonSavenameTemp = SSOConfigsSavenameBase %(changeName, nameIndex)
+
+
 
         utils.createModifiedJson(initJson, jsonSaveDir, SSOJsonSavenameTemp, SSOChangeKeysTemp, SSOChangeValuesTemp)
 
 
 if runSimulations:
-    utils.runAllSimulations(SSOJsonSubDir, printSetting=0, runPath=simulationRunPath, runOnlyThisFile=None)
+    utils.runAllSimulations(SSOJsonSubDir, printSetting=2, runPath=simulationRunPath, runOnlyThisFile=None)
 
 sys.stdout.close()
 

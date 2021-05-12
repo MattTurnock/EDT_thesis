@@ -44,7 +44,7 @@ namespace EDTs {
 
             // Set initial EDT properties
             length_ = configVariables_["tetherLength"];
-            tetherDiameter_ = configVariables_["tetherDiameter"];
+            tetherDiameterOuter_ = configVariables_["tetherDiameter"];
             tetherAreaRatio_ = configVariables["tetherAreaRatio"];
             imposedAreaBool_ = configVariables_["imposedAreaBool"];
             imposedArea_ = configVariables_["imposedArea"];
@@ -85,7 +85,7 @@ namespace EDTs {
 
             //////////////////////// Set diameters and Areas /////////////////////
             // Use overall diameter to find inner and outer areas
-            double TempArea = gen::calculateCircleArea(tetherDiameter_);
+            double TempArea = gen::calculateCircleArea(tetherDiameterOuter_);
             tetherAreaInner_ = TempArea * (1 - tetherAreaRatio_);
             tetherAreaOuter_ = TempArea * tetherAreaRatio_;
 
@@ -189,7 +189,7 @@ namespace EDTs {
             noSecondaryLinks_ = 2 * noPrimaryLines_ * noTetherSegments_;
 
             // Calculate secondary line segment length ls
-            primaryLineSeparation_ = length_ * primaryLineSeparationRatio_;
+            primaryLineSeparation_ = tetherDiameterOuter_ * primaryLineSeparationRatio_;
             secondaryLineSegmentLength_ = slackCoefficient_ * sqrt( pow(primaryLineSeparation_, 2) + pow(primaryLineSegmentLength_, 2));
 
             // Calculate number of primary links nl
@@ -455,7 +455,7 @@ namespace EDTs {
 
         // Create initial variables for EDT properties
         double length_;
-        double tetherDiameter_;
+//        double tetherDiameter_;
         double tetherAreaRatio_;
         double tetherAreaInner_;
         double tetherAreaOuter_;

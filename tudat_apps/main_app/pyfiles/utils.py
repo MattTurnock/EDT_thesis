@@ -136,22 +136,29 @@ referenceParkerDataArray[:,1] = referenceParkerBsnT
 ############################# Set constant values for simulation running ####################################################
 #######################################################################################################################
 
-importantRunsNumber = 100
-minorRunsNumber = 100
+importantRunsNumber = 2
+minorRunsNumber = 2
 
 lengths_m = np.logspace(3, 5, importantRunsNumber, endpoint=True )
 diameters_m = np.logspace(-4, -1, importantRunsNumber, endpoint=True )
-currents_mA = np.logspace(-2, 0, importantRunsNumber, endpoint=True )
+currents_mA = np.logspace(0, 3, importantRunsNumber, endpoint=True )
 areaRatios = np.linspace(0, 1, importantRunsNumber, endpoint=True )
-noLinesRange = np.linspace(1, 100, minorRunsNumber, endpoint=True )
-lengthRatios = np.linspace(0, 1, minorRunsNumber, endpoint=True)
+noLinesRange = np.linspace(1, 100, minorRunsNumber, endpoint=True, dtype=int )
+lengthRatios = np.linspace(0.1, 1, minorRunsNumber, endpoint=True)
+endmassMasses = np.logspace(0, 2, minorRunsNumber, endpoint=True)
+rotationCoefficients = np.linspace(0.5, 0.8, minorRunsNumber, endpoint=True)
+configSensitivityRunnerValues = (lengths_m, diameters_m, currents_mA, areaRatios, noLinesRange, lengthRatios,
+                                 endmassMasses, rotationCoefficients)
+
+
+
+# configSensitivityRunnerValues = (lengths_m, diameters_m, currents_mA, areaRatios, noLinesRange, lengthRatios, slackCoefficients,
+                                 # lineSeparationRatios, occultationCoefficients, endmassMasses)
+
+# These are for sensitivity analysis
 slackCoefficients =np.linspace(1, 1.1, minorRunsNumber, endpoint=True)
 lineSeparationRatios = np.logspace(-7, -5, minorRunsNumber, endpoint=True)
 occultationCoefficients = np.linspace(0.1, 1, minorRunsNumber, endpoint=True)
-endmassMasses = np.logspace(0, 2, minorRunsNumber, endpoint=True)
-
-configSensitivityRunnerValues = (lengths_m, diameters_m, currents_mA, areaRatios, noLinesRange, lengthRatios, slackCoefficients,
-                                 lineSeparationRatios, occultationCoefficients, endmassMasses)
 
 #######################################################################################################################
 ############################# Some useful functions ####################################################
@@ -185,8 +192,8 @@ posDiff = pos2-pos1
 
 V1 = posDiff/tDiff
 
-print("Initial Voyager 1 position: ", pos1)
-print("Initial Voyager 1 Velocity: ", V1)
+# print("Initial Voyager 1 position: ", pos1)
+# print("Initial Voyager 1 Velocity: ", V1)
 
 
 # Function to get true anomaly from a, e, r (NOTE: hyperbolic only, i think). Returns in degrees

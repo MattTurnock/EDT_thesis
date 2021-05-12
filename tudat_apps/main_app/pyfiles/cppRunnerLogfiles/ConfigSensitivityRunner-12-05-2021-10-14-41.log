@@ -1,0 +1,126 @@
+2021-05-12 10:14:41,358 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_Base.json
+
+2021-05-12 10:14:43,460 - Task failed successfully
+
+2021-05-12 10:14:43,460 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_areaRatios-1.json
+
+2021-05-12 10:14:45,438 - Task failed successfully
+
+2021-05-12 10:14:45,438 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_areaRatios-2.json
+
+2021-05-12 10:14:47,413 - Task failed successfully
+
+2021-05-12 10:14:47,413 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_currents-1.json
+
+2021-05-12 10:14:49,352 - Task failed successfully
+
+2021-05-12 10:14:49,352 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_currents-2.json
+
+2021-05-12 10:14:51,257 - Task failed successfully
+
+2021-05-12 10:14:51,257 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_diameters-1.json
+
+2021-05-12 10:14:53,223 - Task failed successfully
+
+2021-05-12 10:14:53,224 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_diameters-2.json
+
+2021-05-12 10:14:55,156 - Task failed successfully
+
+2021-05-12 10:14:55,157 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_endmassMasses-1.json
+
+2021-05-12 10:14:57,278 - Task failed successfully
+
+2021-05-12 10:14:57,278 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_endmassMasses-2.json
+
+2021-05-12 10:14:59,468 - Task failed successfully
+
+2021-05-12 10:14:59,468 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_lengthRatios-1.json
+
+2021-05-12 10:15:01,704 - Task failed successfully
+
+2021-05-12 10:15:01,704 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_lengthRatios-2.json
+
+2021-05-12 10:15:03,833 - Task failed successfully
+
+2021-05-12 10:15:03,833 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_lengths-1.json
+
+2021-05-12 10:15:06,065 - Task failed successfully
+
+2021-05-12 10:15:06,065 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_lengths-2.json
+
+2021-05-12 10:15:07,995 - Task failed successfully
+
+2021-05-12 10:15:07,995 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_lineSeparationCoefficients-1.json
+
+2021-05-12 10:15:09,894 - Task failed successfully
+
+2021-05-12 10:15:09,894 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_lineSeparationCoefficients-2.json
+
+2021-05-12 10:15:11,783 - Task failed successfully
+
+2021-05-12 10:15:11,783 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_noLines-1.json
+
+2021-05-12 10:15:13,751 - Task failed successfully
+
+2021-05-12 10:15:13,752 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_noLines-2.json
+
+2021-05-12 10:15:15,644 - Task failed successfully
+
+2021-05-12 10:15:15,644 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_occultationCoefficients-1.json
+
+2021-05-12 10:15:17,582 - Task failed successfully
+
+2021-05-12 10:15:17,582 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_occultationCoefficients-2.json
+
+2021-05-12 10:15:19,532 - Task failed successfully
+
+2021-05-12 10:15:19,532 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_slackCoefficients-1.json
+
+2021-05-12 10:15:21,396 - Task failed successfully
+
+2021-05-12 10:15:21,396 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_slackCoefficients-2.json
+
+2021-05-12 10:15:23,345 - Task failed successfully
+

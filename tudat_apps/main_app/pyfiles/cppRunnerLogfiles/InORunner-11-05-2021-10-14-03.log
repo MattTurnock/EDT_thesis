@@ -1,0 +1,112 @@
+2021-05-11 10:14:04,676 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_Base.json
+
+2021-05-11 10:14:06,605 - ===============Loading Variables From File==================
+===============Prepping Sim==================
+ -- Loading spice kernels -- 
+ -- Creating environment class -- 
+ -- Creating Config class -- 
+ -- Creating Guidance class -- 
+ -- Creating Propbodies class -- 
+Using bodies: 
+Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+ -- Creating Propsettings class -- 
+====================Propagating==========================
+====================Saving Data==========================
+Saving propData
+Saving magneticFieldData
+Saving ionosphericData
+Saving thrustData
+Saving currentData
+Saving currentVNVData
+Saving bodyData
+Saving dependentVariableData
+Saving configInfo
+Program finished 
+
+2021-05-11 10:14:06,605 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_areaRatios-1.json
+
+2021-05-11 10:14:08,553 - ===============Loading Variables From File==================
+===============Prepping Sim==================
+ -- Loading spice kernels -- 
+ -- Creating environment class -- 
+ -- Creating Config class -- 
+ -- Creating Guidance class -- 
+ -- Creating Propbodies class -- 
+Using bodies: 
+Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+ -- Creating Propsettings class -- 
+====================Propagating==========================
+====================Saving Data==========================
+Saving propData
+Saving magneticFieldData
+Saving ionosphericData
+Saving thrustData
+Saving currentData
+Saving currentVNVData
+Saving bodyData
+Saving dependentVariableData
+Saving configInfo
+Program finished 
+
+2021-05-11 10:14:08,553 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_areaRatios-2.json
+
+2021-05-11 10:14:10,453 - ===============Loading Variables From File==================
+===============Prepping Sim==================
+ -- Loading spice kernels -- 
+ -- Creating environment class -- 
+ -- Creating Config class -- 
+ -- Creating Guidance class -- 
+ -- Creating Propbodies class -- 
+Using bodies: 
+Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+ -- Creating Propsettings class -- 
+====================Propagating==========================
+====================Saving Data==========================
+Saving propData
+Saving magneticFieldData
+Saving ionosphericData
+Saving thrustData
+Saving currentData
+Saving currentVNVData
+Saving bodyData
+Saving dependentVariableData
+Saving configInfo
+Program finished 
+
+2021-05-11 10:14:10,453 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_areaRatios-3.json
+
+2021-05-11 10:14:12,431 - ===============Loading Variables From File==================
+===============Prepping Sim==================
+ -- Loading spice kernels -- 
+ -- Creating environment class -- 
+ -- Creating Config class -- 
+ -- Creating Guidance class -- 
+ -- Creating Propbodies class -- 
+Using bodies: 
+Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+ -- Creating Propsettings class -- 
+====================Propagating==========================
+====================Saving Data==========================
+Saving propData
+Saving magneticFieldData
+Saving ionosphericData
+Saving thrustData
+Saving currentData
+Saving currentVNVData
+Saving bodyData
+Saving dependentVariableData
+Saving configInfo
+Program finished 
+
+2021-05-11 10:14:12,431 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_areaRatios-4.json
+

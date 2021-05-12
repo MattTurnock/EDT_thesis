@@ -384,8 +384,17 @@ namespace gen {
         double ic = dimensionlessCurrentC;
         double twothirds = 2.0/3.0;
         double term1 = 2*ic - pow(ic, 2);
-        double absTerm1 = abs(term1);
-        double term2 = pow(abs(term1), twothirds);
+//        double absTerm1 = abs(term1);
+
+//        double term2 = pow(term1, twothirds);
+
+        int two = 2;
+//        std::cout << "here" << std::endl;
+        double lambdaA = pow(std::cbrt(term1), 2);
+//        std::cout << ic << std::endl;
+//        std::cout << term1 << std::endl;
+//        std::cout << lambdaA << std::endl;
+//        std::cout << "there" << std::endl;
 
         // If-else statement to catch negative inputs - required since pow won't do this itself
 //        double finalReturn;
@@ -401,7 +410,7 @@ namespace gen {
 //        std::cout << "IN FUNCTION absTerm1: " << absTerm1 << std::endl; //TODO: remove me
 //        std::cout << "IN FUNCTION term2: " << term2 << std::endl; //TODO: remove me
 
-        return term2;
+        return lambdaA;
 //        return pow( (2*ic - pow(ic, 2)), 2/3 );
     }
 

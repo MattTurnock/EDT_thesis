@@ -12,10 +12,10 @@ year = 365*24*60*60
 AU = 1.496E11
 
 doingSSO = False
-doingSOKGA = True
+doingSOKGA = False
 doingInO = False
 doingCompare = False
-doingSSOSensitivity = False
+doingSSOSensitivity = True
 
 fullLoadTodoList = ["bodyData", "propData", "thrustData", "currentVNVData"]
 
@@ -206,7 +206,7 @@ if doingSSOSensitivity:
     listOfJsons = []
     listOfDatas = []
     rejectedJsons = []
-    rejectionValue = 10
+    rejectionValue = 1
 
     SSOSensitivityMasterSubdir = "SSO-Configs-Sensitivity/"
     SSOSensitivityJsonDirPath = os.path.join(utils.jsonInputs_dir, "finalSims", "SSO_Config_Sensitivity")
@@ -218,6 +218,7 @@ if doingSSOSensitivity:
     thrustDataBase = dataSetBase[6]
     configDataBase = dataSetBase[8]
     spacecraftMassBase = configDataBase[4]
+    propDataBase = dataSetBase[5]
 
     meanThrustBase = np.mean(thrustDataBase[:, 1])
     meanAccelBase = np.mean(thrustDataBase[:, 1])/spacecraftMassBase
@@ -233,14 +234,17 @@ if doingSSOSensitivity:
 
             if thisType in thisPath:
                 thisTypeJsonList.append(allSSOSensitivityJsonFiles[j])
-                thisDataSet = utils.getAllSimDataFromJson(thisPath)
+                try:
+                    thisDataSet = utils.getAllSimDataFromJson(thisPath)
+                except FileNotFoundError:
+                    print("ERROR loading data from: %s" %thisPath)
                 thisTypeDataList.append(thisDataSet)
 
         listOfJsons.append(thisTypeJsonList)
         listOfDatas.append(thisTypeDataList)
 
 
-    print(listOfJsons)
+    # print(listOfJsons)
     bestThrustIndices = []
     bestThrustValues = []
     bestAccelIndices = []
@@ -278,7 +282,7 @@ if doingSSOSensitivity:
 
             meaniavg = np.mean(iavgData)
             maxiavg = np.nanmax(iavgData)
-            print(maxiavg)
+            # print(maxiavg)
             if abs(maxiavg) > rejectionValue:
                 rejectedJsons.append(thisJson)
             else:
@@ -315,7 +319,7 @@ if doingSSOSensitivity:
         worstAccelValues.append(worstAccel)
 
     # thrustAccelIndices = [bestThrustIndices, bestAccelIndices, worstThrustIndices, worstAccelIndices]
-    print(bestThrustIndices)
+    # print(bestThrustIndices)
     print("Rejected: ", rejectedJsons)
 
 
@@ -446,8 +450,9 @@ if doingSSOSensitivity:
 
         plt.savefig(os.path.join(configPlotFolder, "%s-accelPlot.png" %thisParameterType))
 
-
-
+    
+    #plot trajectory of base case
+    utils.plotTrajectoryData(propDataBase, plotType="x-y")
 
 
 plt.show()

@@ -46,8 +46,9 @@ namespace univ {
 
             // Constructor
             // Set various json sets from the simulation variables
-            jsonBodiesToInclude_ = jsonSimulationVariables["Spice"]["bodiesToInclude"];
-            gravitationalParameters_ = jsonSimulationVariables["constants"]["gravitationalParameters"];
+            jsonBodiesToInclude_ = jsonSimulationVariables_["Spice"]["bodiesToInclude"];
+            gravitationalParameters_ = jsonSimulationVariables_["constants"]["gravitationalParameters"];
+            bool verbosity = jsonSimulationVariables_["saveDataConfigs"]["verbosity"];
 
 
             /////////// Initialise all bodies list with all possible bodies that can be used //////////
@@ -71,11 +72,11 @@ namespace univ {
                 }
             }
 
-            std::cout << "Using bodies: " << std::endl;
+            if (verbosity){std::cout << "Using bodies: " << std::endl;}
             for(std::size_t i=0; i<bodiesToCreate_.size(); ++i){
                 // Set string for body being used
                 std::string bodyToCreate = bodiesToCreate_[i];
-                std::cout << bodyToCreate << ", ";
+                if (verbosity){std::cout << bodyToCreate << ", ";}
 
                 // Create variable for target body, and set observer body. Also set ref frame name
                 std::string targetBodyName;
@@ -125,7 +126,7 @@ namespace univ {
                 // Set gravitational parameter for new body
                 bodyMap[ bodyToCreate ]->setGravityFieldModel( std::make_shared< GravityFieldModel >( gravitationalParameter ) );
             }
-            std::cout << std::endl;
+                    if (verbosity){std::cout << std::endl;}
 
             // Add vehicle to bodyMap
             bodyMap["Vehicle"] = vehicleConfig.EDTBody;

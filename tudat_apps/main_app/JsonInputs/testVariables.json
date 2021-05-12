@@ -42,7 +42,7 @@
   },
   "GuidanceConfigs": {
     "thrustMagnitudeConfig": "nominal",
-    "thrustDirectionConfig": "nominalPrograde",
+    "thrustDirectionConfig": "justPositiveCurrent",
     "minPeAU": 0.1,
     "initialEphemerisYear": 2000,
     "integratorSettings": {
@@ -103,6 +103,7 @@
   "saveDataConfigs": {
     "outputSubFolder": "testCase/",
     "baseFilename": "test-",
+    "verbosity": false,
     "dataTypesToSave": {
       "propData": true,
       "magneticField": true,

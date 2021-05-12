@@ -42,7 +42,7 @@
     },
     "GuidanceConfigs": {
         "thrustMagnitudeConfig": "nominal",
-        "thrustDirectionConfig": "nominalPrograde",
+        "thrustDirectionConfig": "justPositiveCurrent",
         "minPeAU": 0.1,
         "initialEphemerisYear": 2041.0326226897334,
         "integratorSettings": {
@@ -88,20 +88,22 @@
         "tetherAreaRatio": 0.5,
         "imposedAreaBool": false,
         "imposedArea": 500000000,
-        "emitterCurrentmA": 100,
+        "emitterCurrentmA": 10,
+        "generalRotationCoefficient": 0.7,
         "hoytether": {
             "tetherDiameterSecondary": 0.001,
             "tetherAreaRatioSecondary": 0.5,
             "noPrimaryLines": 10,
-            "primaryLineSegmentLengthRatio": 0.1,
+            "primaryLineSegmentLengthRatio": 0.5,
             "slackCoefficient": 1.005,
             "primaryLineSeparationRatio": 5e-06,
-            "occultationCoefficient": 0.7
+            "SRPOccultationCoefficient": 0.7
         }
     },
     "saveDataConfigs": {
         "outputSubFolder": "SSO-Configs-Sensitivity/SSO-endmassMasses-2/",
-        "baseFilename": "SSO-endmassMasses-2-",
+        "baseFilename": "SSO-endmassMasses-2",
+        "verbosity": false,
         "dataTypesToSave": {
             "propData": true,
             "magneticField": true,
@@ -120,12 +122,12 @@
             "endmassArea2": 1.2,
             "endmassRadiationCoefficient": 0,
             "tetherRadiationCoefficient": 0,
-            "rotationFactor": 0.7,
-            "endmassMass1": 1.0476157527896648,
-            "endmassMass2": 1.0476157527896648
+            "SRPRotationCoefficient": 0.7,
+            "endmassMass1": 100.0,
+            "endmassMass2": 100.0
         },
-        "endmassMass1": 1.0476157527896648,
-        "endmassMass2": 1.0476157527896648
+        "endmassMass1": 100.0,
+        "endmassMass2": 100.0
     },
     "materialProperties": {
         "imposedConductivityBool": false,
