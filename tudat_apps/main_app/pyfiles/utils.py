@@ -12,6 +12,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import logging
 import natsort
+from progress.bar import IncrementalBar
 
 #######################################################################################################################
 ############################## Set various project directories ############################################
@@ -136,14 +137,14 @@ referenceParkerDataArray[:,1] = referenceParkerBsnT
 ############################# Set constant values for simulation running ####################################################
 #######################################################################################################################
 
-importantRunsNumber = 2
-minorRunsNumber = 2
+importantRunsNumber = 100
+minorRunsNumber = importantRunsNumber
 
 lengths_m = np.logspace(3, 5, importantRunsNumber, endpoint=True )
-diameters_m = np.logspace(-4, -1, importantRunsNumber, endpoint=True )
+diameters_m = np.logspace(-3, -1, importantRunsNumber, endpoint=True )
 currents_mA = np.logspace(0, 3, importantRunsNumber, endpoint=True )
 areaRatios = np.linspace(0, 1, importantRunsNumber, endpoint=True )
-noLinesRange = np.linspace(1, 100, minorRunsNumber, endpoint=True, dtype=int )
+noLinesRange = np.logspace(0, 2, minorRunsNumber, endpoint=True, dtype=int )
 lengthRatios = np.linspace(0.1, 1, minorRunsNumber, endpoint=True)
 endmassMasses = np.logspace(0, 2, minorRunsNumber, endpoint=True)
 rotationCoefficients = np.linspace(0.5, 0.8, minorRunsNumber, endpoint=True)
@@ -257,8 +258,9 @@ def checkFolderExist(folderToCheck):
 
 def findNearestInArray(array, value):
     "Element in nd array closest to the scalar value "
-    idx = np.abs(array - value).argmin()
-    return (array.flat[idx], idx)
+    theArray = np.array(array)
+    idx = np.abs(theArray - value).argmin()
+    return (theArray.flat[idx], idx)
 
 # Lists all files in a directory, with a specific extension
 def list_files(directory, extension=None, sort=True, exceptions=None):
@@ -943,7 +945,7 @@ def createGARunnerJsons(quickConfigs, outputSubFolderBase, jsonSaveSubDir, jsonF
 
 def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
                       runPath=os.path.join(cppApplications_dir, "application_GA_calculator"),
-                      printSetting=0, fileIgnores=[], runOnlyThisFile=None):
+                      printSetting=0, fileIgnores=[], runOnlyThisFile=None, printProgress=False):
     """
     Runs all simulations within a json directory
     :param jsonSubDirectory:
@@ -975,12 +977,16 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
         else:
             logger.info("Ignoring file: %s" %jsonFilenameTemp )
 
-
+    bar = IncrementalBar("Processing", max=len(jsonsToRunPaths), suffix='[%(percent).1f%%. ETA: %(eta)ds]   ')
     for i in range(len(jsonsToRunPaths)):
         # Run simulations using relevant json file
         logger.info("\n\nRunning application %s, with json %s\n" %(applicationName, jsonsToRunPaths[i].split("/")[-1]))
         argumentsList = [runPath, jsonsToRunPaths[i]]
         runBashCommand( argumentsList, printSetting=printSetting)
+
+        if printProgress: bar.next()
+
+    if printProgress: bar.finish()
 
 
 #######################################################################################################################

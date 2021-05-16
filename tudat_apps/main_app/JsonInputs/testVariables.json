@@ -36,15 +36,15 @@
   },
   "ImposedMagField": {
     "imposingMagField": false,
-    "B1_nT": 4.78,
-    "B2_nT": 4.42,
+    "B1_nT": 1000,
+    "B2_nT": 1000,
     "B3_nT": 0.0
   },
   "GuidanceConfigs": {
     "thrustMagnitudeConfig": "nominal",
     "thrustDirectionConfig": "justPositiveCurrent",
     "minPeAU": 0.1,
-    "initialEphemerisYear": 2000,
+    "initialEphemerisYear": 2020,
     "integratorSettings": {
       "initialTimeStep": 1.0,
       "integrator": "RK87DP",
@@ -55,8 +55,8 @@
     },
     "terminationSettings": {
       "terminationType": "nominalTimeTermination",
-      "timeTerminationYears": 0.000001,
-      "absoluteTimeTerminationYear": 2650,
+      "timeTerminationYears": 9999,
+      "absoluteTimeTerminationYear": 2021,
       "proximityTerminationBody1": "Vehicle",
       "proximityTerminationBody2": "Jupiter",
       "proximityTerminationCutoffAU": 1,
@@ -70,7 +70,7 @@
       "i_deg": 0,
       "aop_deg": 0,
       "raan_deg": 0,
-      "ta_deg": 0
+      "ta_deg": 45
     },
     "vehicleInitialCartesian": {
       "x1_m": 1.496E11,
@@ -82,27 +82,27 @@
     }
   },
   "EDTConfigs": {
-    "configType": "CHTr",
-    "tetherLength": 10,
-    "tetherDiameter": 1E-3,
-    "tetherAreaRatio": 10,
+    "configType": "CHB",
+    "tetherLength": 10000,
+    "tetherDiameter": 20E-3,
+    "tetherAreaRatio": 1.0,
     "imposedAreaBool": false,
     "imposedArea": 500000000,
-    "emitterCurrentmA": 2,
-    "generalRotationCoefficient": 0.7,
+    "emitterCurrentmA": 300,
+    "generalRotationCoefficient": 0.8,
     "hoytether": {
-      "tetherDiameterSecondary": 1E-3,
-      "tetherAreaRatioSecondary": 10,
-      "noPrimaryLines": 10,
-      "primaryLineSegmentLengthRatio": 0.1,
+      "tetherDiameterSecondary": 20E-3,
+      "tetherAreaRatioSecondary": 1.0,
+      "noPrimaryLines": 3,
+      "primaryLineSegmentLengthRatio": 0.5,
       "slackCoefficient": 1.005,
-      "primaryLineSeparationRatio": 5E-6,
-      "SRPOccultationCoefficient": 0.7
+      "primaryLineSeparationRatio": 100,
+      "SRPOccultationCoefficient": 0.75
     }
   },
   "saveDataConfigs": {
-    "outputSubFolder": "testCase/",
-    "baseFilename": "test-",
+    "outputSubFolder": "testCase",
+    "baseFilename": "testCase-",
     "verbosity": false,
     "dataTypesToSave": {
       "propData": true,
@@ -118,14 +118,15 @@
   },
   "scConfigs": {
     "SRP": {
-      "endmassArea1": 1.2,
-      "endmassArea2": 1.2,
-      "endmassRadiationCoefficient": 0.5,
-      "tetherRadiationCoefficient": 0.5,
-      "SRPRotationCoefficient": 0.7
+      "useSRP": false,
+      "endmassArea1": 1,
+      "endmassArea2": 1,
+      "endmassRadiationCoefficient": 1.5,
+      "tetherRadiationCoefficient": 1.5,
+      "SRPRotationCoefficient": 0.75
     },
-    "endmassMass1": 1,
-    "endmassMass2": 1
+    "endmassMass1": 50,
+    "endmassMass2": 50
   },
   "materialProperties": {
     "imposedConductivityBool": false,

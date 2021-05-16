@@ -71,6 +71,7 @@ namespace EDTs {
             endmassRadiationCoefficient_ = SRPVariables_["endmassRadiationCoefficient"];
             tetherRadiationCoefficient_ = SRPVariables_["tetherRadiationCoefficient"];
             SRPRotationCoefficient_ = SRPVariables_["SRPRotationCoefficient"];
+            useSRP_ = SRPVariables_["useSRP"];
 
             // Set some material properties
             imposedConductivityBool_ = materialProperties_["imposedConductivityBool"];
@@ -187,6 +188,7 @@ namespace EDTs {
 
             // Calculate number of secondary tether links m
             noSecondaryLinks_ = 2 * noPrimaryLines_ * noTetherSegments_;
+            std::cout << "Number secondary links: " << noSecondaryLinks_ << std::endl;
 
             // Calculate secondary line segment length ls
             primaryLineSeparation_ = tetherDiameterOuter_ * primaryLineSeparationRatio_;
@@ -223,6 +225,8 @@ namespace EDTs {
             double volumeHoytetherSecondaryTotal = xSecAreaHoytetherSecondaryTotal * secondaryLineSegmentLength_;
             double totalMaterialVolume = volumeHoytetherPrimaryTotal + volumeHoytetherSecondaryTotal;
 
+            std::cout << "Volumes: " << volumeHoytetherPrimaryTotal << ",  " << volumeHoytetherSecondaryTotal << std::endl;
+
             tetherMass_ = totalMaterialVolume * compositeMaterialDensity_;
 //            std::cout << "Hoytether area conducting: " << xSecAreaConducting_ << std::endl;
 
@@ -247,10 +251,17 @@ namespace EDTs {
             effectiveSingleLineSRPArea_ = SRPRotationCoefficient_ * length_ * tetherAreaOuter_;
             totalEffectiveSRPArea_ = endmassArea1_ + endmassArea2_ + effectiveSingleLineSRPArea_;
 
-            // Set total effective radiation pressure coefficient, using a weighted sum
-            totalEffectiveRadiationPressureCoefficient_ =
-                    ( endmassRadiationCoefficient_*(endmassArea1_ + endmassArea2_) + tetherRadiationCoefficient_ * effectiveSingleLineSRPArea_ ) /
-                    (endmassArea1_ + endmassArea2_ + effectiveSingleLineSRPArea_);
+            if (useSRP_) {
+                // Set total effective radiation pressure coefficient, using a weighted sum
+                totalEffectiveRadiationPressureCoefficient_ =
+                        (endmassRadiationCoefficient_ * (endmassArea1_ + endmassArea2_) +
+                         tetherRadiationCoefficient_ * effectiveSingleLineSRPArea_) /
+                        (endmassArea1_ + endmassArea2_ + effectiveSingleLineSRPArea_);
+            }
+            else {
+                totalEffectiveRadiationPressureCoefficient_ = 0;
+            }
+
         }
 
 
@@ -473,6 +484,9 @@ namespace EDTs {
         /////////////////////////// Other set parameters ///////////////////////////////
         // Initialise constant thrust value
         double constantThrust_;
+
+        // boolean for using SRP
+        bool useSRP_;
 
         // Create derived EDT properties - cross sectional areas. Inner is Cu, outer is Al
         double xSecAreaTotal_;

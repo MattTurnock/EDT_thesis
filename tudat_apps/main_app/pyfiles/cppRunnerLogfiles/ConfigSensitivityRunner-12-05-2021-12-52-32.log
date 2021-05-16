@@ -1,0 +1,28 @@
+2021-05-12 12:52:32,482 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_Bare_Base.json
+
+2021-05-12 12:52:34,513 - Task failed successfully
+
+2021-05-12 12:52:34,513 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_Bare_areaRatios-1.json
+
+2021-05-12 12:52:36,504 - Task failed successfully
+
+2021-05-12 12:52:36,504 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_Bare_areaRatios-2.json
+
+2021-05-12 12:52:38,474 - Task failed successfully
+
+2021-05-12 12:52:38,474 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_Bare_currents-1.json
+
+2021-05-12 12:52:40,392 - Task failed successfully
+
+2021-05-12 12:52:40,392 - 
+
+Running application application_simulation_SSO-CHB, with json SSO_Bare_currents-2.json
+
