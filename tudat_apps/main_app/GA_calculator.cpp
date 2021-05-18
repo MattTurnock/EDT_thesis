@@ -300,9 +300,9 @@ int main(int argc, char *argv[])
             departureState[1] = departureBodyPosition[0];
             departureState[2] = departureBodyPosition[1];
             departureState[3] = departureBodyPosition[2];
-            departureState[4] = velocityAfterDeparture[0] + departureBodyVelocity[0];
-            departureState[5] = velocityAfterDeparture[1] + departureBodyVelocity[1];
-            departureState[6] = velocityAfterDeparture[2] + departureBodyVelocity[2];
+            departureState[4] = velocityAfterDeparture[0];// + departureBodyVelocity[0];
+            departureState[5] = velocityAfterDeparture[1];// + departureBodyVelocity[1];
+            departureState[6] = velocityAfterDeparture[2];// + departureBodyVelocity[2];
             departureState[7] = thisDV; // DV added to file just to be helpful
 
 //            std::cout << "pos1" << departureState[0] << std::endl;

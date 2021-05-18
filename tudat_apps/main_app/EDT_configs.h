@@ -188,7 +188,7 @@ namespace EDTs {
 
             // Calculate number of secondary tether links m
             noSecondaryLinks_ = 2 * noPrimaryLines_ * noTetherSegments_;
-            std::cout << "Number secondary links: " << noSecondaryLinks_ << std::endl;
+//            std::cout << "Number secondary links: " << noSecondaryLinks_ << std::endl;
 
             // Calculate secondary line segment length ls
             primaryLineSeparation_ = tetherDiameterOuter_ * primaryLineSeparationRatio_;
@@ -225,7 +225,7 @@ namespace EDTs {
             double volumeHoytetherSecondaryTotal = xSecAreaHoytetherSecondaryTotal * secondaryLineSegmentLength_;
             double totalMaterialVolume = volumeHoytetherPrimaryTotal + volumeHoytetherSecondaryTotal;
 
-            std::cout << "Volumes: " << volumeHoytetherPrimaryTotal << ",  " << volumeHoytetherSecondaryTotal << std::endl;
+//            std::cout << "Volumes: " << volumeHoytetherPrimaryTotal << ",  " << volumeHoytetherSecondaryTotal << std::endl;
 
             tetherMass_ = totalMaterialVolume * compositeMaterialDensity_;
 //            std::cout << "Hoytether area conducting: " << xSecAreaConducting_ << std::endl;

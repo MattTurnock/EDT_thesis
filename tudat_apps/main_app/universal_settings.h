@@ -196,6 +196,7 @@ namespace univ {
             return accelerationsOfVehicle_;
         }
 
+
     protected:
 
         /////////////////////////// (Mandatory) Initialisation parameters ///////////////////////////////
@@ -253,12 +254,14 @@ namespace univ {
                 Eigen::Vector3d vehicleInitialVelocity,
                 nlohmann::json integratorSettingsJson,
                 nlohmann::json terminationSettingsJson,
+                nlohmann::json jsonSimulationVariables,
                 double initialEphemerisYear = 2000):
                 simulationPropBodies_(simulationPropBodies),
                 vehicleInitialPosition_(vehicleInitialPosition),
                 vehicleInitialVelocity_(vehicleInitialVelocity),
                 integratorSettingsJson_(integratorSettingsJson),
                 terminationSettingsJson_(terminationSettingsJson),
+                jsonSimulationVariables_(jsonSimulationVariables),
                 initialEphemerisYear_(initialEphemerisYear){
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -361,6 +364,54 @@ namespace univ {
                             false)
                     );
 
+            // Add Jupiter coordinates (for comparing distance)
+            int includeJupiter = jsonSimulationVariables_["Spice"]["bodiesToInclude"]["Jupiter"];
+            if (includeJupiter == 1) {
+                dependentVariablesList.push_back(
+                        std::make_shared<SingleDependentVariableSaveSettings>(relative_position_dependent_variable,
+                                                                              "Jupiter", "Sun")
+                );
+
+                dependentVariablesList.push_back(
+                        std::make_shared< SingleDependentVariableSaveSettings >(relative_distance_dependent_variable,
+                                                                                "Vehicle", "Jupiter"));
+            }
+            // Add dummy variables if jupiter isnt saved, to keep files the same
+            else{
+                dependentVariablesList.push_back(
+                        std::make_shared<SingleDependentVariableSaveSettings>(relative_position_dependent_variable,
+                                                                              "Sun", "Sun")
+                );
+
+                dependentVariablesList.push_back(
+                        std::make_shared< SingleDependentVariableSaveSettings >(relative_distance_dependent_variable,
+                                                                                "Vehicle", "Vehicle"));
+            }
+
+            // Add Saturn coordinates (for comparing distance)
+            int includeSaturn = jsonSimulationVariables_["Spice"]["bodiesToInclude"]["Saturn"];
+            if (includeSaturn == 1) {
+                dependentVariablesList.push_back(
+                        std::make_shared<SingleDependentVariableSaveSettings>(relative_position_dependent_variable,
+                                                                              "Saturn", "Sun")
+                );
+
+                dependentVariablesList.push_back(
+                        std::make_shared< SingleDependentVariableSaveSettings >(relative_distance_dependent_variable,
+                                                                                "Vehicle", "Saturn"));
+            }
+                // Add dummy variables if Saturn isnt saved, to keep files the same
+            else{
+                dependentVariablesList.push_back(
+                        std::make_shared<SingleDependentVariableSaveSettings>(relative_position_dependent_variable,
+                                                                              "Sun", "Sun")
+                );
+
+                dependentVariablesList.push_back(
+                        std::make_shared< SingleDependentVariableSaveSettings >(relative_distance_dependent_variable,
+                                                                                "Vehicle", "Vehicle"));
+            }
+
             // Finalise dependent variables to save
             dependentVariablesToSave_ =
                     std::make_shared< DependentVariableSaveSettings >( dependentVariablesList, false );
@@ -418,6 +469,7 @@ namespace univ {
         Eigen::Vector3d vehicleInitialVelocity_;
         nlohmann::json integratorSettingsJson_;
         nlohmann::json terminationSettingsJson_;
+        nlohmann::json jsonSimulationVariables_;
 
 
         /////////////////////////// (Optional) Initialisation parameters ///////////////////////////////
@@ -429,6 +481,7 @@ namespace univ {
         std::shared_ptr< DependentVariableSaveSettings > dependentVariablesToSave_;
         std::shared_ptr< SingleDependentVariableSaveSettings > proximityTerminationDepVar_;
         double initialEphemerisTime_;
+
 
 
 

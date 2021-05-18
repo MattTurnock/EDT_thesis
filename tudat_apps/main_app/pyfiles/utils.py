@@ -46,6 +46,7 @@ pythonRunnerLogfilesDir = os.path.join(pyfiles_dir, "cppRunnerLogfiles")
 ############################## Set constant values for use in GACalculatorRunner.py and others ######################
 #######################################################################################################################
 
+# First stage configs
 quickConfigsJupiter = ["Jupiter", 2020.580, 2050, 90, 398.8/365.25, False] #[planetName, start year optimal, end year, generation, synodic period, ??]
 JupiterInfoList = [2020.58, 398/365.25] # Info list contains [initial same side time, synodic period]
 
@@ -54,6 +55,17 @@ SaturnInfoList = [2020.58, 378/365.25] # Info list contains [initial same side t
 
 quickConfigsMars = ["Mars", 2020.789, 2050, 10, 780/365.25, False] #[planetName, start year optimal, end year, generation, synodic period, ??]
 MarsInfoList = [2020.789, 780/365.25] # Info list contains [initial same side time, synodic period]
+
+# Second stage info
+GAStage2GenerationNumberToUse = 90
+
+GAJupiterGlobalResultsDirPath = os.path.join(simulation_output_dir, "GAJupiterGlobal", "GACalculatorNominal_Jupiter_2020.00-2050.00")
+GAJupiterInitialStateFilename = "initialState_GA_EJ_%s.dat" %GAStage2GenerationNumberToUse
+GAJupiterGlobalResultsGenInitalStatesFilePath = os.path.join(GAJupiterGlobalResultsDirPath, GAJupiterInitialStateFilename)
+
+GASaturnGlobalResultsDirPath = os.path.join(simulation_output_dir, "GASaturnGlobal", "GACalculatorNominal_Saturn_2020.00-2050.00")
+GASaturnInitialStateFilename = "initialState_GA_ES_%s.dat" %GAStage2GenerationNumberToUse
+GASaturnGlobalResultsGenInitalStatesFilePath = os.path.join(GASaturnGlobalResultsDirPath, GASaturnInitialStateFilename)
 
 #######################################################################################################################
 ############################## Set constant values for VnV stuff ######################
@@ -468,24 +480,52 @@ def decimalYearToDatetimeObject(decimalYear):
 #######################################################################################################################
 
 # Function to get array of paretos, given an input array
-def getParetoArray(costs, returnParetoArray=True, sortOutput=True):
+def getParetoArray(costs, returnParetoArray=True, returnBoth=False, sortOutput=True, efficiencyMatrix=(0, 0)):
     """
     Find the pareto-efficient points
-    :param costs: An (n_points, n_costs) array
-    :return: A (n_points, ) boolean array, indicating whether each point is Pareto efficient
+    :param costs: array of x-y values to asses
+    :param returnParetoArray:
+    :param sortOutput:
+    :param efficiencyMatrix: shows if larger or smaller values are more efficient, for the x-y in costs respectively. 0 means lower values are more efficient
+    :return:
     """
+    costsToUse = np.empty(np.shape(costs))
 
-    is_efficient = np.ones(costs.shape[0], dtype = bool)
-    for i, c in enumerate(costs):
-        is_efficient[i] = np.all(np.any(costs[:i]>c, axis=1)) and np.all(np.any(costs[i+1:]>c, axis=1))
+    # Nominal pareto
+    if efficiencyMatrix == (0,0): #ok
+        costsToUse[:, 0] = costs[:, 0]
+        costsToUse[:, 1] = costs[:, 1]
 
-    if returnParetoArray:
-        paretoArray = costs[is_efficient]
+    elif efficiencyMatrix == (1,0):
+        costsToUse[:, 0] = -costs[:, 0]
+        costsToUse[:, 1] = costs[:, 1]
 
-        if sortOutput:
-        	paretoArray = paretoArray[paretoArray[:,0].argsort()]
+    elif efficiencyMatrix == (0,1): # Inverted
+        costsToUse[:, 0] = costs[:, 0]
+        costsToUse[:, 1] = -costs[:, 1]
+
+    elif efficiencyMatrix == (1,1):
+        costsToUse[:, 0] = -costs[:, 0]
+        costsToUse[:, 1] = -costs[:, 1]
+
+    print(efficiencyMatrix)
+
+
+
+    is_efficient = np.ones(costsToUse.shape[0], dtype = bool)
+    for i, c in enumerate(costsToUse):
+        is_efficient[i] = np.all(np.any(costsToUse[:i]>c, axis=1)) and np.all(np.any(costsToUse[i+1:]>c, axis=1))
+
+
+    paretoArray = costs[is_efficient]
+
+    if sortOutput:
+        paretoArray = paretoArray[paretoArray[:,0].argsort()]
+
+    if returnBoth:
+        return (is_efficient, paretoArray)
+    elif returnParetoArray:
         return paretoArray
-        
     else:
         return is_efficient
 
@@ -756,6 +796,69 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
         checkFolderExist(saveFolder)
         plt.savefig(os.path.join(saveFolder, savename ))
 
+def plotStage2GAData(simulationDataList, initialStateData, fignumber=None, plotType="DV-FinalAlt",savename=None, saveFolder=None,
+                     figsize=figSizeDefault,  scatterPointSize=1, scatterColour=None, scatterMarker=".", scatterLinewidths=None,
+                      removeDominated=True, plotParetoFront=False, xlims=None, ylims=None, plotTitle=None):
+    """
+    Function to plot data for the second stage GA stuff. Ie a pareto front
+
+    """
+
+
+    finalAltitudeList = []
+    for i in range(len(simulationDataList)):
+
+        allSimData = simulationDataList[i]
+        depVarDataArray = allSimData[2]
+        finalAltitudeList.append(depVarDataArray[-1, 7])
+
+    DVArray = initialStateData[:, 8]
+    finalAltitudeArray = np.array(finalAltitudeList)
+
+
+    plt.figure(fignumber, figsize=figsize)
+    if plotTitle is not None:
+        plt.title(plotTitle)
+
+    if plotType=="DV-FinalAlt":
+        xToPlot = DVArray / 1000
+        yToPlot = finalAltitudeArray / AU
+        plt.xlabel("DV [km/s]")
+        plt.ylabel("Final Distance from Sun [AU]")
+        efficiencyMatrix = (0, 1)
+    else:
+        logger.info("ERROR: plotType not recognised")
+        sys.exit()
+
+    if removeDominated:
+        # Uses inverted x-y to make y the point, and x the cost parameter
+        xyArrayRaw = arrayCoordsConvert(inputParameter1=xToPlot, inputParameter2=yToPlot)
+        pareto_is_efficient, xyArrayPareto = getParetoArray(xyArrayRaw, returnBoth=True, sortOutput=True, efficiencyMatrix=efficiencyMatrix)
+        xToPlot, yToPlot = xyArrayPareto[:, 0], xyArrayPareto[:, 1]
+    else:
+        pareto_is_efficient = np.array([0])
+
+    if plotParetoFront:
+        if removeDominated == False:
+            logger.info("ERROR: Cannot plot pareto front without removing dominated points")
+            sys.exit()
+
+        plt.plot(xToPlot, yToPlot)
+    else:
+        plt.scatter(xToPlot, yToPlot, scatterPointSize, c=scatterColour, marker=scatterMarker, linewidth=scatterLinewidths)
+
+    if xlims is not None:
+        plt.xlim(xlims)
+    if ylims is not None:
+        plt.ylim(ylims)
+
+    plt.grid()
+
+    if saveFolder is not None:
+        checkFolderExist(saveFolder)
+        plt.savefig(os.path.join(saveFolder, savename))
+
+    return (xToPlot, yToPlot, pareto_is_efficient)
 
 
 def porkchopPlot(directoryPath, baseFilename,
@@ -980,7 +1083,7 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
     bar = IncrementalBar("Processing", max=len(jsonsToRunPaths), suffix='[%(percent).1f%%. ETA: %(eta)ds]   ')
     for i in range(len(jsonsToRunPaths)):
         # Run simulations using relevant json file
-        logger.info("\n\nRunning application %s, with json %s\n" %(applicationName, jsonsToRunPaths[i].split("/")[-1]))
+        if printSetting != 0: logger.info("\n\nRunning application %s, with json %s\n" %(applicationName, jsonsToRunPaths[i].split("/")[-1]))
         argumentsList = [runPath, jsonsToRunPaths[i]]
         runBashCommand( argumentsList, printSetting=printSetting)
 
@@ -1195,21 +1298,21 @@ figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, 
 def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plotType="x-y", legendSize=11, plotSun=False,
                        figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, sameScale=False, planetsToPlot=[],
                        plotOnlyTrajectory=False, trajectoryLabel="Spacecraft Trajectory", legendLabelsCustom=None, logScaleX=False, logScaleY=False,
-                       scatter=False):
+                       scatter=False, plotTitle=None):
+
+    times = dataArray[:,0]
+    timesYears = times / (365.25 * 24 * 60 * 60)
+    years = timesYears + 2000
 
     if dataArrayType == "bodyData":
-        times = dataArray[:,0]
-        timesYears = times / (365.25 * 24 * 60 * 60)
-        years = timesYears + 2000
+
         radii = dataArray[:, 1]
         radiiAU = radii/AU
         stateVector = dataArray[:, 2:8]
         stateVectorAU = stateVector / AU
 
     elif dataArrayType == "propData":
-        times = dataArray[:,0]
-        timesYears = times / (365.25 * 24 * 60 * 60)
-        years = timesYears + 2000
+
         stateVector = dataArray[:, 1:]
         stateVectorAU = stateVector/AU
 
@@ -1225,14 +1328,14 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
     fig=plt.gcf()
     ax = fig.gca()
 
-
-    if plotType == "x-y":
+    # General trajectory plots
+    if (plotType == "x-y") and (dataArrayType == "bodyData" or dataArrayType == "propData"):
         xToPlot = stateVectorAU[:, 0]
         yToPlot = stateVectorAU[:, 1]
         xLabel = "X coordinate [AU]"
         yLabel = "Y coordinate [AU]"
         legendLabels.append(trajectoryLabel)
-    elif plotType == "time-altitude":
+    elif (plotType == "time-altitude") and (dataArrayType == "bodyData" or dataArrayType == "propData"):
         # if dataArrayType != "bodyData":
         #     logger.info("ERROR: Must use bodyData input for a time-altitude plot")
         #     sys.exit()
@@ -1240,16 +1343,61 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
         yToPlot = radiiAU
         xLabel = "Year"
         yLabel = "Distance from Sun [AU]"
-    elif plotType == "time-speed":
+    elif (plotType == "time-speed") and (dataArrayType == "bodyData" or dataArrayType == "propData"):
         xToPlot = years
         yToPlot = speedKms
         xLabel = "Year"
         yLabel = "Spacecraft velocity [km/s]"
-    elif plotType == "altitude-speed":
+    elif (plotType == "altitude-speed") and (dataArrayType == "bodyData" or dataArrayType == "propData"):
         xToPlot = radiiAU
         yToPlot = speedKms
         xLabel = "Distance from Sun [AU]"
         yLabel = "Spacecraft velocity [km/s]"
+
+    # Keplerian element plots
+    elif (plotType == "time-SMA") and (dataArrayType == "depVarData"):
+        xToPlot = years
+        yToPlot = dataArray[:, 1] / AU
+        xLabel = "Year"
+        yLabel = "Semi-major axis [AU]"
+    elif (plotType == "time-ECC") and (dataArrayType == "depVarData"):
+        xToPlot = years
+        yToPlot = dataArray[:, 2]
+        xLabel = "Year"
+        yLabel = "Eccentricity [-]"
+    elif (plotType == "time-INC") and (dataArrayType == "depVarData"):
+        xToPlot = years
+        yToPlot = dataArray[:, 3]
+        xLabel = "Year"
+        yLabel = "Inclination [deg]"
+    elif (plotType == "time-AOP") and (dataArrayType == "depVarData"):
+        xToPlot = years
+        yToPlot = dataArray[:, 4]
+        xLabel = "Year"
+        yLabel = "Argument of Periapsis [deg]"
+    elif (plotType == "time-RAAN") and (dataArrayType == "depVarData"):
+        xToPlot = years
+        yToPlot = dataArray[:, 5]
+        xLabel = "Year"
+        yLabel = "Right Ascension of Ascending Node [deg]"
+    elif (plotType == "time-TA") and (dataArrayType == "depVarData"):
+        xToPlot = years
+        yToPlot = dataArray[:, 6]
+        xLabel = "Year"
+        yLabel = "True Anomaly [deg]"
+
+    # Separation / jupiter trajectory plotting
+    elif (plotType == "time-separation") and (dataArrayType == "separation"):
+        xToPlot = years
+        yToPlot = dataArray[:, 1] / AU
+        xLabel = "Year"
+        yLabel = "Separation [AU]"
+    elif(plotType == "x-y-jupiter") and (dataArrayType == "depVarData"):
+        xToPlot = dataArray[:, 11] / AU
+        yToPlot = dataArray[:, 12] / AU
+        xLabel = "X coordinate [AU]"
+        yLabel = "Y coordinate [AU]"
+
     else:
         logger.info("ERROR: Plot type not recognised, ending program")
         sys.exit()
@@ -1298,6 +1446,9 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
         plt.legend(legendLabelsTodo)
         if xlims is not None: plt.xlim(xlims)
         if ylims is not None: plt.ylim(ylims)
+
+        if plotTitle is not None:
+            plt.title(plotTitle)
 
         if saveFolder is not None:
             checkFolderExist(saveFolder)

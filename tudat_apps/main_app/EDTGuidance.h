@@ -144,6 +144,7 @@ public:
         Eigen::Vector6d spacecraftStateKeplerianT0 = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(spacecraftStateCartesianT0, SunMu_);
         double ApT0 =  spacecraftStateKeplerianT0[0] * (1 + spacecraftStateKeplerianT0[1]);
         double PeT0 = spacecraftStateKeplerianT0[0] * (1 - spacecraftStateKeplerianT0[1]);
+        double ECCT0 = spacecraftStateKeplerianT0[1];
 
         // Grab thrust direction at T0, for both positive and negative current cases
         Eigen::Vector3d thrustVectorPositive = currentPositiveDirectionVector.cross(guidanceEnvironment_.getMagFieldInertial());
@@ -159,6 +160,7 @@ public:
         Eigen::Vector6d spacecraftStateKeplerianT1Positive = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(spacecraftStateCartesianT1Positive, SunMu_);
         double ApT1Positive = spacecraftStateKeplerianT1Positive[0] * (1 + spacecraftStateKeplerianT1Positive[1]);
         double PeT1Positive = spacecraftStateKeplerianT1Positive[0] * (1 - spacecraftStateKeplerianT1Positive[1]);
+        double ECCPositive = spacecraftStateKeplerianT1Positive[1];
 
         Eigen::Vector6d spacecraftStateDeltaNegative;
         spacecraftStateDeltaNegative << 0, 0, 0, thrustDirectionNegative[0], thrustDirectionNegative[1], thrustDirectionNegative[2];
@@ -166,55 +168,81 @@ public:
         Eigen::Vector6d spacecraftStateKeplerianT1Negative = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(spacecraftStateCartesianT1Negative, SunMu_);
         double ApT1Negative = spacecraftStateKeplerianT1Negative[0] * (1 + spacecraftStateKeplerianT1Negative[1]);
         double PeT1Negative = spacecraftStateKeplerianT1Negative[0] * (1 - spacecraftStateKeplerianT1Negative[1]);
+        double ECCNegative = spacecraftStateKeplerianT1Negative[1];
 
         // Thrust logic only used at lower altitudes, ie when altitude less than 10 AU
-        bool useThrustLogic;
-        double altitude = guidanceEnvironment_.getVehiclePosition().norm();
-        if (altitude > 10*AU){
-            useThrustLogic = false;
+        bool useHyperbolicLogic;
+//        double altitude = guidanceEnvironment_.getVehiclePosition().norm();
+        if (ECCT0 > 1){
+            useHyperbolicLogic = true;
         }
         else{
-            useThrustLogic = true;
+            useHyperbolicLogic = false;
         }
 
         // For whether using nominalPrograde or nominalRetrograde, apply the relevant logic to achieve a final thrust direction
-        if ((thrustDirectionConfig_ == "nominalPrograde") and (useThrustLogic) ){
+        if (thrustDirectionConfig_ == "nominalPrograde"){
 
-            if ((ApT1Positive > ApT0) and (PeT1Positive > PeT0)){
+            // Decide whether to use regular or hyperbolic logic
+            if (useHyperbolicLogic){
+//                if (ECCPositive > ECCT0){
+//                    currentDirectionVector_ = currentPositiveDirectionVector;
+//                }
+//                else if (ECCNegative > ECCT0){
+//                    currentDirectionVector_ = currentNegativeDirectionVector;
+//                }
+//                else{
+//                    currentDirectionVector_ = currentDirectionVectorNoThrust;
+//                    forceZeroCurrentMagnitude_ = true;
+//                }
                 currentDirectionVector_ = currentPositiveDirectionVector;
             }
-            else if ((ApT1Negative > ApT0) and (PeT1Negative > PeT0)){
-                currentDirectionVector_ = currentNegativeDirectionVector;
-            }
-            else if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)){
-                currentDirectionVector_ = currentPositiveDirectionVector;
-            }
-            else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)){
-                currentDirectionVector_ = currentNegativeDirectionVector;
-            }
-            else{
-                currentDirectionVector_ = currentDirectionVectorNoThrust;
-                forceZeroCurrentMagnitude_ = true;
+            else {
+                if ((ApT1Positive > ApT0) and (PeT1Positive > PeT0)) {
+                    currentDirectionVector_ = currentPositiveDirectionVector;
+                } else if ((ApT1Negative > ApT0) and (PeT1Negative > PeT0)) {
+                    currentDirectionVector_ = currentNegativeDirectionVector;
+                } else if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)) {
+                    currentDirectionVector_ = currentPositiveDirectionVector;
+                } else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)) {
+                    currentDirectionVector_ = currentNegativeDirectionVector;
+                } else {
+                    currentDirectionVector_ = currentDirectionVectorNoThrust;
+                    forceZeroCurrentMagnitude_ = true;
+                }
             }
         }
 
-        else if ((thrustDirectionConfig_ == "nominalRetrograde") and (useThrustLogic)){
+        else if (thrustDirectionConfig_ == "nominalRetrograde"){
 
-            if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)){
-                currentDirectionVector_ = currentPositiveDirectionVector;
-            }
-            else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)){
+            // Decide whether or not to use hyperbolic logic
+            if (useHyperbolicLogic) {
+//                if (ECCPositive < ECCT0){
+//                    currentDirectionVector_ = currentPositiveDirectionVector;
+//                }
+//                else if (ECCNegative < ECCT0){
+//                    currentDirectionVector_ = currentNegativeDirectionVector;
+//                }
+//                else{
+//                    currentDirectionVector_ = currentDirectionVectorNoThrust;
+//                    forceZeroCurrentMagnitude_ = true;
+//                }
                 currentDirectionVector_ = currentNegativeDirectionVector;
+
             }
-            else if ((ApT1Positive < ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)){
-                currentDirectionVector_ = currentPositiveDirectionVector;
-            }
-            else if ((ApT1Negative < ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)){
-                currentDirectionVector_ = currentNegativeDirectionVector;
-            }
-            else{
-                currentDirectionVector_ = currentDirectionVectorNoThrust;
-                forceZeroCurrentMagnitude_ = true;
+            else {
+                if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)) {
+                    currentDirectionVector_ = currentPositiveDirectionVector;
+                } else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)) {
+                    currentDirectionVector_ = currentNegativeDirectionVector;
+                } else if ((ApT1Positive < ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)) {
+                    currentDirectionVector_ = currentPositiveDirectionVector;
+                } else if ((ApT1Negative < ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)) {
+                    currentDirectionVector_ = currentNegativeDirectionVector;
+                } else {
+                    currentDirectionVector_ = currentDirectionVectorNoThrust;
+                    forceZeroCurrentMagnitude_ = true;
+                }
             }
         }
 
@@ -229,6 +257,10 @@ public:
 
         else if (thrustDirectionConfig_ == "currentArbitraryVNV"){
             currentDirectionVector_ = currentDirectionArbitraryVnV;
+        }
+
+        else{
+            std::cout << "WARNING: Thrust logic disabled, but no alternative provided, defaulting to last known setting" << std::endl;
         }
 
 //        std::cout << "Force current bool: " << forceZeroCurrentMagnitude_ << std::endl;

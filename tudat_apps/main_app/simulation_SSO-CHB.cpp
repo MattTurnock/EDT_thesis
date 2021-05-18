@@ -50,8 +50,10 @@ int main(int argc, char *argv[] )
 //        jsonName = "testCase_Guidance.json";
 //        jsonName = "testCase_NoGuidance.json";
 //        jsonName = "testCase_NoGuidanceNeg.json";
-        jsonName = "finalSims/SSO_Config_Sensitivity/SSO_Bare_Base.json";
+//        jsonName = "finalSims/SSO_Config_Sensitivity/SSO_Bare_Base.json";
 //        jsonName = "finalSims/SSO_Config_Sensitivity/SSO_Trans_Base.json";
+//        jsonName = "GATestVariablesNominal.json";
+        jsonName = "boot.json";
     }
     nlohmann::json simulationVariables = gen::readJson(jsonName);
     bool verbosity = simulationVariables["saveDataConfigs"]["verbosity"];
@@ -191,6 +193,7 @@ int main(int argc, char *argv[] )
                                                             vehicleInitialVelocity,
                                                             integratorSettingsJson,
                                                             terminationSettingsJson,
+                                                            simulationVariables,
                                                             initialEphemerisYear);
 
 
