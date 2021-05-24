@@ -347,9 +347,9 @@ if doingJupiterStage2:
 
 
 
-    listOfAllSimDataLists = []
-    listOfCloseApproachArrays = []
-    listOfLaunchDatesArrays = []
+    GAJupiterListOfAllSimDataLists = []
+    GAJupiterListOfCloseApproachArrays = []
+    GAJupiterListOfLaunchDatesArrays = []
     bar = utils.IncrementalBar("Loading data ", max=len(GAJupiterSynodicSubDirList), suffix='[%(percent).1f%%. ETA: %(eta)ds]   ')
     for i in range(len(GAJupiterSynodicSubDirList)):
 
@@ -357,28 +357,35 @@ if doingJupiterStage2:
         initialStates = np.genfromtxt(os.path.join(subDirPath, utils.GAJupiterInitialStateFilename), delimiter=",")
 
         stage2JsonsList = utils.natsort.natsorted(glob.glob(GAJupiterSynodicJsonDirList[i] + "/*"))
-        # print(stage2JsonsList)
 
         thisAllSimDataList = []
         closeApproachArray = np.empty(len(stage2JsonsList))
         launchDatesArray = np.copy(closeApproachArray)
 
         for j in range(len(stage2JsonsList)):
-            allSimData = utils.getAllSimDataFromJson(stage2JsonsList[i], todoList=["depVarData"])
+
+            allSimData = utils.getAllSimDataFromJson(stage2JsonsList[j], todoList=["depVarData"])
             thisAllSimDataList.append(allSimData)
 
             depVarData = allSimData[2]
-            closeApproachArray[i] = np.amin(depVarData[:, 14])
-            launchDatesArray[i] = depVarData[0, 0]
+            closeApproachArray[j] = np.amin(depVarData[:, 14])
+            launchDatesArray[j] = depVarData[0, 0]
 
             # LOAD DATA FOR THE JSONS
 
-        listOfAllSimDataLists.append(thisAllSimDataList)
-        listOfCloseApproachArrays.append(closeApproachArray)
-        listOfLaunchDatesArrays.append(launchDatesArray)
+        GAJupiterListOfAllSimDataLists.append(thisAllSimDataList)
+        GAJupiterListOfCloseApproachArrays.append(closeApproachArray)
+        GAJupiterListOfLaunchDatesArrays.append(launchDatesArray)
 
         bar.next()
     bar.finish()
 
+    utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterSynodicSubDirList, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
+                               saveFolder=jupiterStage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto")
+    utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterSynodicSubDirList, plotType="DV-FinalAlt", removeDominated=False, plotParetoFront=False,
+                               saveFolder=jupiterStage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Scatter")
+
 if showing:
     plt.show()
+
+

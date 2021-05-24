@@ -508,7 +508,7 @@ def getParetoArray(costs, returnParetoArray=True, returnBoth=False, sortOutput=T
         costsToUse[:, 0] = -costs[:, 0]
         costsToUse[:, 1] = -costs[:, 1]
 
-    print(efficiencyMatrix)
+    # print(efficiencyMatrix)
 
 
 
@@ -796,56 +796,18 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
         checkFolderExist(saveFolder)
         plt.savefig(os.path.join(saveFolder, savename ))
 
-def plotStage2GAData(simulationDataList, initialStateData, fignumber=None, plotType="DV-FinalAlt",savename=None, saveFolder=None,
+def plotManyStage2GAData(listOfAllSimDataLists, synodicSubDirList, fignumber=None, plotType="DV-FinalAlt",savename=None, saveFolder=None,
                      figsize=figSizeDefault,  scatterPointSize=1, scatterColour=None, scatterMarker=".", scatterLinewidths=None,
                       removeDominated=True, plotParetoFront=False, xlims=None, ylims=None, plotTitle=None):
     """
     Function to plot data for the second stage GA stuff. Ie a pareto front
 
     """
-
-
-    finalAltitudeList = []
-    for i in range(len(simulationDataList)):
-
-        allSimData = simulationDataList[i]
-        depVarDataArray = allSimData[2]
-        finalAltitudeList.append(depVarDataArray[-1, 7])
-
-    DVArray = initialStateData[:, 8]
-    finalAltitudeArray = np.array(finalAltitudeList)
-
-
+    legend = []
     plt.figure(fignumber, figsize=figsize)
+
     if plotTitle is not None:
         plt.title(plotTitle)
-
-    if plotType=="DV-FinalAlt":
-        xToPlot = DVArray / 1000
-        yToPlot = finalAltitudeArray / AU
-        plt.xlabel("DV [km/s]")
-        plt.ylabel("Final Distance from Sun [AU]")
-        efficiencyMatrix = (0, 1)
-    else:
-        logger.info("ERROR: plotType not recognised")
-        sys.exit()
-
-    if removeDominated:
-        # Uses inverted x-y to make y the point, and x the cost parameter
-        xyArrayRaw = arrayCoordsConvert(inputParameter1=xToPlot, inputParameter2=yToPlot)
-        pareto_is_efficient, xyArrayPareto = getParetoArray(xyArrayRaw, returnBoth=True, sortOutput=True, efficiencyMatrix=efficiencyMatrix)
-        xToPlot, yToPlot = xyArrayPareto[:, 0], xyArrayPareto[:, 1]
-    else:
-        pareto_is_efficient = np.array([0])
-
-    if plotParetoFront:
-        if removeDominated == False:
-            logger.info("ERROR: Cannot plot pareto front without removing dominated points")
-            sys.exit()
-
-        plt.plot(xToPlot, yToPlot)
-    else:
-        plt.scatter(xToPlot, yToPlot, scatterPointSize, c=scatterColour, marker=scatterMarker, linewidth=scatterLinewidths)
 
     if xlims is not None:
         plt.xlim(xlims)
@@ -854,11 +816,64 @@ def plotStage2GAData(simulationDataList, initialStateData, fignumber=None, plotT
 
     plt.grid()
 
+
+    for j in range(len(synodicSubDirList)):
+
+        simulationDataList = listOfAllSimDataLists[j]
+        initialStateData = np.genfromtxt(os.path.join(synodicSubDirList[j], GAJupiterInitialStateFilename), delimiter=",")
+
+        finalAltitudeList = []
+        for i in range(len(simulationDataList)):
+
+            allSimData = simulationDataList[i]
+            depVarDataArray = allSimData[2]
+            finalAltitudeList.append(depVarDataArray[-1, 7])
+
+        DVArray = initialStateData[:, 8]
+        finalAltitudeArray = np.array(finalAltitudeList)
+        # print(finalAltitudeArray)
+
+
+
+
+
+        if plotType=="DV-FinalAlt":
+            xToPlot = DVArray / 1000
+            yToPlot = finalAltitudeArray / AU
+            plt.xlabel("DV [km/s]")
+            plt.ylabel("Final Distance from Sun [AU]")
+            efficiencyMatrix = (0, 1)
+        else:
+            logger.info("ERROR: plotType not recognised")
+            sys.exit()
+
+        if removeDominated:
+            # Uses inverted x-y to make y the point, and x the cost parameter
+            xyArrayRaw = arrayCoordsConvert(inputParameter1=xToPlot, inputParameter2=yToPlot)
+            pareto_is_efficient, xyArrayPareto = getParetoArray(xyArrayRaw, returnBoth=True, sortOutput=True, efficiencyMatrix=efficiencyMatrix)
+            xToPlot, yToPlot = xyArrayPareto[:, 0], xyArrayPareto[:, 1]
+        else:
+            pareto_is_efficient = np.array([0])
+
+        if plotParetoFront:
+            if removeDominated == False:
+                logger.info("ERROR: Cannot plot pareto front without removing dominated points")
+                sys.exit()
+
+            plt.plot(xToPlot, yToPlot)
+
+        else:
+            plt.scatter(xToPlot, yToPlot, scatterPointSize, c=scatterColour, marker=scatterMarker, linewidth=scatterLinewidths)
+
+        legend.append(str(j))
+
+
+    plt.legend(legend)
     if saveFolder is not None:
         checkFolderExist(saveFolder)
         plt.savefig(os.path.join(saveFolder, savename))
 
-    return (xToPlot, yToPlot, pareto_is_efficient)
+    #return (xToPlot, yToPlot, pareto_is_efficient)
 
 
 def porkchopPlot(directoryPath, baseFilename,
