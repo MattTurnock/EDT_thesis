@@ -13,7 +13,7 @@ runSaturn = False
 runMars = False
 
 runSecondStage = True
-runStage2Jupiter = True
+runStage2Jupiter = False
 runStage2Saturn = True
 printSetting=0
 
@@ -244,8 +244,8 @@ if runSecondStage:
             initialEphemerisYear = initialState[1] + 2000
             col1Value = int(initialState[0])
 
-            thisStateChangeValues = [ 1,
-                                      0,
+            thisStateChangeValues = [ 0,
+                                      1,
                                       initialEphemerisYear,
                                       terminationYearsSaturn,
                                       initialState[2],

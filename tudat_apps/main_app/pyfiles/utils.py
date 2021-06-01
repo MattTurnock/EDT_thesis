@@ -2,6 +2,7 @@ import os
 import numpy as np
 import subprocess
 import sys
+import glob
 from matplotlib import pyplot as plt
 import scipy.interpolate as si
 import json
@@ -27,6 +28,7 @@ simulation_output_dir = os.path.abspath(os.path.join(main_app_dir, "SimulationOu
 tudatBundle_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(main_app_dir))))
 cppApplications_dir = os.path.abspath(os.path.join(tudatBundle_dir, "tudatApplications", "EDT_thesis", "tudat_apps", "bin", "applications"))
 jsonInputs_dir = os.path.join(main_app_dir, "JsonInputs")
+numpyBinary_dir = os.path.join(pyfiles_dir, "numpyBinaries/")
 
 deepSpaceMagfieldDataDir = os.path.join(tudat_apps_dir, "deepSpaceMagfieldData")
 voyagerMagDataSubDirBase = "Voyagers/pub/data/voyager/voyager%s/magnetic_fields/ip_1hour_ascii"
@@ -58,6 +60,9 @@ MarsInfoList = [2020.789, 780/365.25] # Info list contains [initial same side ti
 
 # Second stage info
 GAStage2GenerationNumberToUse = 90
+launchDateRange = (2025, 2050)
+launchDVLimit = 11 # km/s
+closeApproachCutoffAU = 0.1
 
 GAJupiterGlobalResultsDirPath = os.path.join(simulation_output_dir, "GAJupiterGlobal", "GACalculatorNominal_Jupiter_2020.00-2050.00")
 GAJupiterInitialStateFilename = "initialState_GA_EJ_%s.dat" %GAStage2GenerationNumberToUse
@@ -67,6 +72,14 @@ GASaturnGlobalResultsDirPath = os.path.join(simulation_output_dir, "GASaturnGlob
 GASaturnInitialStateFilename = "initialState_GA_ES_%s.dat" %GAStage2GenerationNumberToUse
 GASaturnGlobalResultsGenInitalStatesFilePath = os.path.join(GASaturnGlobalResultsDirPath, GASaturnInitialStateFilename)
 
+#######################################################################################################################
+############################## SOKGA CONSTANTS ######################
+#######################################################################################################################
+
+SOKGAStage1JsonSubDir = "finalSims/SOKGA_Stage1/"
+SOKGAStage2JsonSubDir = "finalSims/SOKGA_Stage2/"
+
+SOKGASimulationEndYear = 2200
 #######################################################################################################################
 ############################## Set constant values for VnV stuff ######################
 #######################################################################################################################
@@ -257,7 +270,7 @@ def normaliseValue(initialValue, lowerBound, upperBound, denormalise = False):
 
     return newValue
 
-def checkFolderExist(folderToCheck):
+def checkFolderExist(folderToCheck, emptyDirectory=False):
     """
     Function checks if the folder exists, and creates it if it doesnt
     :param folderToCheck:
@@ -267,6 +280,12 @@ def checkFolderExist(folderToCheck):
     if not os.path.exists(folderToCheck):
         logger.info("Creating new folder %s" %folderToCheck)
         os.mkdir(folderToCheck)
+
+    if emptyDirectory:
+        # Delete file in directory:
+        fileList = glob.glob(folderToCheck + "/*")
+        for filePath in fileList:
+            os.remove(filePath)
 
 def findNearestInArray(array, value):
     "Element in nd array closest to the scalar value "
@@ -796,9 +815,10 @@ def plotManyDataGA(allYearsGAData, fignumber, quickConfigs, plotType="DV-TOFS", 
         checkFolderExist(saveFolder)
         plt.savefig(os.path.join(saveFolder, savename ))
 
-def plotManyStage2GAData(listOfAllSimDataLists, synodicSubDirList, fignumber=None, plotType="DV-FinalAlt",savename=None, saveFolder=None,
+def plotManyStage2GAData(listOfAllSimDataLists, listOfInitialStateLists, fignumber=None, plotType="DV-FinalAlt",savename=None, saveFolder=None,
                      figsize=figSizeDefault,  scatterPointSize=1, scatterColour=None, scatterMarker=".", scatterLinewidths=None,
-                      removeDominated=True, plotParetoFront=False, xlims=None, ylims=None, plotTitle=None):
+                      removeDominated=True, plotParetoFront=False, xlims=None, ylims=None, plotTitle=None,
+                         initialStateFilename=GAJupiterInitialStateFilename, saveBothPdfPng=True, plotLegend=True, plotGrid=True):
     """
     Function to plot data for the second stage GA stuff. Ie a pareto front
 
@@ -814,23 +834,28 @@ def plotManyStage2GAData(listOfAllSimDataLists, synodicSubDirList, fignumber=Non
     if ylims is not None:
         plt.ylim(ylims)
 
-    plt.grid()
+    if plotGrid: plt.grid()
 
 
-    for j in range(len(synodicSubDirList)):
+    for j in range(len(listOfAllSimDataLists)):
 
         simulationDataList = listOfAllSimDataLists[j]
-        initialStateData = np.genfromtxt(os.path.join(synodicSubDirList[j], GAJupiterInitialStateFilename), delimiter=",")
+        # initialStateData = np.genfromtxt(os.path.join(synodicSubDirList[j], initialStateFilename), delimiter=",")
+        initialStateData = listOfInitialStateLists[j]
 
         finalAltitudeList = []
+        DVList = []
         for i in range(len(simulationDataList)):
 
             allSimData = simulationDataList[i]
             depVarDataArray = allSimData[2]
             finalAltitudeList.append(depVarDataArray[-1, 7])
+            # print("BOOB: ", initialStateData[i])
+            DVList.append(initialStateData[i][8])
 
-        DVArray = initialStateData[:, 8]
+        # DVArray = initialStateData[:, 8]
         finalAltitudeArray = np.array(finalAltitudeList)
+        DVArray = np.array(DVList)
         # print(finalAltitudeArray)
 
 
@@ -849,8 +874,11 @@ def plotManyStage2GAData(listOfAllSimDataLists, synodicSubDirList, fignumber=Non
 
         if removeDominated:
             # Uses inverted x-y to make y the point, and x the cost parameter
+            # print(len(xToPlot))
+            # print(len(yToPlot))
             xyArrayRaw = arrayCoordsConvert(inputParameter1=xToPlot, inputParameter2=yToPlot)
             pareto_is_efficient, xyArrayPareto = getParetoArray(xyArrayRaw, returnBoth=True, sortOutput=True, efficiencyMatrix=efficiencyMatrix)
+            # print(pareto_is_efficient)
             xToPlot, yToPlot = xyArrayPareto[:, 0], xyArrayPareto[:, 1]
         else:
             pareto_is_efficient = np.array([0])
@@ -860,7 +888,7 @@ def plotManyStage2GAData(listOfAllSimDataLists, synodicSubDirList, fignumber=Non
                 logger.info("ERROR: Cannot plot pareto front without removing dominated points")
                 sys.exit()
 
-            plt.plot(xToPlot, yToPlot)
+            plt.plot(xToPlot, yToPlot, linewidth=scatterLinewidths)
 
         else:
             plt.scatter(xToPlot, yToPlot, scatterPointSize, c=scatterColour, marker=scatterMarker, linewidth=scatterLinewidths)
@@ -868,10 +896,14 @@ def plotManyStage2GAData(listOfAllSimDataLists, synodicSubDirList, fignumber=Non
         legend.append(str(j))
 
 
-    plt.legend(legend)
+    if plotLegend: plt.legend(legend)
     if saveFolder is not None:
         checkFolderExist(saveFolder)
-        plt.savefig(os.path.join(saveFolder, savename))
+        if saveBothPdfPng:
+            plt.savefig(os.path.join(saveFolder, savename.split(".")[0] + ".pdf"))
+            plt.savefig(os.path.join(saveFolder, savename.split(".")[0] + ".png"))
+        else:
+            plt.savefig(os.path.join(saveFolder, savename))
 
     #return (xToPlot, yToPlot, pareto_is_efficient)
 
@@ -1107,6 +1139,124 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
     if printProgress: bar.finish()
 
 
+def GAStage2DataToNewArrayFormat(synodicDirPath, synodicJsonDirPath, initialStateFilename, launchDateRange=(0, 10000),
+                                 DVLimit=1E12, loadDepVarsOnly=False, saveDirectory=None, saveNameBase="GAStage2NewArrayData_%s.npy",
+                                 planet="Jupiter"):
+    """
+    Function to process raw data and save it in an easier to use numpy binary format
+    :param synodicDirPath: Path to directory containing synodic GA data
+    :param synodicJsonDirPath: Path to directory containing jsons for synodic GA data
+    :param initialStateFilename: Filename used for the initial states (usually found in utils)
+    :param launchDateRange: Tuple of launch date ranges. Should be decimal year
+    :param DVLimit: Limit of DV in km/s
+    :param loadDepVarsOnly: Bool to only load dependent variable data or all data
+    :param saveDirectory: Directory to save numpy binaries to
+    :param saveNameBase: Base name for the numpy binaries
+    :return:
+    """
+
+    if planet == "Jupiter":
+        separationIndex = 14
+    elif planet == "Saturn":
+        separationIndex = 18
+
+    if loadDepVarsOnly:
+        loadingTodoList = ["depVarData"]
+    else:
+        loadingTodoList = ["bodyData", "currentData", "currentVNVData", "depVarData", "ionoData", "magData", "propData", "thrustData", "configInfo"]
+
+
+    synodicSubDirList = natsort.natsorted(glob.glob(synodicDirPath + "/*"))
+    synodicJsonDirList = natsort.natsorted(glob.glob(synodicJsonDirPath + "/*"))
+
+
+    listOfAllSimDataLists = []
+    listOfInitialStateLists = []
+    listOfFinalAltitudeLists = []
+    listOfClosestApproachLists = []
+
+
+    ############# Start by loading data and placing into a simdata and initialstatedata list. ####################
+    bar = IncrementalBar("Loading data ", max=len(synodicSubDirList), suffix='[%(percent).1f%%. ETA: %(eta)ds]   ')
+    for i in range(len(synodicSubDirList)):
+
+        subDirPath = synodicSubDirList[i]
+        initialStates = np.genfromtxt(os.path.join(subDirPath, initialStateFilename), delimiter=",")
+
+        stage2JsonsList = natsort.natsorted(glob.glob(synodicJsonDirList[i] + "/*"))
+
+
+        thisAllSimDataList = []
+        finalAltitudeList = []
+        closestApproachList = []
+        for j in range(len(stage2JsonsList)):
+
+            allSimData = getAllSimDataFromJson(stage2JsonsList[j], todoList=loadingTodoList)
+            depVarDataArray = allSimData[2]
+
+            finalAltitudeList.append(depVarDataArray[-1, 7])
+            thisAllSimDataList.append(allSimData)
+
+            closestApproach = np.amin(depVarDataArray[:, separationIndex])
+            closestApproachList.append(closestApproach)
+
+        listOfAllSimDataLists.append(thisAllSimDataList)
+        listOfInitialStateLists.append(initialStates)
+        listOfFinalAltitudeLists.append(finalAltitudeList)
+        listOfClosestApproachLists.append(closestApproachList)
+
+        bar.next()
+    bar.finish()
+
+    ############### Next use those lists to clean the up the data as necessary ###################
+
+    for i in range(len(listOfInitialStateLists)):
+        initialStateData = listOfInitialStateLists[i]
+        allSimDataList = listOfAllSimDataLists[i]
+        allSimDataArray = np.array(allSimDataList)
+
+
+        DVArray = initialStateData[:, 8]
+        finalAltitudeArray = np.array(listOfFinalAltitudeLists[i])
+
+        thisClosestApproachList = np.array(listOfClosestApproachLists[i])
+        newDataRowCloseApproachTrueFalseArray = thisClosestApproachList / AU < closeApproachCutoffAU
+        # print(thisClosestApproachList[newDataRowCloseApproachTrueFalseArray] /AU)
+        # print("Max before: ", np.amax(thisClosestApproachList / AU))
+        # print("Max now: ", np.amax(thisClosestApproachList[newDataRowCloseApproachTrueFalseArray]) /AU)
+
+        DV_Alt_Array = arrayCoordsConvert(inputParameter1=DVArray, inputParameter2=finalAltitudeArray)
+        pareto_is_efficient = getParetoArray(DV_Alt_Array, returnParetoArray=False, returnBoth=False, sortOutput=False, efficiencyMatrix=(0,1))
+
+        initialStateDataProcessed = initialStateData[pareto_is_efficient * newDataRowCloseApproachTrueFalseArray]
+        allSimDataProcessed = allSimDataArray[pareto_is_efficient * newDataRowCloseApproachTrueFalseArray]
+
+        newDataRowProcessed = np.concatenate((initialStateDataProcessed, allSimDataProcessed), axis=1)
+        newDataRowComplete = np.concatenate((initialStateData, allSimDataArray), axis=1)
+
+        if i == 0:
+            newDataArrayProcessed = newDataRowProcessed
+            newDataArrayComplete = newDataRowComplete
+        else:
+            newDataArrayProcessed = np.concatenate((newDataArrayProcessed, newDataRowProcessed), axis=0)
+            newDataArrayComplete = np.concatenate((newDataArrayComplete, newDataRowComplete), axis=0)
+
+        newDataDVTrueFalseArray = (newDataArrayProcessed[:, 8] / 1000) < DVLimit
+        newDataLaunchDateLowerTrueFalseArray = (2000 + newDataArrayProcessed[:, 1]) > launchDateRange[0]
+        newDataLaunchDateUpperTrueFalseArray = (2000 + newDataArrayProcessed[:, 1]) < launchDateRange[1]
+
+        newDataArrayProcessed = newDataArrayProcessed[newDataDVTrueFalseArray * newDataLaunchDateLowerTrueFalseArray * newDataLaunchDateUpperTrueFalseArray]
+
+    newDataArrayProcessed
+    if saveDirectory is not None:
+        checkFolderExist(saveDirectory)
+
+        np.save(os.path.join(saveDirectory, saveNameBase %"Processed"), newDataArrayProcessed)
+        np.save(os.path.join(saveDirectory, saveNameBase %"Complete"), newDataArrayComplete)
+
+
+
+
 #######################################################################################################################
 ####################################### Magfield VNV Related functions #########################################################
 #######################################################################################################################
@@ -1117,7 +1267,6 @@ def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation
 
     fullDataFilesDirectoryPath = os.path.join(simulation_output_dir, dataSubdirectory)
     dataToLoadFilenames = os.listdir(fullDataFilesDirectoryPath)
-
     # Make dummy variables in case not wanted to load
     ignoreArray = np.array([[0,0,0],[0,0,0]])
     bodyDataArray = ignoreArray
@@ -1191,14 +1340,14 @@ def getAllSimDataFromFolder(dataSubdirectory, simulationDataDirectory=simulation
             configInfoFilename = os.path.join(fullDataFilesDirectoryPath, filename)
             configInfoArray = np.genfromtxt(configInfoFilename, delimiter=",")
 
-        elif (jsonFilePath is not None):
-            with open(jsonFilePath) as jsonFile:
-                jsonDataDict = json.load(jsonFile)
-
-
         else:
             if printInfo:
                 logger.info("Data file does not have recognised type (or is purposely being ignored), ignoring: %s" %filename)
+
+    if (jsonFilePath is not None):
+        # print(jsonFilePath)
+        with open(jsonFilePath) as jsonFile:
+            jsonDataDict = json.load(jsonFile)
 
 
     return (bodyDataArray, currentDataArray, depVarDataArray, ionoDataArray, magDataArray, propDataArray, thrustDataArray, currentVNVDataArray, configInfoArray, jsonDataDict)
@@ -1212,6 +1361,7 @@ def getAllSimDataFromJson(JsonPath, useCompressed=False, printInfo=True, simulat
 
     dataSubDirectory = jsonDataDict["saveDataConfigs"]["outputSubFolder"]
 
+    # print(JsonPath)
     allData = getAllSimDataFromFolder(dataSubDirectory, jsonFilePath=JsonPath, useCompressed=useCompressed,
                                       printInfo=printInfo, simulationDataDirectory=simulationDataDirectory, todoList=todoList)
 
@@ -1313,7 +1463,7 @@ figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, 
 def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plotType="x-y", legendSize=11, plotSun=False,
                        figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, sameScale=False, planetsToPlot=[],
                        plotOnlyTrajectory=False, trajectoryLabel="Spacecraft Trajectory", legendLabelsCustom=None, logScaleX=False, logScaleY=False,
-                       scatter=False, plotTitle=None):
+                       scatter=False, plotTitle=None, doNotPlot=False, savePngAndPdf=False):
 
     times = dataArray[:,0]
     timesYears = times / (365.25 * 24 * 60 * 60)
@@ -1417,10 +1567,11 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
         logger.info("ERROR: Plot type not recognised, ending program")
         sys.exit()
 
-    if scatter:
-        plt.scatter(xToPlot, yToPlot)
-    else:
-        plt.plot(xToPlot, yToPlot)
+    if not doNotPlot:
+        if scatter:
+            plt.scatter(xToPlot, yToPlot)
+        else:
+            plt.plot(xToPlot, yToPlot)
 
     if not plotOnlyTrajectory:
         if len(planetsToPlot) != 0:
@@ -1438,6 +1589,12 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
                     circleRadius = 0.4
                     circleColour = 'brown'
                     legendName = "Mercury"
+                elif currentPlanet == "Saturn":
+                    circleRadius = 9.6
+                    circleColour = "orange"
+                    legendName = "Saturn"
+                else:
+                    print("WARNING: Planet not recognised, defaulting to last known one")
 
                 circleToPlot = plt.Circle((0, 0), circleRadius, color=circleColour, fill=False)
                 ax.add_patch(circleToPlot)
@@ -1467,7 +1624,11 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
 
         if saveFolder is not None:
             checkFolderExist(saveFolder)
-            plt.savefig(os.path.join(saveFolder, savename ))
+            if savePngAndPdf:
+                plt.savefig(os.path.join(saveFolder, savename.split(".")[0] + ".pdf" ), bbox_inches="tight")
+                plt.savefig(os.path.join(saveFolder, savename.split(".")[0] + ".png" ), bbox_inches="tight")
+            else:
+                plt.savefig(os.path.join(saveFolder, savename ), bbox_inches="tight")
 
 # Function to load magfield data from voyager datafiles. load type is based on year coverage: can be "7789" or "9004"
 def loadVoyagerMagfieldData(dirPath, loadType="7789"):

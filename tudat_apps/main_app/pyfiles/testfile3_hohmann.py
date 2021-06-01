@@ -3,6 +3,10 @@ from astropy import units as u
 
 pi = np.pi
 
+
+
+
+
 def getTOF(a, mu, unitsOut=u.s):
     T = 2*pi*np.sqrt( a**3 / mu )
 
@@ -26,6 +30,24 @@ def getDVHohmann(a1, a2, mu, unitsOut=u.m/u.s):
     DV2 = abs(V2circ - V2)
 
     return [DV1, DV2]
+
+
+def getOrbitalParameters(V, r, mu, rPe=True):
+
+    a = (2/r - V**2/mu)**(-1)
+
+    if rPe:
+        e = 1 - r/a
+    else:
+        e = r/a - 1
+
+    Ap = a*(1+e)
+    Pe = a*(1-e)
+
+
+    return (a, e, Ap, Pe)
+
+
 
 
 R_E = 1*u.AU
@@ -58,3 +80,31 @@ print("Hohmann TOF to Mars: ", TOFM)
 print("Hohmann DV to Jupiter: ", DV1J[0])
 print("Hohmann DV to Saturn: ", DV1S[0])
 print("Hohmann DV to Mars: ", DV1M[0])
+
+
+
+DVMax = 10*u.km/u.s
+
+V_E = getV(mu_S, R_E, R_E, unitsOut=u.km/u.s)
+Vmax = V_E + DVMax
+Vmin = V_E - DVMax
+
+aMax, eMax, ApMax, PeMax = getOrbitalParameters(Vmax, R_E, mu_S, rPe=True)
+aMin, eMin, ApMin, PeMin = getOrbitalParameters(Vmin, R_E, mu_S, rPe=False)
+
+
+print("\nWith +DVMax = %s:" %DVMax)
+print("Earth V: %s\n"
+      "Vmax: %s\n"
+      "aMax: %s\n"
+      "eMax: %s\n"
+      "ApMax: %s\n"
+      "PeMax: %s" %(V_E, Vmax, aMax, eMax, ApMax, PeMax))
+
+print("\nWith -DVMax = %s:" %DVMax)
+print("Earth V: %s\n"
+      "Vmin: %s\n"
+      "aMin: %s\n"
+      "eMin: %s\n"
+      "ApMin: %s\n"
+      "PeMin: %s" %(V_E, Vmin, aMin, eMin, ApMin, PeMin))

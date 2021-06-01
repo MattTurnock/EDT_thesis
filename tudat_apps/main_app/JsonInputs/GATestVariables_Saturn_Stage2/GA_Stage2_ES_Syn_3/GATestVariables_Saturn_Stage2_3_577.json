@@ -7,8 +7,8 @@
             "Venus": 0,
             "Earth": 0,
             "Mars": 0,
-            "Jupiter": 1,
-            "Saturn": 0,
+            "Jupiter": 0,
+            "Saturn": 1,
             "Uranus": 0,
             "Neptune": 0
         }

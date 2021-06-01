@@ -7,7 +7,7 @@ import natsort
 from matplotlib import pyplot as plt
 import matplotlib
 
-year = 365*24*60*60
+year = 365.25*24*60*60
 AU = 1.496E11
 
 ##################################### Set some common parameters ########################################################################
@@ -20,9 +20,12 @@ doingJupiter=False
 doingSaturn=False
 doingMars=False
 doingJupiterStage2 = True
+doingSaturnStage2 = True
+doingProcessing = True
+# justPrintingStage2Info = True
 
 doingTitles = False
-showing=True
+showing=False
 
 plotTitles = {"Jupiter_DVTOFS_Syn": None,
               "Jupiter_yearsTOFS_Syn": None,
@@ -39,6 +42,7 @@ plotTitles = {"Jupiter_DVTOFS_Syn": None,
               "Saturn_porkchop_Glob": None,
               "Saturn_porkchop_Syn": None,
               "Saturn_porkchopClose_Glob": None,
+
               }
 
 if doingTitles:
@@ -285,105 +289,163 @@ if doingMars:
     # figNumberCount += 1
 
 
-if doingJupiterStage2:
+def saveGAPlotNumpyData(GAPlotNumpyFolder, planet, emptyNumpyDirectory=False):
 
-    # ###### GLOBAL ONES #####
-    #
-    # jupiterStage2PyplotFolder = "pyplots/GA_Jupiter_Stage2/"
-    # jupiterStage2PyplotSavenameBase = "GA_Jupiter_Stage2_%s.png"
-    #
-    # GAJupiterInitialStates = np.genfromtxt(utils.GAJupiterGlobalResultsGenInitalStatesFilePath, delimiter=",")
-    #
-    # jupiterStage2JsonDir = os.path.join(utils.jsonInputs_dir, "GATestVariables_Jupiter_Stage2")
-    # jupiterStage2JsonsList = natsort.natsorted(glob.glob(jupiterStage2JsonDir + "/*"))
-    #
-    # jupiterStage2AllSimDataList = []
-    # bar = utils.IncrementalBar("Loading data ", max=len(jupiterStage2JsonsList), suffix='[%(percent).1f%%. ETA: %(eta)ds]   ')
-    # for i in range(len(jupiterStage2JsonsList)):
-    #     allSimData = utils.getAllSimDataFromJson(jupiterStage2JsonsList[i] )
-    #     jupiterStage2AllSimDataList.append(allSimData)
-    #     bar.next()
-    # bar.finish()
-    #
-    # jupiterParetoDVs, jupiterParetoFinalAlts, jupiterPareto_is_efficient = utils.plotStage2GAData(jupiterStage2AllSimDataList, GAJupiterInitialStates, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=False,
-    #                                                                                               saveFolder=jupiterStage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase % "DV-Alt-Pareto", )
-    # utils.plotStage2GAData(jupiterStage2AllSimDataList, GAJupiterInitialStates, plotType="DV-FinalAlt", removeDominated=False, plotParetoFront=False,
-    #                        saveFolder=jupiterStage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase % "DV-Alt-Scatter", )
-    #
-    # print(len(GAJupiterInitialStates[jupiterPareto_is_efficient]))
-    #
-    #
-    # closeApproachArray = np.empty(len(jupiterStage2AllSimDataList))
-    # launchDatesArray = np.copy(closeApproachArray)
-    # for i in range(len(jupiterStage2AllSimDataList)):
-    #     depVarData = jupiterStage2AllSimDataList[i][2]
-    #     closeApproachArray[i] = np.amin(depVarData[:, 14])
-    #     launchDatesArray[i] = depVarData[0, 0]
-    #
-    # ones = np.ones(len(closeApproachArray))
-    #
-    # plt.figure()
-    # plt.scatter(np.array(closeApproachArray) / 1000, ones)
-    # plt.scatter(np.array(closeApproachArray)[jupiterPareto_is_efficient] / 1000, 0.5 * ones[jupiterPareto_is_efficient])
-    # plt.xlabel("Closest approach distance [km]")
-    #
-    # plt.figure()
-    # plt.scatter(launchDatesArray / year, ones)
-    # plt.scatter(launchDatesArray[jupiterPareto_is_efficient] / year, 0.5*ones[jupiterPareto_is_efficient])
-    # plt.xlabel("Launch Year")
+    utils.checkFolderExist(GAPlotNumpyFolder, emptyDirectory=emptyNumpyDirectory)
+
+    if planet == "Jupiter":
+        initialStateFilename = utils.GAJupiterInitialStateFilename
+    elif planet == "Saturn":
+        initialStateFilename = utils.GASaturnInitialStateFilename
+
+    synodicDirPath = os.path.join(utils.simulation_output_dir, "GA%sSynodic" %planet)
+    synodicSubDirList = utils.natsort.natsorted(glob.glob(synodicDirPath + "/*"))
+    synodicSubDirListToUse = []
+
+    synodicJsonDirPath = os.path.join(utils.jsonInputs_dir, "GATestVariables_%s_Stage2" %planet)
+    synodicJsonDirList = utils.natsort.natsorted(glob.glob(synodicJsonDirPath + "/*"))
+
+    listOfAllSimDataLists = []
+    listOfCloseApproachArrays = []
+    listOfLaunchDatesArrays = []
+    listOfInitialStateLists = []
 
 
-    ###### SYNODIC ONES #####
+    bar = utils.IncrementalBar("Loading data ", max=len(synodicSubDirList), suffix='[%(percent).1f%%. ETA: %(eta)ds]   ')
+    for i in range(len(synodicSubDirList)):
 
-    jupiterStage2PyplotFolder = "pyplots/GA_Jupiter_Stage2/"
-    jupiterStage2PyplotSavenameBase = "GA_Jupiter_Stage2_%s.png"
+        subDirPath = synodicSubDirList[i]
+        initialStates = np.genfromtxt(os.path.join(subDirPath, initialStateFilename), delimiter=",")
 
-
-    GAJupiterSynodicDirPath = os.path.join(utils.simulation_output_dir, "GAJupiterSynodic")
-    GAJupiterSynodicSubDirList = utils.natsort.natsorted(glob.glob(GAJupiterSynodicDirPath + "/*"))
-
-    GAJupiterSynodicJsonDirPath = os.path.join(utils.jsonInputs_dir, "GATestVariables_Jupiter_Stage2")
-    GAJupiterSynodicJsonDirList = utils.natsort.natsorted(glob.glob(GAJupiterSynodicJsonDirPath + "/*"))
-
-
-
-    GAJupiterListOfAllSimDataLists = []
-    GAJupiterListOfCloseApproachArrays = []
-    GAJupiterListOfLaunchDatesArrays = []
-    bar = utils.IncrementalBar("Loading data ", max=len(GAJupiterSynodicSubDirList), suffix='[%(percent).1f%%. ETA: %(eta)ds]   ')
-    for i in range(len(GAJupiterSynodicSubDirList)):
-
-        subDirPath = GAJupiterSynodicSubDirList[i]
-        initialStates = np.genfromtxt(os.path.join(subDirPath, utils.GAJupiterInitialStateFilename), delimiter=",")
-
-        stage2JsonsList = utils.natsort.natsorted(glob.glob(GAJupiterSynodicJsonDirList[i] + "/*"))
+        stage2JsonsList = utils.natsort.natsorted(glob.glob(synodicJsonDirList[i] + "/*"))
 
         thisAllSimDataList = []
-        closeApproachArray = np.empty(len(stage2JsonsList))
-        launchDatesArray = np.copy(closeApproachArray)
+        closeApproachList = []
+        launchDatesList = []
+        initialStatesList = [] # These are the ones we will use in the future ok
 
         for j in range(len(stage2JsonsList)):
 
-            allSimData = utils.getAllSimDataFromJson(stage2JsonsList[j], todoList=["depVarData"])
-            thisAllSimDataList.append(allSimData)
-
+            allSimData = utils.getAllSimDataFromJson(stage2JsonsList[j], todoList=["depVarData"], printInfo=False)
             depVarData = allSimData[2]
-            closeApproachArray[j] = np.amin(depVarData[:, 14])
-            launchDatesArray[j] = depVarData[0, 0]
+
+            initialState = initialStates[j]
+            deltaV = initialState[8]
+
+
+
+            closeApproachValue = np.amin(depVarData[:, 14])
+            launchDateValue = depVarData[0, 0]
+
+
+            # Check if launch date and delta V within specs
+            # print(utils.launchDateRange[0])
+            # print(2000+ launchDateValue/ year)
+            # print(utils.launchDateRange[1])
+            # print(deltaV)
+            # print(utils.launchDVLimit, "\n")
+            if (utils.launchDateRange[0] < 2000 + launchDateValue/year < utils.launchDateRange[1]) and (deltaV / 1000 < utils.launchDVLimit):
+
+                thisAllSimDataList.append(allSimData)
+                closeApproachList.append(closeApproachValue)
+                launchDatesList.append(launchDateValue)
+                initialStatesList.append(initialState)
 
             # LOAD DATA FOR THE JSONS
 
-        GAJupiterListOfAllSimDataLists.append(thisAllSimDataList)
-        GAJupiterListOfCloseApproachArrays.append(closeApproachArray)
-        GAJupiterListOfLaunchDatesArrays.append(launchDatesArray)
+        # Do not append empty arrays
+        if len(thisAllSimDataList) != 0:
+            listOfAllSimDataLists.append(thisAllSimDataList)
+            listOfCloseApproachArrays.append(closeApproachList)
+            listOfLaunchDatesArrays.append(launchDatesList)
+            listOfInitialStateLists.append(initialStatesList)
+            synodicSubDirListToUse.append(synodicSubDirList[i])
 
         bar.next()
     bar.finish()
 
-    utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterSynodicSubDirList, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
-                               saveFolder=jupiterStage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto")
-    utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterSynodicSubDirList, plotType="DV-FinalAlt", removeDominated=False, plotParetoFront=False,
-                               saveFolder=jupiterStage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Scatter")
+    print("Saving numpy arrays")
+
+    np.save(os.path.join(GAPlotNumpyFolder, "GA%sListOfAllSimDataLists.npy" %planet), listOfAllSimDataLists)
+    np.save(os.path.join(GAPlotNumpyFolder, "GA%sListOfCloseApproachArrays.npy" %planet), listOfCloseApproachArrays)
+    np.save(os.path.join(GAPlotNumpyFolder, "GA%sListOfLaunchDatesArrays.npy" %planet), listOfLaunchDatesArrays)
+    np.save(os.path.join(GAPlotNumpyFolder, "GA%sListOfInitialStateLists.npy" %planet), listOfInitialStateLists)
+    np.save(os.path.join(GAPlotNumpyFolder, "GA%sSynodicSubDirListToUse.npy" %planet), synodicSubDirListToUse)
+
+
+def trueFlatten(inputArray):
+    newList = []
+    for i in range(len(inputArray)):
+        # print(inputArray[i])
+        newList = newList + list(inputArray[i])
+
+    return np.array(newList)
+
+
+
+
+GAPlotNumpyFolder = os.path.join(utils.numpyBinary_dir, "GAPlotsData/")
+if doingProcessing:
+    saveGAPlotNumpyData(GAPlotNumpyFolder, "Saturn", emptyNumpyDirectory=True)
+    saveGAPlotNumpyData(GAPlotNumpyFolder, "Jupiter", emptyNumpyDirectory=False)
+
+
+
+print("Loading numpy arrays")
+GAJupiterListOfAllSimDataLists = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfAllSimDataLists.npy"), allow_pickle=True)
+GAJupiterListOfCloseApproachArrays = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfCloseApproachArrays.npy"), allow_pickle=True)
+GAJupiterListOfLaunchDatesArrays = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfLaunchDatesArrays.npy"), allow_pickle=True)
+GAJupiterListOfInitialStateLists = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfInitialStateLists.npy"), allow_pickle=True)
+GAJupiterSynodicSubDirListToUse = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterSynodicSubDirListToUse.npy"), allow_pickle=True)
+
+GASaturnListOfAllSimDataLists = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfAllSimDataLists.npy"), allow_pickle=True)
+GASaturnListOfCloseApproachArrays = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfCloseApproachArrays.npy"), allow_pickle=True)
+GASaturnListOfLaunchDatesArrays = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfLaunchDatesArrays.npy"), allow_pickle=True)
+GASaturnListOfInitialStateLists = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfInitialStateLists.npy"), allow_pickle=True)
+GASaturnSynodicSubDirListToUse = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnSynodicSubDirListToUse.npy"), allow_pickle=True)
+
+
+stage2PyplotFolder = "pyplots/GA_Stage2/"
+
+jupiterStage2PyplotSavenameBase = "GA_Jupiter_Stage2_%s.png"
+saturnStage2PyplotSavenameBase = "GA_Saturn_Stage2_%s.png"
+
+print(len(GAJupiterListOfCloseApproachArrays))
+print("Largest Jupiter separation [AU]: ", np.amax(trueFlatten(GAJupiterListOfCloseApproachArrays)) / AU)
+print("", len(GAJupiterListOfCloseApproachArrays), "----", len(GASaturnListOfCloseApproachArrays))
+
+# for i in range(len(GAJupiterListOfCloseApproachArrays)):
+#     print(len(GAJupiterListOfAllSimDataLists[i]), "    ", len(GAJupiterListOfCloseApproachArrays[i]), "    ", len(GAJupiterListOfLaunchDatesArrays[i]), "    ", len(GAJupiterListOfInitialStateLists[i]), "    ", len(GAJupiterSynodicSubDirListToUse[i]))
+# print("")
+# for i in range(len(GASaturnListOfCloseApproachArrays)):
+#     print(len(GASaturnListOfAllSimDataLists[i]), "    ", len(GASaturnListOfCloseApproachArrays[i]), "    ", len(GASaturnListOfLaunchDatesArrays[i]), "    ", len(GASaturnListOfInitialStateLists[i]), "    ", len(GASaturnSynodicSubDirListToUse[i]))
+
+
+print(len(GASaturnListOfCloseApproachArrays))
+print("Largest Saturn separation [m]: ", np.amax(trueFlatten(GASaturnListOfCloseApproachArrays)) )
+
+utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=False,
+                           saveFolder=stage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=20, plotLegend=False, fignumber=1, plotGrid=False)
+utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
+                           saveFolder=stage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=10, plotLegend=False, fignumber=1, scatterLinewidths=0.5)
+utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=False, plotParetoFront=False,
+                               saveFolder=stage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Scatter", scatterPointSize=2, plotLegend=False, fignumber=2)
+
+print("")
+
+# utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
+#                            saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=2, initialStateFilename=utils.GASaturnInitialStateFilename, plotLegend=False)
+
+utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=False,
+                           saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=20, plotLegend=False, fignumber=3, plotGrid=False)
+utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
+                           saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=10, plotLegend=False, fignumber=3, scatterLinewidths=0.5)
+
+
+utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=False, plotParetoFront=False,
+                           saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Scatter", scatterPointSize=2, initialStateFilename=utils.GASaturnInitialStateFilename, plotLegend=False, fignumber=4)
+
+
 
 if showing:
     plt.show()
