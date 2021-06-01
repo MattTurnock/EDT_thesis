@@ -8,4 +8,5 @@ tudat_apps/bin/
 tudat_apps/EDTCustomKernels/*.bsp
 tudat_apps/EDTCustomKernels/old/*.bsp
 
-# Ignore old voyager
+# Ignore numpy binaries
+tudat_apps/main_app/pyfiles/numpyBinaries/
