@@ -42,7 +42,7 @@ voyager1TrajDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerTrajDataSubD
 voyager2TrajDataDir = os.path.join(deepSpaceMagfieldDataDir, voyagerTrajDataSubDirBase % "2")
 
 pythonRunnerLogfilesDir = os.path.join(pyfiles_dir, "cppRunnerLogfiles")
-
+simulationRunPathDefault = os.path.join(cppApplications_dir, "application_simulation_SSO-CHB")
 
 #######################################################################################################################
 ############################## Set constant values for use in GACalculatorRunner.py and others ######################
@@ -71,6 +71,119 @@ GAJupiterGlobalResultsGenInitalStatesFilePath = os.path.join(GAJupiterGlobalResu
 GASaturnGlobalResultsDirPath = os.path.join(simulation_output_dir, "GASaturnGlobal", "GACalculatorNominal_Saturn_2020.00-2050.00")
 GASaturnInitialStateFilename = "initialState_GA_ES_%s.dat" %GAStage2GenerationNumberToUse
 GASaturnGlobalResultsGenInitalStatesFilePath = os.path.join(GASaturnGlobalResultsDirPath, GASaturnInitialStateFilename)
+
+#######################################################################################################################
+############################## SSO+ CONSTANTS ######################
+#######################################################################################################################
+
+# Change Keys
+SSOPChangeKeys =  [ ["GuidanceConfigs", "initialEphemerisYear"],
+                    ["GuidanceConfigs", "terminationSettings", "timeTerminationYears"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "a_au"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "e"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "i_deg"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "aop_deg"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "raan_deg"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "ta_deg"],
+                    ["saveDataConfigs", "outputSubFolder"],
+                    ["saveDataConfigs", "baseFilename"]]
+
+# Input parameter ranges
+SSOPInitialApRangeAU = (1,10) # AU
+SSOPInitialPeRangeAU = (0.999, 1.001) # AU
+
+# Standard orbital parameters
+SSOP_i_default = 0
+SSOP_aop_default = 0
+SSOP_raan_default = 0
+SSOP_ta_default = 0
+
+# Common unchanging optimisation paraemters
+SSOP_simulationLengthYears = 100
+SSOP_targetTOFYears = 100
+SSOP_NoMoeadGenerations = 1 # NOTE: This should always be one, since many evolutions are made
+SSOP_seed = 97
+
+SSOP_PopulationSize = 150
+SSOP_NoEvolutions = 50
+SSOP_MoeadNeighbours = 20 # NOTE: default is 20
+# SSOP_PopulationSize = 3
+# SSOP_NoEvolutions = 10
+# SSOP_MoeadNeighbours = 2
+
+# A bunch of directories and base filenames
+SSOP_JsonDirPathBaseFile = os.path.join(jsonInputs_dir, "finalSims", "SSOP", "SSOP_Base.json")
+
+SSOP_JsonSubDirPathTemp = os.path.join("finalSims", "SSOP")
+SSOP_JsonDirPathTemp = os.path.join(jsonInputs_dir, SSOP_JsonSubDirPathTemp )
+SSOP_JsonNameTemp = "SSOP_Temp.json"
+
+SSOP_SimOutputSubFolderTemp = "SSOP/SSOP_Temp"
+SSOP_SimOutputFilenameTemp = "SSOP_Temp-"
+
+SSOP_printSetting = 1
+
+SSOP_Results_DirPath = os.path.join(numpyBinary_dir, "SSOP")
+
+SSOP_Results_PopulationFileBase = "SSOP_Pop_%s.npy"
+SSOP_Results_FitnessFileBase = "SSOP_Fit_%s.npy"
+
+SSOP_Results_PopulationProcessedBase = "SSOP_Processed_Pop_%s.npy"
+SSOP_Results_FitnessProcessedBase = "SSOP_Processed_Fit_%s.npy"
+
+
+#### Just for plotter ####
+SSOP_TemplateJsonPathPlotter = os.path.join(jsonInputs_dir, "finalSims", "SSOP", "SSOP_Base_Plotter.json")
+SSOP_TemplateJsonPathPlotter_NoEDT = os.path.join(jsonInputs_dir, "finalSims", "SSOP", "SSOP_Base_Plotter_NoEDT.json")
+# SSOP_OutputJsonDirPathPlotter = os.path.join("finalSims", "SSOP")
+
+#######################################################################################################################
+############################## Ino CONSTANTS ######################
+#######################################################################################################################
+
+# Input parameter ranges
+InOPInitialApRangeAU = (0.999, 1.001) # AU
+InOPInitialPeRangeAU = (0.3, 1) # AU
+InOTargetPe = (0.1, 0.9) # AU
+
+# Standard orbital parameters
+InO_i_default = 0
+InO_aop_default = 0
+InO_raan_default = 0
+InO_ta_default = 0
+
+# Common unchanging optimisation paraemters
+InO_simulationLengthYears = 100
+InO_targetTOFYears = 100
+InO_NoMoeadGenerations = 1 # NOTE: This should always be one, since many evolutions are made
+InO_seed = 97
+
+InO_PopulationSize = 50
+InO_NoEvolutions = 50
+InO_MoeadNeighbours = 20 # NOTE: default is 20
+# InO_PopulationSize = 3
+# InO_NoEvolutions = 10
+# InO_MoeadNeighbours = 2
+
+# A bunch of directories and base filenames
+InO_JsonDirPathBaseFile = os.path.join(jsonInputs_dir, "finalSims", "InO", "InO_Base.json")
+
+InO_JsonSubDirPathTemp = os.path.join("finalSims", "InO")
+InO_JsonDirPathTemp = os.path.join(jsonInputs_dir, InO_JsonSubDirPathTemp )
+InO_JsonNameTemp = "InO_Temp.json"
+
+InO_SimOutputSubFolderTemp = "InO/InO_Temp"
+InO_SimOutputFilenameTemp = "InO_Temp-"
+
+InO_printSetting = 1
+
+InO_Results_DirPath = os.path.join(numpyBinary_dir, "InO")
+
+InO_Results_PopulationFileBase = "InO_Pop_%s.npy"
+InO_Results_FitnessFileBase = "InO_Fit_%s.npy"
+
+InO_Results_PopulationProcessedBase = "InO_Processed_Pop_%s.npy"
+InO_Results_FitnessProcessedBase = "InO_Processed_Fit_%s.npy"
 
 #######################################################################################################################
 ############################## SOKGA CONSTANTS ######################
@@ -186,6 +299,26 @@ slackCoefficients =np.linspace(1, 1.1, minorRunsNumber, endpoint=True)
 lineSeparationRatios = np.logspace(-7, -5, minorRunsNumber, endpoint=True)
 occultationCoefficients = np.linspace(0.1, 1, minorRunsNumber, endpoint=True)
 
+
+#######################################################################################################################
+############################# Some useful constants ####################################################
+#######################################################################################################################
+
+# GRAVITATIONAL PARAMETERS (m^3/s^2)
+mu_Sun = 1.32712440041939400E20
+
+# "gravitationalParameters": {
+#     "Sun": 132712440041.939400E9,
+#     "Mercury": 22031.780000E9,
+#     "Venus": 324858.592000E9,
+#     "Earth": 398600.435436E9,
+#     "Mars": 42828.375214E9,
+#     "Jupiter": 126712764.800000E9,
+#     "Saturn": 37940585.200000E9,
+#     "Uranus": 5794548.600000E9,
+#     "Neptune": 6836527.100580E9
+
+
 #######################################################################################################################
 ############################# Some useful functions ####################################################
 #######################################################################################################################
@@ -228,6 +361,30 @@ def getTA(a, e, r):
     TA = 1/(np.cos(inside))
 
     return np.rad2deg(TA)
+
+# Function to get kepler elements from just Ap and Pe
+def ApPeToKeplerian(Ap, Pe, i=0, AOP=0, RAAN=0, TA=0):
+
+    a = 0.5 * (Ap + Pe)
+    e = (Ap - Pe)/(Ap + Pe)
+
+    return (a, e, i, AOP, RAAN, TA)
+
+# Function to take keplerian parameters and calculate Ap / Pe
+def KeplerianToApPe(a, e):
+    Ap = a*(1+e)
+    Pe = a*(1-e)
+
+    return (Ap, Pe)
+
+# Function to calculate orbital velocity
+def getOrbitalV(mu, r, a):
+    # print(r)
+    # print(a)
+    # print("boop: ", (2/r - 1/a))
+    V = np.sqrt( mu* (2/r - 1/a) )
+    return V
+
 
 # a = -1000
 # e = 1.3
@@ -1127,11 +1284,12 @@ def runAllSimulations(jsonSubDirectory, jsonInputsDir=jsonInputs_dir,
         else:
             logger.info("Ignoring file: %s" %jsonFilenameTemp )
 
-    bar = IncrementalBar("Processing", max=len(jsonsToRunPaths), suffix='[%(percent).1f%%. ETA: %(eta)ds]   ')
+    if printProgress: bar = IncrementalBar("Processing", max=len(jsonsToRunPaths), suffix='[%(percent).1f%%. ETA: %(eta)ds]   ')
     for i in range(len(jsonsToRunPaths)):
         # Run simulations using relevant json file
         if printSetting != 0: logger.info("\n\nRunning application %s, with json %s\n" %(applicationName, jsonsToRunPaths[i].split("/")[-1]))
         argumentsList = [runPath, jsonsToRunPaths[i]]
+        # print(argumentsList)
         runBashCommand( argumentsList, printSetting=printSetting)
 
         if printProgress: bar.next()
@@ -2233,5 +2391,111 @@ def interpolateAllDataArrays(allSimData, dataRange = [0,1], forcedArrayLength=No
 
     return newDataTuple
 
+#######################################################################################################################
+####################################### SSO+ / general optimisation functions #########################################
+#######################################################################################################################
+
+class SSOP_Problem:
+
+    def __init__(self, inputLowerBounds, inputUpperBounds, templateJsonPath=None, outputJsonDirPath=None, outputJsonName=None ):
+        ### Set bounds ###
+        self.lowerBounds = inputLowerBounds
+        self.upperBounds = inputUpperBounds
+
+        # Set Json info #
+        if templateJsonPath is None:
+            self.templateJsonPath = SSOP_JsonDirPathBaseFile
+        else:
+            self.templateJsonPath = templateJsonPath
+
+        if outputJsonDirPath is None:
+            self.jsonDirPath = SSOP_JsonDirPathTemp
+            self.jsonName = SSOP_JsonNameTemp
+        else:
+            self.jsonDirPath = outputJsonDirPath
+            self.jsonName = outputJsonName
 
 
+
+    def fitness(self, x):
+
+        # Get variables from allowed ones #
+        launchEpoch = x[0] * year
+        launchYear = x[0]
+        initialApAU = x[1]
+        initialPeAU = x[2]
+
+        # Calculate intermediate Keplerian parameters to pass to json #
+        a, e, i, AOP, RAAN, TA = ApPeToKeplerian(initialApAU, initialPeAU)
+
+        # Set SSOP change values, and create the new json #
+        SSOPChangeValues = [ launchYear,
+                             SSOP_simulationLengthYears,
+                             a,
+                             e,
+                             i,
+                             AOP,
+                             RAAN,
+                             TA,
+                             SSOP_SimOutputSubFolderTemp,
+                             SSOP_SimOutputFilenameTemp]
+
+        createModifiedJson(self.templateJsonPath, self.jsonDirPath, self.jsonName, SSOPChangeKeys, SSOPChangeValues)
+
+        # Run the simulation using the temporary json #
+        runAllSimulations(SSOP_JsonSubDirPathTemp, runPath=simulationRunPathDefault, printSetting=SSOP_printSetting, runOnlyThisFile=SSOP_JsonNameTemp, printProgress=False)
+
+        # Load simulation data from file #
+        self.allSimData = getAllSimDataFromJson(os.path.join(SSOP_JsonDirPathTemp, SSOP_JsonNameTemp), todoList=["propData", "depVarData"], printInfo=False)
+
+        # Use simulation data to get the Apogee and Perigee at the target TOF #
+        maxAp, maxPe = getApPe_At_TOF(self.allSimData, SSOP_targetTOFYears)
+        maxApAU = maxAp / AU
+
+        # Use known orbit information to find DV to put into that orbit, for second fitness parameter #
+        VCircEarth = getOrbitalV(mu_Sun, 1 * AU, 1*AU)
+        VKick = getOrbitalV(mu_Sun, 1*AU, a*AU)
+        DVKick = abs(VKick - VCircEarth)
+
+        return [1/maxApAU, DVKick]
+
+
+    # Return number of objectives
+    def get_nobj(self):
+        return 2
+
+    def get_bounds(self):
+        ### Gets the simulation bounds for each input parameter ###
+        return (self.lowerBounds, self.upperBounds)
+
+
+    def get_name(self):
+        return "SSO+ Problem"
+
+
+    def get_extra_info(self):
+        return "\tHuman readable lower bounds: [%s, %s, %s] " \
+               "\n\tHuman readable upper bounds: [%s, %s, %s]" %(self.lowerBounds[0], self.lowerBounds[1], self.lowerBounds[2],
+                                                                 self.upperBounds[0], self.upperBounds[1], self.upperBounds[2])
+
+
+
+def getApPe_At_TOF(allSimData, targetTOFYears):
+
+    # Get associated sim data parts
+    depVarData = allSimData[2]
+    propData = allSimData[5]
+
+    # Create TOF array from epoch array, and find targetTOF
+    InitialEpoch = depVarData[0,0]
+    TOFArray = depVarData[:, 0] - InitialEpoch
+    targetTOF = targetTOFYears * year
+    targetTOFIndex = findNearestInArray(TOFArray, targetTOF)[1]
+
+    # Find Ap after TOF
+    aAtTOF = depVarData[targetTOFIndex, 1]
+    eAtTOF = depVarData[targetTOFIndex, 2]
+
+    ApAtTOF, PeAtTOF = KeplerianToApPe(aAtTOF, eAtTOF)
+
+    return (ApAtTOF, PeAtTOF)
