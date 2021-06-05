@@ -54,7 +54,8 @@ int main(int argc, char *argv[] )
 //        jsonName = "finalSims/SSO_Config_Sensitivity/SSO_Trans_Base.json";
 //        jsonName = "GATestVariablesNominal.json";
 //        jsonName = "finalSims/SSO_Config_Sensitivity_Nominal.json";
-        jsonName = "finalSims/SSOP/SSOP_Temp.json";
+//        jsonName = "finalSims/SSOP/SSOP_Temp.json";
+        jsonName = "finalSims/SOKGA_Stage2/SOKGA_Stage2_Jupiter_112.json";
     }
     nlohmann::json simulationVariables = gen::readJson(jsonName);
     bool verbosity = simulationVariables["saveDataConfigs"]["verbosity"];
@@ -92,8 +93,8 @@ int main(int argc, char *argv[] )
     twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["c2"]);
     twoSinePars.push_back(simulationVariables["ParkerMagField"]["twoSinePars"]["d"]);
 
-    nlohmann::json ISMFVariables = simulationVariables["InterstellarMagField"];
-    double testYear = 2001.3;
+//    nlohmann::json ISMFVariables = simulationVariables["InterstellarMagField"];
+//    double testYear = 2001.3;
 //    std::cout << "B0 for year " << testYear << " : " << gen::twoSines(testYear, twoSinePars) << std::endl;
     EDTEnvironment CHBEDTEnviro = EDTEnvironment(twoSinePars, phi0, R0, baseBodyMap, simulationVariables);
 

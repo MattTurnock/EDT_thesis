@@ -3,14 +3,14 @@
     "customKernelName": "de430.bsp",
     "bodiesToInclude": {
       "Sun": 1,
-      "Mercury": 1,
-      "Venus": 1,
+      "Mercury": 0,
+      "Venus": 0,
       "Earth": 0,
-      "Mars": 1,
-      "Jupiter": 1,
-      "Saturn": 1,
-      "Uranus": 1,
-      "Neptune": 1
+      "Mars": 0,
+      "Jupiter": 0,
+      "Saturn": 0,
+      "Uranus": 0,
+      "Neptune": 0
     }
   },
   "ParkerMagField": {
@@ -118,7 +118,7 @@
   },
   "scConfigs": {
     "SRP": {
-      "useSRP": true,
+      "useSRP": false,
       "endmassArea1": 1,
       "endmassArea2": 1,
       "endmassRadiationCoefficient": 1.5,

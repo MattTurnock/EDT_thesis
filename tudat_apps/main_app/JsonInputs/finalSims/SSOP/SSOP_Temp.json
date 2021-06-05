@@ -3,14 +3,14 @@
         "customKernelName": "de430.bsp",
         "bodiesToInclude": {
             "Sun": 1,
-            "Mercury": 1,
-            "Venus": 1,
+            "Mercury": 0,
+            "Venus": 0,
             "Earth": 0,
-            "Mars": 1,
-            "Jupiter": 1,
-            "Saturn": 1,
-            "Uranus": 1,
-            "Neptune": 1
+            "Mars": 0,
+            "Jupiter": 0,
+            "Saturn": 0,
+            "Uranus": 0,
+            "Neptune": 0
         }
     },
     "ParkerMagField": {
@@ -44,14 +44,14 @@
         "thrustMagnitudeConfig": "nominal",
         "thrustDirectionConfig": "nominalPrograde",
         "minPeAU": 0.1,
-        "initialEphemerisYear": 2037.978873390101,
+        "initialEphemerisYear": 2029.4991257603863,
         "integratorSettings": {
             "initialTimeStep": 1.0,
             "integrator": "RK87DP",
             "minimumStepSize": 1e-20,
             "maximumStepSize": 1e+20,
-            "relativeErrorTolerance": 0.0001,
-            "absoluteErrorTolerance": 0.0001
+            "relativeErrorTolerance": 1e-08,
+            "absoluteErrorTolerance": 1e-08
         },
         "terminationSettings": {
             "terminationType": "nominalTimeTermination",
@@ -65,8 +65,8 @@
         },
         "initialStateType": "Keplerian",
         "vehicleInitialKeplerian": {
-            "a_au": 1.2890722938965513,
-            "e": 0.2248937418717251,
+            "a_au": 5.499690366624925,
+            "e": 0.8182626470323341,
             "i_deg": 0,
             "aop_deg": 0,
             "raan_deg": 0,
@@ -118,7 +118,7 @@
     },
     "scConfigs": {
         "SRP": {
-            "useSRP": true,
+            "useSRP": false,
             "endmassArea1": 1,
             "endmassArea2": 1,
             "endmassRadiationCoefficient": 1.5,

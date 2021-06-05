@@ -32,7 +32,7 @@ utils.checkFolderExist(utils.SSOP_Results_DirPath, emptyDirectory=True)
 prob = pg.problem(utils.SSOP_Problem(inputLowerBounds, inputUpperBounds))
 
 # Create algorithm. Using moead with default values, and a single generation (since generations are done by evolution). Also a specific seed #
-algo = pg.algorithm(pg.moead(gen=utils.SSOP_NoMoeadGenerations, seed=utils.SSOP_seed, neighbours=utils.SSOP_MoeadNeighbours))
+algo = pg.algorithm(pg.de(gen=utils.SSOP_NoMoeadGenerations, seed=utils.SSOP_seed))
 # print(prob)
 # print(algo)
 # print("\n=== Creating initial population ===")

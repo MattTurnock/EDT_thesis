@@ -273,6 +273,10 @@ public:
         return theta_;
     }
 
+    double getSphericalTransitionDistance(){
+        return sphericalTransitionDistance_;
+    }
+
 
 
 

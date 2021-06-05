@@ -17,7 +17,7 @@ utils.logger = utils.createLogger(logfilePath)
 
 runStage1s = True
 runStage2s = True
-printSetting=1
+printSetting=0
 
 
 
@@ -164,7 +164,7 @@ allStage1Jsons = utils.natsort.natsorted(utils.glob.glob(SOKGAStage1JsonSaveDirP
 
 for i in range(len(allStage1Jsons)):
     thisStage1Json = allStage1Jsons[i]
-    allSimData = utils.getAllSimDataFromJson(thisStage1Json, printInfo=True, todoList=["propData"])
+    allSimData = utils.getAllSimDataFromJson(thisStage1Json, printInfo=False, todoList=["propData"])
     propDataArray = allSimData[5]
 
     if "Jupiter" in thisStage1Json:

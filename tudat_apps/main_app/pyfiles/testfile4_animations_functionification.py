@@ -18,9 +18,10 @@ DEFAULTSIZE = None
 SaveFolder = "pyplots/finalSimsTemp"
 
 
-dataSubDir_SSO = "SSO"
+# dataSubDir_SSO = "SSOP/SSOP_Temp"
+dataSubDir_SSO = "SOKGA/SOKGA_Stage2_Jupiter_112"
 allSimData_SSO_raw = utils.getAllSimDataFromFolder(dataSubDir_SSO)
-allSimData_SSO = utils.interpolateAllDataArrays(allSimData_SSO_raw, dataRange=[0,0.1], forcedArrayLength=100)
+allSimData_SSO = utils.interpolateAllDataArrays(allSimData_SSO_raw, dataRange=[0,1], forcedArrayLength=None)
 propData_SSO = allSimData_SSO[5]
 speed = np.linalg.norm(propData_SSO[:, 4:7], axis=1)
 
@@ -102,8 +103,8 @@ if sameScale: ax.axis("scaled")
 ax.set_xlabel("X coordinate [AU]")
 ax.set_ylabel("Y coordinate [AU]")
 ax.grid()
-ax.set_xlim(xlims)
-ax.set_ylim(ylims)
+# ax.set_xlim(xlims)
+# ax.set_ylim(ylims)
 
 
 #### Add arrow plotting info ####
@@ -112,8 +113,9 @@ Qx = x[:, None]
 Qy = y[:, None]
 
 # Arrow pointing vector
-UCoords = thrustVectorX * 3
-VCoords = thrustVectorY * 3
+scaleFactor=1000000
+UCoords = thrustVectorX * scaleFactor
+VCoords = thrustVectorY * scaleFactor
 
 U = UCoords[:, None]
 V = VCoords[:, None]
@@ -172,7 +174,7 @@ Iavg = currentVNVData_SSO[:, 6]
 
 timeStringBase = "Date: %s\n" \
                  "Theta: %s\n" \
-                 "Thrust [N]: %s\n" \
+                 "Thrust [nN]: %s\n" \
                  "Speed: [km/s]: %s\n" \
                  "EMs: %s\n" \
                  "I0s: %s\n" \
@@ -200,7 +202,7 @@ def update_point(n, x, y):
     # Add data text to plot
     dataText.set_text(timeStringBase % (np.around(timeList[n], decimals=decimalRounding),
                                         np.around(thetaData[n], decimals=decimalRounding),
-                                        np.around(thrustMagnitude[n], decimals=decimalRounding),
+                                        np.around(thrustMagnitude[n] *1E9, decimals=decimalRounding),
                                         np.around(speed[n]/1000, decimals=decimalRounding),
                                         np.around(Ems[n], decimals=decimalRounding),
                                         np.around(I0s[n], decimals=decimalRounding),

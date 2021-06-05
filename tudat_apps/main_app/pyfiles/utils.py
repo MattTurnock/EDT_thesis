@@ -104,12 +104,10 @@ SSOP_targetTOFYears = 100
 SSOP_NoMoeadGenerations = 1 # NOTE: This should always be one, since many evolutions are made
 SSOP_seed = 97
 
-SSOP_PopulationSize = 150
-SSOP_NoEvolutions = 50
-SSOP_MoeadNeighbours = 20 # NOTE: default is 20
-# SSOP_PopulationSize = 3
-# SSOP_NoEvolutions = 10
-# SSOP_MoeadNeighbours = 2
+SSOP_PopulationSize = 1000
+SSOP_NoEvolutions = 100
+# SSOP_PopulationSize = 15
+# SSOP_NoEvolutions = 5
 
 # A bunch of directories and base filenames
 SSOP_JsonDirPathBaseFile = os.path.join(jsonInputs_dir, "finalSims", "SSOP", "SSOP_Base.json")
@@ -121,7 +119,7 @@ SSOP_JsonNameTemp = "SSOP_Temp.json"
 SSOP_SimOutputSubFolderTemp = "SSOP/SSOP_Temp"
 SSOP_SimOutputFilenameTemp = "SSOP_Temp-"
 
-SSOP_printSetting = 1
+SSOP_printSetting = 0
 
 SSOP_Results_DirPath = os.path.join(numpyBinary_dir, "SSOP")
 
@@ -160,10 +158,8 @@ InO_seed = 97
 
 InO_PopulationSize = 50
 InO_NoEvolutions = 50
-InO_MoeadNeighbours = 20 # NOTE: default is 20
 # InO_PopulationSize = 3
 # InO_NoEvolutions = 10
-# InO_MoeadNeighbours = 2
 
 # A bunch of directories and base filenames
 InO_JsonDirPathBaseFile = os.path.join(jsonInputs_dir, "finalSims", "InO", "InO_Base.json")
@@ -2366,7 +2362,7 @@ def interpolateAllDataArrays(allSimData, dataRange = [0,1], forcedArrayLength=No
         ithDataArray = allSimData[i]
 
         # Make sure to ignore config info file, since not time based
-        if i != 8:
+        if (i != 8) and (i != 9):
             # if i == 5:
 
             ithDataArrayTimes = ithDataArray[:, 0]
@@ -2448,21 +2444,27 @@ class SSOP_Problem:
         # Load simulation data from file #
         self.allSimData = getAllSimDataFromJson(os.path.join(SSOP_JsonDirPathTemp, SSOP_JsonNameTemp), todoList=["propData", "depVarData"], printInfo=False)
 
-        # Use simulation data to get the Apogee and Perigee at the target TOF #
-        maxAp, maxPe = getApPe_At_TOF(self.allSimData, SSOP_targetTOFYears)
-        maxApAU = maxAp / AU
+        # # Use simulation data to get the Apogee and Perigee at the target TOF #
+        # maxAp, maxPe = getApPe_At_TOF(self.allSimData, SSOP_targetTOFYears)
+        # maxApAU = maxAp / AU
+
+        # Use simulation data to make Ap array, and find the maximum value #
+        aArray = self.allSimData[2][:, 1]
+        eArray = self.allSimData[2][:, 2]
+        ApArray, PeArray = KeplerianToApPe(aArray, eArray)
+        maxApAU = np.amax(ApArray) / AU
 
         # Use known orbit information to find DV to put into that orbit, for second fitness parameter #
         VCircEarth = getOrbitalV(mu_Sun, 1 * AU, 1*AU)
         VKick = getOrbitalV(mu_Sun, 1*AU, a*AU)
         DVKick = abs(VKick - VCircEarth)
 
-        return [1/maxApAU, DVKick]
+        return [1/maxApAU]
 
 
     # Return number of objectives
     def get_nobj(self):
-        return 2
+        return 1
 
     def get_bounds(self):
         ### Gets the simulation bounds for each input parameter ###

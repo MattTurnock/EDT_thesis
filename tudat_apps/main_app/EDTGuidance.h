@@ -87,44 +87,6 @@ public:
 
     void updateThrustDirection(const double simulationTime){
 
-//        ///////// TODO: Below is old version of thrust direction logic, use the new one!!! /////////////////////
-//        // Set current vector for prograde and retrograde, normalised vector pointing upwards and downwards
-//        if ((thrustDirectionConfig_ == "nominalPrograde") or (thrustDirectionConfig_ == "nominalRetrograde") or (thrustDirectionConfig_ == "currentArbitraryVNV")){
-//            if (thrustDirectionConfig_ == "nominalPrograde") {
-//
-//                // For prograde use current oriented in positive Z-direction
-//                currentDirectionVector_ << 0, 0, 1; //TODO: Fix to use EDT length unit vector, instead of hardcode
-//            }
-//            else if (thrustDirectionConfig_ == "nominalRetrograde") {
-//
-//                // For retrograde use current oriented in negative Z-direction
-//                currentDirectionVector_ << 0, 0, -1; //TODO: Fix to use EDT length unit vector, instead of hardcode
-//            }
-//            else if (thrustDirectionConfig_ == "currentArbitraryVNV"){
-//
-//                // Manually use the value used for the arbitrary VNV case
-//                currentDirectionVector_ << 0.17583754,  0.87544648, -0.45019399;
-//            }
-////            std::cout << "CurrentDirectionVector at set: " << currentDirectionVector_ << std::endl;
-//            // Set current in guidance class and update it
-////            guidanceEnvironment_.setCurrent(currentDirectionVector_); // TODO: check if this is needed or no - ie move to update script
-//            updateAllEnviro(simulationTime_);
-//
-//            // Get thrust vector and normalise to use as guidance vector
-//            thrustVector_ = (guidanceEnvironment_.getCurrent()).cross(guidanceEnvironment_.getMagFieldInertial());
-//            thrustDirection_ = thrustVector_.normalized();
-//
-//            // Convert inertial thrust vector to local vector for saving
-//            thrustVectorLocal_ = gen::InertialToLvlh(thrustVector_, guidanceEnvironment_.getTheta());
-//        }
-//
-//        // Save simulation time and relevant data to save map
-//        simulationTime_ = simulationTime;
-//        saveParametersToMap();
-
-
-
-        ////////////// THE NEW ONE ///////////////////////////////
 
         // Define positive and negative current direction vectors
         Eigen::Vector3d currentPositiveDirectionVector;
@@ -139,52 +101,76 @@ public:
         // Initialise boolean forcing current magnitude to 0, if thrusting should be disabled
         forceZeroCurrentMagnitude_ = false;
 
-        // Grab spacecraft state at the current time and convert to keplerian, then calculate Ap and Pe for T0
+        // Turn off current if really bad assumption violations are made
+        if (abs(dimensionlessCurrentC_) > 100){
+            forceZeroCurrentMagnitude_ = true;
+        }
+
+        // Grab spacecraft state and find current altitude
         Eigen::Vector6d spacecraftStateCartesianT0 = guidanceEnvironment_.getVehicleState();
-        Eigen::Vector6d spacecraftStateKeplerianT0 = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(spacecraftStateCartesianT0, SunMu_);
-        double ApT0 =  spacecraftStateKeplerianT0[0] * (1 + spacecraftStateKeplerianT0[1]);
-        double PeT0 = spacecraftStateKeplerianT0[0] * (1 - spacecraftStateKeplerianT0[1]);
-        double ECCT0 = spacecraftStateKeplerianT0[1];
+        double solarDistance = guidanceEnvironment_.getVehiclePosition().norm();
 
-        // Grab thrust direction at T0, for both positive and negative current cases
-        Eigen::Vector3d thrustVectorPositive = currentPositiveDirectionVector.cross(guidanceEnvironment_.getMagFieldInertial());
-        Eigen::Vector3d thrustDirectionPositive = thrustVectorPositive.normalized();
+        // Choose whether to use interplanetary or interstellar guidance regime
+        if (solarDistance < guidanceEnvironment_.getSphericalTransitionDistance()) {
 
-        Eigen::Vector3d thrustVectorNegative = currentNegativeDirectionVector.cross(guidanceEnvironment_.getMagFieldInertial());
-        Eigen::Vector3d thrustDirectionNegative = thrustVectorNegative.normalized();
 
-        // Use normalised thrust direction directly as a 1m/s impulse on the original state velocity, to get new Ap and Pe, for both positive and negative cases
-        Eigen::Vector6d spacecraftStateDeltaPositive;
-        spacecraftStateDeltaPositive << 0, 0, 0, thrustDirectionPositive[0], thrustDirectionPositive[1], thrustDirectionPositive[2];
-        Eigen::Vector6d spacecraftStateCartesianT1Positive = spacecraftStateCartesianT0 + spacecraftStateDeltaPositive;
-        Eigen::Vector6d spacecraftStateKeplerianT1Positive = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(spacecraftStateCartesianT1Positive, SunMu_);
-        double ApT1Positive = spacecraftStateKeplerianT1Positive[0] * (1 + spacecraftStateKeplerianT1Positive[1]);
-        double PeT1Positive = spacecraftStateKeplerianT1Positive[0] * (1 - spacecraftStateKeplerianT1Positive[1]);
-        double ECCPositive = spacecraftStateKeplerianT1Positive[1];
 
-        Eigen::Vector6d spacecraftStateDeltaNegative;
-        spacecraftStateDeltaNegative << 0, 0, 0, thrustDirectionNegative[0], thrustDirectionNegative[1], thrustDirectionNegative[2];
-        Eigen::Vector6d spacecraftStateCartesianT1Negative = spacecraftStateCartesianT0 + spacecraftStateDeltaNegative;
-        Eigen::Vector6d spacecraftStateKeplerianT1Negative = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(spacecraftStateCartesianT1Negative, SunMu_);
-        double ApT1Negative = spacecraftStateKeplerianT1Negative[0] * (1 + spacecraftStateKeplerianT1Negative[1]);
-        double PeT1Negative = spacecraftStateKeplerianT1Negative[0] * (1 - spacecraftStateKeplerianT1Negative[1]);
-        double ECCNegative = spacecraftStateKeplerianT1Negative[1];
 
-        // Thrust logic only used at lower altitudes, ie when altitude less than 10 AU
-        bool useHyperbolicLogic;
+            // Use state to  convert to keplerian, then calculate Ap and Pe for T0
+            Eigen::Vector6d spacecraftStateKeplerianT0 = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(
+                    spacecraftStateCartesianT0, SunMu_);
+            double ApT0 = spacecraftStateKeplerianT0[0] * (1 + spacecraftStateKeplerianT0[1]);
+            double PeT0 = spacecraftStateKeplerianT0[0] * (1 - spacecraftStateKeplerianT0[1]);
+            double ECCT0 = spacecraftStateKeplerianT0[1];
+
+
+            // Grab thrust direction at T0, for both positive and negative current cases
+            Eigen::Vector3d thrustVectorPositive = currentPositiveDirectionVector.cross(
+                    guidanceEnvironment_.getMagFieldInertial());
+            Eigen::Vector3d thrustDirectionPositive = thrustVectorPositive.normalized();
+
+            Eigen::Vector3d thrustVectorNegative = currentNegativeDirectionVector.cross(
+                    guidanceEnvironment_.getMagFieldInertial());
+            Eigen::Vector3d thrustDirectionNegative = thrustVectorNegative.normalized();
+
+            // Use normalised thrust direction directly as a 1m/s impulse on the original state velocity, to get new Ap and Pe, for both positive and negative cases
+            Eigen::Vector6d spacecraftStateDeltaPositive;
+            spacecraftStateDeltaPositive
+                    << 0, 0, 0, thrustDirectionPositive[0], thrustDirectionPositive[1], thrustDirectionPositive[2];
+            Eigen::Vector6d spacecraftStateCartesianT1Positive =
+                    spacecraftStateCartesianT0 + spacecraftStateDeltaPositive;
+            Eigen::Vector6d spacecraftStateKeplerianT1Positive = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(
+                    spacecraftStateCartesianT1Positive, SunMu_);
+            double ApT1Positive = spacecraftStateKeplerianT1Positive[0] * (1 + spacecraftStateKeplerianT1Positive[1]);
+            double PeT1Positive = spacecraftStateKeplerianT1Positive[0] * (1 - spacecraftStateKeplerianT1Positive[1]);
+            double ECCPositive = spacecraftStateKeplerianT1Positive[1];
+
+            Eigen::Vector6d spacecraftStateDeltaNegative;
+            spacecraftStateDeltaNegative
+                    << 0, 0, 0, thrustDirectionNegative[0], thrustDirectionNegative[1], thrustDirectionNegative[2];
+            Eigen::Vector6d spacecraftStateCartesianT1Negative =
+                    spacecraftStateCartesianT0 + spacecraftStateDeltaNegative;
+            Eigen::Vector6d spacecraftStateKeplerianT1Negative = tudat::orbital_element_conversions::convertCartesianToKeplerianElements(
+                    spacecraftStateCartesianT1Negative, SunMu_);
+            double ApT1Negative = spacecraftStateKeplerianT1Negative[0] * (1 + spacecraftStateKeplerianT1Negative[1]);
+            double PeT1Negative = spacecraftStateKeplerianT1Negative[0] * (1 - spacecraftStateKeplerianT1Negative[1]);
+            double ECCNegative = spacecraftStateKeplerianT1Negative[1];
+
+            // Thrust logic only used at lower altitudes, ie when altitude less than 10 AU
+            bool useHyperbolicLogic;
 //        double altitude = guidanceEnvironment_.getVehiclePosition().norm();
-        if (ECCT0 > 1){
-            useHyperbolicLogic = true;
-        }
-        else{
-            useHyperbolicLogic = false;
-        }
+            if (ECCT0 > 1) {
+                useHyperbolicLogic = true;
+            } else {
+                useHyperbolicLogic = false;
+            }
 
-        // For whether using nominalPrograde or nominalRetrograde, apply the relevant logic to achieve a final thrust direction
-        if (thrustDirectionConfig_ == "nominalPrograde"){
 
-            // Decide whether to use regular or hyperbolic logic
-            if (useHyperbolicLogic){
+            // For whether using nominalPrograde or nominalRetrograde, apply the relevant logic to achieve a final thrust direction
+            if (thrustDirectionConfig_ == "nominalPrograde") {
+
+                // Decide whether to use regular or hyperbolic logic
+                if (useHyperbolicLogic) {
 //                if (ECCPositive > ECCT0){
 //                    currentDirectionVector_ = currentPositiveDirectionVector;
 //                }
@@ -195,28 +181,27 @@ public:
 //                    currentDirectionVector_ = currentDirectionVectorNoThrust;
 //                    forceZeroCurrentMagnitude_ = true;
 //                }
-                currentDirectionVector_ = currentPositiveDirectionVector;
-            }
-            else {
-                if ((ApT1Positive > ApT0) and (PeT1Positive > PeT0)) {
-                    currentDirectionVector_ = currentPositiveDirectionVector;
-                } else if ((ApT1Negative > ApT0) and (PeT1Negative > PeT0)) {
-                    currentDirectionVector_ = currentNegativeDirectionVector;
-                } else if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)) {
-                    currentDirectionVector_ = currentPositiveDirectionVector;
-                } else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)) {
                     currentDirectionVector_ = currentNegativeDirectionVector;
                 } else {
-                    currentDirectionVector_ = currentDirectionVectorNoThrust;
-                    forceZeroCurrentMagnitude_ = true;
+                    if ((ApT1Positive > ApT0) and (PeT1Positive > PeT0)) {
+                        currentDirectionVector_ = currentPositiveDirectionVector;
+                    } else if ((ApT1Negative > ApT0) and (PeT1Negative > PeT0)) {
+                        currentDirectionVector_ = currentNegativeDirectionVector;
+                    } else if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0) and
+                               (PeT1Positive > minimumPerihelion_)) {
+                        currentDirectionVector_ = currentPositiveDirectionVector;
+                    } else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0) and
+                               (PeT1Negative > minimumPerihelion_)) {
+                        currentDirectionVector_ = currentNegativeDirectionVector;
+                    } else {
+                        currentDirectionVector_ = currentDirectionVectorNoThrust;
+                        forceZeroCurrentMagnitude_ = true;
+                    }
                 }
-            }
-        }
+            } else if (thrustDirectionConfig_ == "nominalRetrograde") {
 
-        else if (thrustDirectionConfig_ == "nominalRetrograde"){
-
-            // Decide whether or not to use hyperbolic logic
-            if (useHyperbolicLogic) {
+                // Decide whether or not to use hyperbolic logic
+                if (useHyperbolicLogic) {
 //                if (ECCPositive < ECCT0){
 //                    currentDirectionVector_ = currentPositiveDirectionVector;
 //                }
@@ -227,42 +212,53 @@ public:
 //                    currentDirectionVector_ = currentDirectionVectorNoThrust;
 //                    forceZeroCurrentMagnitude_ = true;
 //                }
-                currentDirectionVector_ = currentNegativeDirectionVector;
+                    currentDirectionVector_ = currentPositiveDirectionVector;
 
-            }
-            else {
-                if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)) {
-                    currentDirectionVector_ = currentPositiveDirectionVector;
-                } else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)) {
-                    currentDirectionVector_ = currentNegativeDirectionVector;
-                } else if ((ApT1Positive < ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)) {
-                    currentDirectionVector_ = currentPositiveDirectionVector;
-                } else if ((ApT1Negative < ApT0) and (PeT1Negative < PeT0) and (PeT1Negative > minimumPerihelion_)) {
-                    currentDirectionVector_ = currentNegativeDirectionVector;
                 } else {
-                    currentDirectionVector_ = currentDirectionVectorNoThrust;
-                    forceZeroCurrentMagnitude_ = true;
+                    if ((ApT1Positive > ApT0) and (PeT1Positive < PeT0) and (PeT1Positive > minimumPerihelion_)) {
+                        currentDirectionVector_ = currentPositiveDirectionVector;
+                    } else if ((ApT1Negative > ApT0) and (PeT1Negative < PeT0) and
+                               (PeT1Negative > minimumPerihelion_)) {
+                        currentDirectionVector_ = currentNegativeDirectionVector;
+                    } else if ((ApT1Positive < ApT0) and (PeT1Positive < PeT0) and
+                               (PeT1Positive > minimumPerihelion_)) {
+                        currentDirectionVector_ = currentPositiveDirectionVector;
+                    } else if ((ApT1Negative < ApT0) and (PeT1Negative < PeT0) and
+                               (PeT1Negative > minimumPerihelion_)) {
+                        currentDirectionVector_ = currentNegativeDirectionVector;
+                    } else {
+                        currentDirectionVector_ = currentDirectionVectorNoThrust;
+                        forceZeroCurrentMagnitude_ = true;
+                    }
                 }
             }
+
+                // System is also able to specify whether to thrust only in "positive" or "negative" directions the whole time
+            else if (thrustDirectionConfig_ == "justPositiveCurrent") {
+                currentDirectionVector_ = currentPositiveDirectionVector;
+            } else if (thrustDirectionConfig_ == "justNegativeCurrent") {
+                currentDirectionVector_ = currentNegativeDirectionVector;
+            } else if (thrustDirectionConfig_ == "currentArbitraryVNV") {
+                currentDirectionVector_ = currentDirectionArbitraryVnV;
+            } else {
+                std::cout
+                        << "WARNING: Thrust logic disabled, but no alternative provided, defaulting to last known setting"
+                        << std::endl;
+            }
         }
 
-        // System is also able to specify whether to thrust only in "positive" or "negative" directions the whole time
-        else if (thrustDirectionConfig_ == "justPositiveCurrent"){
-            currentDirectionVector_ = currentPositiveDirectionVector;
-        }
+        else if(solarDistance > guidanceEnvironment_.getSphericalTransitionDistance()){
 
-        else if (thrustDirectionConfig_ == "justNegativeCurrent"){
-            currentDirectionVector_ = currentNegativeDirectionVector;
-        }
+            // Use theta to determine quadrant as NW or SE. Then set direction vector accordingly
+            double ThetaDeg = unit_conversions::convertRadiansToDegrees(guidanceEnvironment_.getTheta());
+            if (45 < ThetaDeg && ThetaDeg < 225){
+                currentDirectionVector_ = currentNegativeDirectionVector;
+            }
+            else{
+                currentDirectionVector_ = currentPositiveDirectionVector;
+            }
 
-        else if (thrustDirectionConfig_ == "currentArbitraryVNV"){
-            currentDirectionVector_ = currentDirectionArbitraryVnV;
         }
-
-        else{
-            std::cout << "WARNING: Thrust logic disabled, but no alternative provided, defaulting to last known setting" << std::endl;
-        }
-
 //        std::cout << "Force current bool: " << forceZeroCurrentMagnitude_ << std::endl;
         updateAllEnviro(simulationTime_, forceZeroCurrentMagnitude_);
 
