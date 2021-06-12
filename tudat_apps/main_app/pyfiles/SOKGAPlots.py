@@ -73,18 +73,7 @@ if doProcessing:
         if finishLoop:
             allSimDataStage1 = utils.getAllSimDataFromJson(stage1JsonPath, useCompressed=False, printInfo=True, todoList=loadingTodoList)
 
-            # For loop through the sim data to concatenate as required, saving only the stage 1 json data
-            newAllSimDataList = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            for j in range(len(allSimDataStage1)):
-                if j != 9:
-                    newData = np.concatenate((allSimDataStage1[j], allSimDataStage2[j]), axis=0)
-                else:
-                    newData = allSimDataStage1[j]
-
-                newAllSimDataList[j] = newData
-
-            # Convert list to tuple to comply with the usual all sim data format
-            newAllSimDataArray = np.array(newAllSimDataList)
+            newAllSimDataArray = utils.concatenateAllSimDatas(allSimDataStage1, allSimDataStage2, jsonToKeep=1)
             listOfAllNewSimDataArrays.append(newAllSimDataArray)
 
 
@@ -205,7 +194,7 @@ utils.plotTrajectoryData(propData, planetsToPlot=["Earth", "Jupiter", "Saturn"],
                          doNotPlot=True, sameScale=True, plotSun=True, legendLabelsCustom=["Spacecraft Trajectory", "Earth", "Jupiter", "Saturn", "Sun", "6"],
                          saveFolder=plotFolder, savename="SOKGA_Pareto_Trajectories.pdf", savePngAndPdf=True, xlims=[-25,100], ylims=[-50, 50])
 
-
+print("Optimal trajectory launch date: %s" %(propData[0,0]/year))
 
 
 # firstAllSimData = listOfAllNewSimDataArrays[10]

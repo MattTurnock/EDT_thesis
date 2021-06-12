@@ -103,6 +103,7 @@ SSOP_simulationLengthYears = 100
 SSOP_targetTOFYears = 100
 SSOP_NoMoeadGenerations = 1 # NOTE: This should always be one, since many evolutions are made
 SSOP_seed = 97
+SSOP_seed2 = 1264899
 
 SSOP_PopulationSize = 1000
 SSOP_NoEvolutions = 100
@@ -125,9 +126,13 @@ SSOP_Results_DirPath = os.path.join(numpyBinary_dir, "SSOP")
 
 SSOP_Results_PopulationFileBase = "SSOP_Pop_%s.npy"
 SSOP_Results_FitnessFileBase = "SSOP_Fit_%s.npy"
-
 SSOP_Results_PopulationProcessedBase = "SSOP_Processed_Pop_%s.npy"
 SSOP_Results_FitnessProcessedBase = "SSOP_Processed_Fit_%s.npy"
+
+SSOP_Results_PopulationFileBase_seed2 = "SSOP_Pop_Seed2_%s.npy"
+SSOP_Results_FitnessFileBase_seed2 = "SSOP_Fit_Seed2_%s.npy"
+SSOP_Results_PopulationProcessedBase_seed2 = "SSOP_Processed_Pop_Seed2_%s.npy"
+SSOP_Results_FitnessProcessedBase_seed2 = "SSOP_Processed_Fit_Seed2_%s.npy"
 
 
 #### Just for plotter ####
@@ -139,47 +144,96 @@ SSOP_TemplateJsonPathPlotter_NoEDT = os.path.join(jsonInputs_dir, "finalSims", "
 ############################## Ino CONSTANTS ######################
 #######################################################################################################################
 
+# Change Keys
+InOChangeKeys =  [  # Spice Bodies
+                    ["Spice", "bodiesToInclude", "Mercury"],
+                    ["Spice", "bodiesToInclude", "Venus"],
+                    ["Spice", "bodiesToInclude", "Earth"],
+                    ["Spice", "bodiesToInclude", "Mars"],
+                    ["Spice", "bodiesToInclude", "Jupiter"],
+                    ["Spice", "bodiesToInclude", "Saturn"],
+                    ["Spice", "bodiesToInclude", "Uranus"],
+                    ["Spice", "bodiesToInclude", "Neptune"],
+                    # General guidance configs
+                    ["GuidanceConfigs", "thrustDirectionConfig"],
+                    ["GuidanceConfigs", "initialEphemerisYear"],
+                    # Guidance configs - termination settings
+                    ["GuidanceConfigs", "terminationSettings", "terminationType"],
+                    ["GuidanceConfigs", "terminationSettings", "absoluteTimeTerminationYear"],
+                    ["GuidanceConfigs", "terminationSettings", "proximityTerminationCutoffAU"],
+                    # Guidance configs - initial state
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "a_au"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "e"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "i_deg"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "aop_deg"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "raan_deg"],
+                    ["GuidanceConfigs", "vehicleInitialKeplerian", "ta_deg"],
+                    # Save settings
+                    ["saveDataConfigs", "outputSubFolder"],
+                    ["saveDataConfigs", "baseFilename"]]
+
+# Default values for including planets in sim
+InO_Mercury = 0
+InO_Venus = 0
+InO_Earth = 0
+InO_Mars = 0
+InO_Jupiter = 0
+InO_Saturn = 0
+InO_Uranus = 0
+InO_Neptune = 0
+
 # Input parameter ranges
-InOPInitialApRangeAU = (0.999, 1.001) # AU
-InOPInitialPeRangeAU = (0.3, 1) # AU
-InOTargetPe = (0.1, 0.9) # AU
+InOInitialApRangeAU = (0.999, 1.001) # AU
+InOInitialPeRangeAU = (0.3, 1) # AU
+InOTargetPeRangeAU = (0.1, 0.9) # AU
 
 # Standard orbital parameters
 InO_i_default = 0
 InO_aop_default = 0
 InO_raan_default = 0
-InO_ta_default = 0
+InO_ta_default = 180
 
 # Common unchanging optimisation paraemters
 InO_simulationLengthYears = 100
 InO_targetTOFYears = 100
 InO_NoMoeadGenerations = 1 # NOTE: This should always be one, since many evolutions are made
 InO_seed = 97
+InO_seed2 = 1264899
 
-InO_PopulationSize = 50
-InO_NoEvolutions = 50
-# InO_PopulationSize = 3
-# InO_NoEvolutions = 10
+InO_PopulationSize = 1000
+InO_NoEvolutions = 100
+# InO_PopulationSize = 50
+# InO_NoEvolutions = 3
 
-# A bunch of directories and base filenames
+# Base InO Json file full path
 InO_JsonDirPathBaseFile = os.path.join(jsonInputs_dir, "finalSims", "InO", "InO_Base.json")
 
-InO_JsonSubDirPathTemp = os.path.join("finalSims", "InO")
-InO_JsonDirPathTemp = os.path.join(jsonInputs_dir, InO_JsonSubDirPathTemp )
-InO_JsonNameTemp = "InO_Temp.json"
+# Subdirectory for temporary json used during optimisation, along with the full dir path for the same json, and the name for the temporary json. Only names are unique for stage 1 and 2
+InO_JsonSubDirPath = os.path.join("finalSims", "InO")
+InO_JsonDirPath = os.path.join(jsonInputs_dir, InO_JsonSubDirPath)
 
-InO_SimOutputSubFolderTemp = "InO/InO_Temp"
-InO_SimOutputFilenameTemp = "InO_Temp-"
+InO_JsonNameTemp_stage1 = "InO_Temp_Stage1.json"
+InO_JsonNameTemp_stage2 = "InO_Temp_Stage2.json"
 
-InO_printSetting = 1
+# Subdirectory for the InO Temporary simulation output, along with the base filename. Unique versions for stage 1 and stage 2
+InO_SimOutputSubFolderTemp_stage1 = "InO/InO_Temp_Stage1"
+InO_SimOutputFilenameTemp_stage1 = "InO_Temp-Stage1-"
+InO_SimOutputSubFolderTemp_stage2 = "InO/InO_Temp_Stage2"
+InO_SimOutputFilenameTemp_stage2 = "InO_Temp-Stage2-"
+
+InO_printSetting = 0
 
 InO_Results_DirPath = os.path.join(numpyBinary_dir, "InO")
 
 InO_Results_PopulationFileBase = "InO_Pop_%s.npy"
 InO_Results_FitnessFileBase = "InO_Fit_%s.npy"
-
 InO_Results_PopulationProcessedBase = "InO_Processed_Pop_%s.npy"
 InO_Results_FitnessProcessedBase = "InO_Processed_Fit_%s.npy"
+
+InO_Results_PopulationFileBase_seed2 = "InO_Pop_Seed2_%s.npy"
+InO_Results_FitnessFileBase_seed2 = "InO_Fit_Seed2_%s.npy"
+InO_Results_PopulationProcessedBase_seed2 = "InO_Processed_Pop_Seed2_%s.npy"
+InO_Results_FitnessProcessedBase_seed2 = "InO_Processed_Fit_Seed2_%s.npy"
 
 #######################################################################################################################
 ############################## SOKGA CONSTANTS ######################
@@ -189,6 +243,8 @@ SOKGAStage1JsonSubDir = "finalSims/SOKGA_Stage1/"
 SOKGAStage2JsonSubDir = "finalSims/SOKGA_Stage2/"
 
 SOKGASimulationEndYear = 2200
+
+
 #######################################################################################################################
 ############################## Set constant values for VnV stuff ######################
 #######################################################################################################################
@@ -645,6 +701,26 @@ def decimalYearToDatetimeObject(decimalYear):
     result = base + timedelta(seconds=(base.replace(year=base.year + 1) - base).total_seconds() * rem)
 
     return result
+
+def concatenateAllSimDatas(allSimData1, allSimData2, jsonToKeep=1):
+
+    # For loop through the sim data to concatenate as required, saving only the stage 1 json data
+    newAllSimDataList = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    for i in range(len(allSimData1)):
+        if i != 9:
+            newData = np.concatenate((allSimData1[i], allSimData2[i]), axis=0)
+        else:
+            if jsonToKeep == 1:
+                newData = allSimData1[i]
+            elif jsonToKeep == 2:
+                newData = allSimData2[i]
+
+        newAllSimDataList[i] = newData
+
+    # Convert list to tuple to comply with the usual all sim data format
+    newAllSimDataArray = np.array(newAllSimDataList)
+
+    return newAllSimDataArray
 
 
 #######################################################################################################################
@@ -1617,7 +1693,7 @@ figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, 
 def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plotType="x-y", legendSize=11, plotSun=False,
                        figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, sameScale=False, planetsToPlot=[],
                        plotOnlyTrajectory=False, trajectoryLabel="Spacecraft Trajectory", legendLabelsCustom=None, logScaleX=False, logScaleY=False,
-                       scatter=False, plotTitle=None, doNotPlot=False, savePngAndPdf=False):
+                       scatter=False, plotTitle=None, doNotPlot=False, savePngAndPdf=False, scatterSize=None):
 
     times = dataArray[:,0]
     timesYears = times / (365.25 * 24 * 60 * 60)
@@ -1723,7 +1799,7 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
 
     if not doNotPlot:
         if scatter:
-            plt.scatter(xToPlot, yToPlot)
+            plt.scatter(xToPlot, yToPlot, s=scatterSize)
         else:
             plt.plot(xToPlot, yToPlot)
 
@@ -1755,7 +1831,7 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
                 legendLabels.append(legendName)
 
         if plotSun:
-            plt.scatter([0], [0], c="orange")
+            plt.scatter([0], [0], c="orange", s=scatterSize)
             legendLabels.append("Sun")
 
         plt.xlabel(xLabel)
@@ -1769,7 +1845,9 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
         else:
             legendLabelsTodo = legendLabels
 
+
         plt.legend(legendLabelsTodo)
+
         if xlims is not None: plt.xlim(xlims)
         if ylims is not None: plt.ylim(ylims)
 
@@ -2422,7 +2500,7 @@ class SSOP_Problem:
         initialPeAU = x[2]
 
         # Calculate intermediate Keplerian parameters to pass to json #
-        a, e, i, AOP, RAAN, TA = ApPeToKeplerian(initialApAU, initialPeAU)
+        a, e, i, AOP, RAAN, TA = ApPeToKeplerian(initialApAU, initialPeAU, SSOP_i_default, SSOP_aop_default, SSOP_raan_default, SSOP_ta_default)
 
         # Set SSOP change values, and create the new json #
         SSOPChangeValues = [ launchYear,
@@ -2481,6 +2559,191 @@ class SSOP_Problem:
                                                                  self.upperBounds[0], self.upperBounds[1], self.upperBounds[2])
 
 
+#######################################################################################################################
+####################################### InO / general optimisation functions #########################################
+#######################################################################################################################
+
+class InO_Problem:
+
+    def __init__(self, inputLowerBounds, inputUpperBounds, printSetting=InO_printSetting, simLoadTodoList=["depVarData"],
+                 outputJsonName=None, templateJsonPath=None):
+        ### Set bounds ###
+        self.lowerBounds = inputLowerBounds
+        self.upperBounds = inputUpperBounds
+
+        self.printSetting = printSetting
+        self.simLoadTodoList = simLoadTodoList
+        # # Set Json info #
+        # if templateJsonPath is None:
+        #     self.templateJsonPath = InO_JsonDirPathBaseFile
+        # else:
+        #     self.templateJsonPath = templateJsonPath
+        #
+        if outputJsonName is None:
+            self.jsonName_stage1 = InO_JsonNameTemp_stage1
+            self.jsonName_stage2 = InO_JsonNameTemp_stage2
+        else:
+            self.jsonName_stage1 = outputJsonName %1
+            self.jsonName_stage2 = outputJsonName %2
+
+        if templateJsonPath is None:
+            self.templateJsonPath = InO_JsonDirPathBaseFile
+        else:
+            self.templateJsonPath = templateJsonPath
+
+
+
+    def fitness(self, x):
+
+        ################# Do the first stage simulation #############
+
+        # Get variables from allowed ones #
+        launchEpoch_stage1 = x[0] * year
+        launchYear_stage1 = x[0]
+        initialApAU_stage1 = x[1]
+        initialPeAU_stage1 = x[2]
+        targetPeAU_stage1 = x[3]
+
+        # Calculate intermediate Keplerian parameters to pass to json for stage 1 #
+        a_stage1, e_stage1, i_stage1, AOP_stage1, RAAN_stage1, TA_stage1 = ApPeToKeplerian(initialApAU_stage1, initialPeAU_stage1, InO_i_default, InO_aop_default, InO_raan_default, InO_ta_default)
+
+        # Set InO change values, and create the new json #
+        InOChangeValues_stage1 = [  # Spice Bodies
+                            InO_Mercury,
+                            InO_Venus,
+                            InO_Earth,
+                            InO_Mars,
+                            InO_Jupiter,
+                            InO_Saturn,
+                            InO_Uranus,
+                            InO_Neptune,
+                            # General guidance configs
+                            "nominalRetrograde",
+                            launchYear_stage1,
+                            # Guidance configs - termination settings
+                            "proximityTermination",
+                            launchYear_stage1 + InO_simulationLengthYears + 10, # has a final cutoff after the usual TOF, + 10 to easily identify bad trajectories
+                            targetPeAU_stage1,
+                            # Guidance configs - initial state
+                            a_stage1,
+                            e_stage1,
+                            i_stage1,
+                            AOP_stage1,
+                            RAAN_stage1,
+                            TA_stage1,
+                            # Save settings
+                            InO_SimOutputSubFolderTemp_stage1,
+                            InO_SimOutputFilenameTemp_stage1]
+
+
+        createModifiedJson(self.templateJsonPath, InO_JsonDirPath, self.jsonName_stage1, InOChangeKeys, InOChangeValues_stage1)
+
+        # Run the simulation using the temporary json #
+        runAllSimulations(InO_JsonSubDirPath, runPath=simulationRunPathDefault, printSetting=self.printSetting, runOnlyThisFile=InO_JsonNameTemp_stage1, printProgress=False)
+
+        # Load simulation data from file #
+        self.allSimData_stage1 = getAllSimDataFromJson(os.path.join(InO_JsonDirPath, InO_JsonNameTemp_stage1), todoList=self.simLoadTodoList, printInfo=False)
+
+        depVarDateStage1 = self.allSimData_stage1[2]
+
+        self.stage1InitialEpoch = depVarDateStage1[0, 0]
+        self.stage1FinalEpoch = depVarDateStage1[-1, 0]
+        self.stage1TOF = self.stage1FinalEpoch - self.stage1InitialEpoch
+        self.stage1TOFYears = self.stage1TOF / year
+
+
+        ################# Do the second stage simulation #############
+
+        launchYear_stage2 = 2000 + self.stage1FinalEpoch / year
+        totalTOFTerminationYear = launchYear_stage1 + InO_simulationLengthYears
+        # If statement to check if target Pe is ever reached, by checking simulation length if not then just don't bother with the second stage simulation
+        if self.stage1TOFYears < InO_simulationLengthYears:
+            # Do second stage stuff #
+            a_stage2_m, e_stage2, i_stage2_rad, AOP_stage2_rad, RAAN_stage2_rad, TA_stage2_rad = depVarDateStage1[-1, 1:7]
+            a_stage2 = a_stage2_m / AU
+            i_stage2 = np.rad2deg(i_stage2_rad)
+            AOP_stage2 = np.rad2deg(AOP_stage2_rad)
+            RAAN_stage2 = np.rad2deg(RAAN_stage2_rad)
+            TA_stage2 = np.rad2deg(TA_stage2_rad)
+            # Set InO change values, and create the new json #
+            InOChangeValues_stage2 = [  # Spice Bodies
+                                        InO_Mercury,
+                                        InO_Venus,
+                                        InO_Earth,
+                                        InO_Mars,
+                                        InO_Jupiter,
+                                        InO_Saturn,
+                                        InO_Uranus,
+                                        InO_Neptune,
+                                        # General guidance configs
+                                        "nominalPrograde",
+                                        launchYear_stage2,
+                                        # Guidance configs - termination settings
+                                        "nominalTimeTermination",
+                                        totalTOFTerminationYear, # has a final cutoff after the usual TOF, + 10 to easily identify bad trajectories
+                                        999,
+                                        # Guidance configs - initial state
+                                        a_stage2,
+                                        e_stage2,
+                                        i_stage2,
+                                        AOP_stage2,
+                                        RAAN_stage2,
+                                        TA_stage2,
+                                        # Save settings
+                                        InO_SimOutputSubFolderTemp_stage2,
+                                        InO_SimOutputFilenameTemp_stage2]
+
+            createModifiedJson(self.templateJsonPath, InO_JsonDirPath, self.jsonName_stage2, InOChangeKeys, InOChangeValues_stage2)
+
+            # Run the simulation using the temporary json #
+            runAllSimulations(InO_JsonSubDirPath, runPath=simulationRunPathDefault, printSetting=self.printSetting, runOnlyThisFile=InO_JsonNameTemp_stage2, printProgress=False)
+
+            # Load simulation data from file #
+            self.allSimData_stage2 = getAllSimDataFromJson(os.path.join(InO_JsonDirPath, InO_JsonNameTemp_stage2), todoList=self.simLoadTodoList, printInfo=False)
+
+            # Concatenate sim datas to form the total trajectory in a single go
+            self.allSimDataComplete = concatenateAllSimDatas(self.allSimData_stage1, self.allSimData_stage2, jsonToKeep=1)
+
+        else:
+            # Don't do second stage stuff #
+            self.allSimDataComplete = self.allSimData_stage1
+
+
+        # Use simulation data to make Ap array, and find the maximum value #
+        aArray = self.allSimDataComplete[2][:, 1]
+        eArray = self.allSimDataComplete[2][:, 2]
+        ApArray, PeArray = KeplerianToApPe(aArray, eArray)
+        maxApAU = np.amax(ApArray) / AU
+        # print(maxApAU)
+
+        # # Use known orbit information to find DV to put into that orbit, for second fitness parameter #
+        # VCircEarth = getOrbitalV(mu_Sun, 1 * AU, 1*AU)
+        # VKick = getOrbitalV(mu_Sun, 1*AU, a*AU)
+        # DVKick = abs(VKick - VCircEarth)
+
+        return [1/maxApAU]
+
+
+    # Return number of objectives
+    def get_nobj(self):
+        return 1
+
+    def get_bounds(self):
+        ### Gets the simulation bounds for each input parameter ###
+        return (self.lowerBounds, self.upperBounds)
+
+
+    def get_name(self):
+        return "InO Problem"
+
+
+    # def get_extra_info(self):
+    #     return "\tHuman readable lower bounds: [%s, %s, %s] " \
+    #            "\n\tHuman readable upper bounds: [%s, %s, %s]" %(self.lowerBounds[0], self.lowerBounds[1], self.lowerBounds[2],
+    #                                                              self.upperBounds[0], self.upperBounds[1], self.upperBounds[2])
+
+
+
 
 def getApPe_At_TOF(allSimData, targetTOFYears):
 
@@ -2501,3 +2764,4 @@ def getApPe_At_TOF(allSimData, targetTOFYears):
     ApAtTOF, PeAtTOF = KeplerianToApPe(aAtTOF, eAtTOF)
 
     return (ApAtTOF, PeAtTOF)
+

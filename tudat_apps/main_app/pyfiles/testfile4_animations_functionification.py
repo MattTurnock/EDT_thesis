@@ -19,7 +19,8 @@ SaveFolder = "pyplots/finalSimsTemp"
 
 
 # dataSubDir_SSO = "SSOP/SSOP_Temp"
-dataSubDir_SSO = "SOKGA/SOKGA_Stage2_Jupiter_112"
+# dataSubDir_SSO = "SOKGA/SOKGA_Stage2_Jupiter_112"
+dataSubDir_SSO = "InO/InO_Temp_Stage2"
 allSimData_SSO_raw = utils.getAllSimDataFromFolder(dataSubDir_SSO)
 allSimData_SSO = utils.interpolateAllDataArrays(allSimData_SSO_raw, dataRange=[0,1], forcedArrayLength=None)
 propData_SSO = allSimData_SSO[5]

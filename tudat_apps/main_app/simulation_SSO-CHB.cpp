@@ -45,7 +45,7 @@ int main(int argc, char *argv[] )
 //        jsonName = "finalSims/SSO.json"; // TODO: change to nominal test variables
 //        jsonName = "finalSims/InO.json"; // TODO: change to nominal test variables
 //        jsonName = "VnV/testVariablesIntegratorGA_Reference.json"; // TODO: Make python file to run all variants as needed
-//        jsonName = "testVariables.json";
+        jsonName = "testVariables.json";
 //        jsonName = "finalSims/SOKGA_reference.json";
 //        jsonName = "testCase_Guidance.json";
 //        jsonName = "testCase_NoGuidance.json";
@@ -55,7 +55,7 @@ int main(int argc, char *argv[] )
 //        jsonName = "GATestVariablesNominal.json";
 //        jsonName = "finalSims/SSO_Config_Sensitivity_Nominal.json";
 //        jsonName = "finalSims/SSOP/SSOP_Temp.json";
-        jsonName = "finalSims/SOKGA_Stage2/SOKGA_Stage2_Jupiter_112.json";
+//        jsonName = "finalSims/SOKGA_Stage2/SOKGA_Stage2_Jupiter_112.json";
     }
     nlohmann::json simulationVariables = gen::readJson(jsonName);
     bool verbosity = simulationVariables["saveDataConfigs"]["verbosity"];

@@ -44,7 +44,7 @@
         "thrustMagnitudeConfig": "nominal",
         "thrustDirectionConfig": "nominalPrograde",
         "minPeAU": 0.1,
-        "initialEphemerisYear": 2049.815810472216,
+        "initialEphemerisYear": 2032.073725973751,
         "integratorSettings": {
             "initialTimeStep": 1.0,
             "integrator": "RK87DP",
@@ -55,22 +55,22 @@
         },
         "terminationSettings": {
             "terminationType": "nominalTimeTermination",
-            "timeTerminationYears": 100,
-            "absoluteTimeTerminationYear": 99999,
+            "timeTerminationYears": 999,
+            "absoluteTimeTerminationYear": 2131.896513353019,
             "proximityTerminationBody1": "Vehicle",
-            "proximityTerminationBody2": "Jupiter",
-            "proximityTerminationCutoffAU": 1,
+            "proximityTerminationBody2": "Sun",
+            "proximityTerminationCutoffAU": 999,
             "distanceTerminationAU": 10,
             "maxCPUTimeTerminationSecs": 60
         },
         "initialStateType": "Keplerian",
         "vehicleInitialKeplerian": {
-            "a_au": 1.3218092864500897,
-            "e": 0.2432763405207622,
-            "i_deg": 0,
-            "aop_deg": 0,
-            "raan_deg": 0,
-            "ta_deg": 0
+            "a_au": 0.7828959001520789,
+            "e": 0.277102970356435,
+            "i_deg": 0.0,
+            "aop_deg": 0.005121502818530851,
+            "raan_deg": 0.0,
+            "ta_deg": 241.46741803015126
         },
         "vehicleInitialCartesian": {
             "x1_m": -12350252273.8035,
@@ -101,8 +101,8 @@
         }
     },
     "saveDataConfigs": {
-        "outputSubFolder": "SSOP/SSOP_Temp",
-        "baseFilename": "SSOP_Temp-",
+        "outputSubFolder": "InO/InO_Temp_Stage2",
+        "baseFilename": "InO_Temp-Stage2-",
         "verbosity": false,
         "dataTypesToSave": {
             "propData": true,

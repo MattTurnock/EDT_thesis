@@ -13,7 +13,7 @@ AU = 1.496E11
 ##################################### Set some common parameters ########################################################################
 normalising = False
 matplotlib.rcParams.update({'font.size': 20})
-plotFolder = "pyplots/SSOP"
+plotFolder = "pyplots/InO"
 utils.checkFolderExist(plotFolder)
 
 showing = False
@@ -23,16 +23,17 @@ plotOptimalTrajectory = True
 generationToUse = -1
 
 if useExample:
-    results_DirPathToUse = os.path.join(utils.numpyBinary_dir, "SSOP_EXAMPLE")
+    results_DirPathToUse = os.path.join(utils.numpyBinary_dir, "InO_EXAMPLE")
 else:
-    results_DirPathToUse = utils.SSOP_Results_DirPath
+    results_DirPathToUse = utils.InO_Results_DirPath
+utils.checkFolderExist(results_DirPathToUse)
 
 print("-- Loading Numpy Array --")
 numpyArraysFileList = natsort.natsorted(glob.glob(results_DirPathToUse + "/*"))
 numpyArraysFileList_Processed = natsort.natsorted(glob.glob(results_DirPathToUse + "/*Processed*"))
 # print(numpyArraysFileList_Processed)
 
-# SSOP_Populations
+# InO_Populations
 fitArrayList = []
 popArrayList = []
 for i in range(len(numpyArraysFileList_Processed)):
@@ -68,16 +69,21 @@ plt.ylabel("Maximum Ap [AU]")
 
 gen0StartYears = popArrayList[0][:, 0]
 gen0InitialAp = popArrayList[0][:, 1]
-gen0MaxAps = np.reshape(fitArrayList[0], np.shape(gen0InitialAp))
+gen0InitialPe = popArrayList[0][:, 2]
+gen0MaxAps = np.reshape(fitArrayList[0], np.shape(gen0InitialPe))
+gen0TargetPe = popArrayList[0][:, 3]
 
 genFinalStartYears = popArrayList[-1][:, 0]
 genFinalInitialAp = popArrayList[-1][:, 1]
-genFinalMaxAps = np.reshape(fitArrayList[-1], np.shape(genFinalInitialAp))
+genFinalInitialPe = popArrayList[-1][:, 2]
+genFinalMaxAps = np.reshape(fitArrayList[-1], np.shape(genFinalInitialPe))
+genFinalTargetPe = popArrayList[-1][:, 3]
 
 scatterSize = 3
 
 legend = ["First generation", "Final generation"]
 
+# Launch year vs Max Ap
 plt.figure(figsize=utils.figSizeDefault)
 plt.scatter(gen0StartYears, gen0MaxAps, scatterSize)
 plt.scatter(genFinalStartYears, genFinalMaxAps, scatterSize)
@@ -85,29 +91,36 @@ plt.xlabel("Start Year")
 plt.ylabel("Maximum Ap [AU]")
 plt.grid()
 plt.legend(legend)
-plt.savefig(os.path.join(utils.pyplots_dir, "SSOP/Year_MaxAp.pdf"), bbox_inches="tight")
-plt.savefig(os.path.join(utils.pyplots_dir, "SSOP/Year_MaxAp.png"), bbox_inches="tight")
+plt.savefig(os.path.join(utils.pyplots_dir, "InO/Year_MaxAp.pdf"), bbox_inches="tight")
+plt.savefig(os.path.join(utils.pyplots_dir, "InO/Year_MaxAp.png"), bbox_inches="tight")
 
+# initial Pe vs max Ap
 plt.figure(figsize=utils.figSizeDefault)
-# print(gen0InitialAp)
-# print("")
-# print(gen0MaxAps[:,0])
-
-plt.scatter(gen0InitialAp, gen0MaxAps - gen0InitialAp, scatterSize)
-plt.scatter(genFinalInitialAp, genFinalMaxAps - genFinalInitialAp, scatterSize)
-plt.xlabel("Initial Ap [AU]")
+plt.scatter(gen0InitialPe, gen0MaxAps - gen0InitialAp, scatterSize)
+plt.scatter(genFinalInitialPe, genFinalMaxAps - genFinalInitialAp, scatterSize)
+plt.xlabel("Initial Pe [AU]")
 plt.ylabel("Ap Change [AU]")
 plt.grid()
 plt.legend(legend)
-plt.savefig(os.path.join(utils.pyplots_dir, "SSOP/InitialAp_MaxAp.pdf"), bbox_inches="tight")
-plt.savefig(os.path.join(utils.pyplots_dir, "SSOP/InitialAp_MaxAp.png"), bbox_inches="tight")
+plt.savefig(os.path.join(utils.pyplots_dir, "InO/InitialPe_MaxAp.pdf"), bbox_inches="tight")
+plt.savefig(os.path.join(utils.pyplots_dir, "InO/InitialPe_MaxAp.png"), bbox_inches="tight")
+
+# target Pe vs max Ap
+plt.figure(figsize=utils.figSizeDefault)
+plt.scatter(gen0TargetPe, gen0MaxAps - gen0InitialAp, scatterSize)
+plt.scatter(genFinalTargetPe, genFinalMaxAps - genFinalInitialAp, scatterSize)
+plt.xlabel("Target Pe [AU]")
+plt.ylabel("Ap Change [AU]")
+plt.grid()
+plt.legend(legend)
+plt.savefig(os.path.join(utils.pyplots_dir, "InO/targetPe_MaxAp.pdf"), bbox_inches="tight")
+plt.savefig(os.path.join(utils.pyplots_dir, "InO/targetPe_MaxAp.png"), bbox_inches="tight")
 
 if plotOptimalTrajectory:
 
     # Plot the ideal trajectory, or maybe all trajectories in a generation or something? #
-
-    dummyProblemClass = utils.SSOP_Problem([0,0,0], [0,0,0], templateJsonPath=utils.SSOP_TemplateJsonPathPlotter)
-    dummyProblemClassNoEDT = utils.SSOP_Problem([0,0,0], [0,0,0], templateJsonPath=utils.SSOP_TemplateJsonPathPlotter_NoEDT)
+    plotterTemplateJsonPath = os.path.join(utils.InO_JsonDirPath, "InO_Plotter.json")
+    dummyProblemClass = utils.InO_Problem([0,0,0,0], [0,0,0,0], simLoadTodoList=["depVarData", "propData"], templateJsonPath=plotterTemplateJsonPath)
 
     # Gets the index for the one with the largest Ap #
     optimalIndex = utils.findNearestInArray(fitArrayToUse[:, 0], np.amax(fitArrayToUse[:, 0]) )[-1]
@@ -117,15 +130,22 @@ if plotOptimalTrajectory:
     print(optimalIndividual)
     print(optimalFit)
 
-    dummyProblemClassNoEDT.fitness(optimalIndividual)
-    noEDTAllSimData = dummyProblemClassNoEDT.allSimData
+    # dummyProblemClassNoEDT.fitness(optimalIndividual)
+    # noEDTAllSimData = dummyProblemClassNoEDT.allSimData
 
     dummyProblemClass.fitness(optimalIndividual)
-    optimalAllSimData = dummyProblemClass.allSimData
+    optimalAllSimData = dummyProblemClass.allSimDataComplete
+    optimalAllSimDataStage1 = dummyProblemClass.allSimData_stage1
+    optimalAllSimDataStage2 = dummyProblemClass.allSimData_stage2
 
 
-
-    utils.plotTrajectoryData(optimalAllSimData[5], sameScale=True, fignumber=10, plotOnlyTrajectory=False, saveFolder=os.path.join(utils.pyplots_dir, "SSOP"), savename="optimalTrajectory", savePngAndPdf=True, plotSun=True, scatterSize=500 )
+    InOTrajectoryLegendLabels = ["Trajectory Stage 2", "Trajectory Stage 1", "Sun", "4", "5"]
+    # utils.plotTrajectoryData(optimalAllSimData[5], sameScale=True, fignumber=10, plotOnlyTrajectory=False, saveFolder=os.path.join(utils.pyplots_dir, "InO"), savename="optimalTrajectory", savePngAndPdf=True, plotSun=True, scatterSize=250 )
+    utils.plotTrajectoryData(optimalAllSimDataStage2[5], sameScale=True, fignumber=11, plotOnlyTrajectory=True )
+    utils.plotTrajectoryData(optimalAllSimDataStage1[5], sameScale=True, fignumber=11, plotOnlyTrajectory=True )
+    utils.plotTrajectoryData(optimalAllSimDataStage2[5], sameScale=True, fignumber=11, plotOnlyTrajectory=False,
+                             saveFolder=os.path.join(utils.pyplots_dir, "InO"), savename="optimalTrajectory", savePngAndPdf=True,
+                             plotSun=True, scatterSize=250, doNotPlot=True, legendLabelsCustom=InOTrajectoryLegendLabels)
     # utils.plotTrajectoryData(noEDTAllSimData[5], sameScale=False, fignumber=11)
 
     depVarData = optimalAllSimData[2]
