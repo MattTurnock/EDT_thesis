@@ -23,7 +23,7 @@ inputUpperBounds = [utils.launchDateRange[1],
 
 def doInOOptimisation(results_PopulationFileBase, results_FitnessFileBase, results_PopulationProcessedBase, results_FitnessProcessedBase, seedNumber):
 
-    utils.checkFolderExist(utils.InO_Results_DirPath, emptyDirectory=True)
+    utils.checkFolderExist(utils.InO_Results_DirPath, emptyDirectory=False)
     # utils.checkFolderExist(utils.InODir, emptyDirectory=True)
 
 
@@ -68,8 +68,8 @@ def doInOOptimisation(results_PopulationFileBase, results_FitnessFileBase, resul
     bar.finish()
 
 
-doSeed1 = False
-doSeed2 = True
+doSeed1 = True
+doSeed2 = False
 
 if doSeed1:
     print("seed1")

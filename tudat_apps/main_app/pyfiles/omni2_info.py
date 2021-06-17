@@ -5,6 +5,7 @@ import numpy.polynomial.polynomial as poly
 import scipy.optimize
 pi=np.pi
 
+
 def fit_sin(tt, yy):
     '''Fit sin to the input time sequence, and return fitting parameters "amp", "omega", "phase", "offset", "freq", "period" and "fitfunc"'''
     tt = np.array(tt)
@@ -109,28 +110,41 @@ bounds = ([-100, -100, b1LowerBound, b2LowerBound, -100, -100, -100], [100, 100,
 popt, pcov = scipy.optimize.curve_fit(twosines, timesMonthly, magfieldStrengthsMonthly, bounds=bounds)
 # popt, pcov = scipy.optimize.curve_fit(twosines, timesHourly, magfieldStrengthsHourly, bounds=bounds)
 a1, a2, b1, b2, c1, c2, d = popt
-print(" popt: ", popt)
+print("Found popt: ", popt)
 print(a1, a2, b1, b2, c1, c2, d)
 testYear = 2001.3
 print("B0 for year %s: %s" %(testYear, twosines(testYear, a1, a2, b1, b2, c1, c2, d)))
 # print(fittedData)
 
-# a1 = 1
-# b1 = 0.1
-# c1 = 4
-# # a2 = 1
-# # b2 = 10
-# # c2 = 0
-# a2 = 1.5
-# b2 = 0.5
-# c2 = -0.9
-# d = 6.2
+a1 = 1
+b1 = 0.1
+c1 = 4
+# a2 = 1
+# b2 = 10
+# c2 = 0
+a2 = 1.5
+b2 = 0.57
+c2 = -2.9
+d = 6.2
+
 #
 # pguess = [a1, b1, c1, a2, b2, c2, d]
 # print("pguess: ", pguess)
 
-print("period1: ", 2*pi/b1)
-print("period2: ", 2*pi/b2)
+print("\n=========\nPopt being used manually (each parameter): ")
+print("a1: %s" %a1)
+print("a2: %s" %a2)
+print("b1: %s" %b1)
+print("b2: %s" %b2)
+print("T1: %s" %(2*pi/b1))
+print("T2: %s" %(2*pi/b2))
+print("c1: %s" %c1)
+print("c2: %s" %c2)
+print("d: %s" %d)
+print("==============\n")
+
+# print("period1: ", 2*pi/b1)
+# print("period2: ", 2*pi/b2)
 
 figsize = (8, 5)
 
@@ -154,6 +168,7 @@ legend1.append("OMNI2 data (yearly average)")
 plt.legend(legend1)
 
 plt.savefig(os.path.join(plotfiles_dir, "B0_fitFunction_yearly.pdf") )
+plt.savefig(os.path.join(plotfiles_dir, "B0_fitFunction_yearly.png") )
 
 
 plt.figure(figsize=figsize)
@@ -286,7 +301,7 @@ plt.legend(legend4)
 plt.savefig(os.path.join(plotfiles_dir, "phi0_fitFunction_monthly.png") )
 
 
-plotting = True
+plotting = False
 
 if plotting:
     plt.show()

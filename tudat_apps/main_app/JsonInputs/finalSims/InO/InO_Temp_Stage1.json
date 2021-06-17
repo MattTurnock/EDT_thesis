@@ -44,29 +44,29 @@
         "thrustMagnitudeConfig": "nominal",
         "thrustDirectionConfig": "nominalRetrograde",
         "minPeAU": 0.1,
-        "initialEphemerisYear": 2031.8965133530191,
+        "initialEphemerisYear": 2031.1701362041983,
         "integratorSettings": {
             "initialTimeStep": 1.0,
             "integrator": "RK87DP",
             "minimumStepSize": 1e-20,
             "maximumStepSize": 1e+20,
-            "relativeErrorTolerance": 0.0001,
-            "absoluteErrorTolerance": 0.0001
+            "relativeErrorTolerance": 1e-10,
+            "absoluteErrorTolerance": 1e-10
         },
         "terminationSettings": {
             "terminationType": "proximityTermination",
             "timeTerminationYears": 999,
-            "absoluteTimeTerminationYear": 2141.896513353019,
+            "absoluteTimeTerminationYear": 2141.1701362041986,
             "proximityTerminationBody1": "Vehicle",
             "proximityTerminationBody2": "Sun",
-            "proximityTerminationCutoffAU": 0.8477362524380145,
+            "proximityTerminationCutoffAU": 0.45257543010862245,
             "distanceTerminationAU": 10,
             "maxCPUTimeTerminationSecs": 60
         },
         "initialStateType": "Keplerian",
         "vehicleInitialKeplerian": {
-            "a_au": 0.7829027153273618,
-            "e": 0.27711743167758174,
+            "a_au": 0.6784271988892348,
+            "e": 0.4754639896916004,
             "i_deg": 0,
             "aop_deg": 0,
             "raan_deg": 0,

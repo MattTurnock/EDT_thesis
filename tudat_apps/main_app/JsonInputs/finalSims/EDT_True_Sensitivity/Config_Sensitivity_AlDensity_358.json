@@ -1,0 +1,160 @@
+{
+    "Spice": {
+        "customKernelName": "de430.bsp",
+        "bodiesToInclude": {
+            "Sun": 1,
+            "Mercury": 1,
+            "Venus": 1,
+            "Earth": 1,
+            "Mars": 1,
+            "Jupiter": 1,
+            "Saturn": 1,
+            "Uranus": 1,
+            "Neptune": 1
+        }
+    },
+    "ParkerMagField": {
+        "B0_tesla": 1.2e-08,
+        "phi0_deg": 42.748,
+        "R0_au": 1,
+        "twoSinePars": {
+            "a1": 1,
+            "b1": 0.1,
+            "c1": 4,
+            "a2": 1.5,
+            "b2": 0.5,
+            "c2": -0.9,
+            "d": 6.2
+        }
+    },
+    "InterstellarMagField": {
+        "transitionType": "spherical",
+        "sphericalTransitionDistanceAU": 100,
+        "BInf_nT": 0.375,
+        "longitudeInf_deg": 227.28,
+        "latitudeInf_deg": 34.62
+    },
+    "ImposedMagField": {
+        "imposingMagField": false,
+        "B1_nT": 1000,
+        "B2_nT": 1000,
+        "B3_nT": 0.0
+    },
+    "GuidanceConfigs": {
+        "thrustMagnitudeConfig": "nominal",
+        "thrustDirectionConfig": "justPositiveCurrent",
+        "minPeAU": 0.1,
+        "initialEphemerisYear": 2020,
+        "integratorSettings": {
+            "initialTimeStep": 1.0,
+            "integrator": "RK87DP",
+            "minimumStepSize": 1e-20,
+            "maximumStepSize": 1e+20,
+            "relativeErrorTolerance": 0.0001,
+            "absoluteErrorTolerance": 0.0001
+        },
+        "terminationSettings": {
+            "terminationType": "nominalTimeTermination",
+            "timeTerminationYears": 9999,
+            "absoluteTimeTerminationYear": 2021,
+            "proximityTerminationBody1": "Vehicle",
+            "proximityTerminationBody2": "Jupiter",
+            "proximityTerminationCutoffAU": 1,
+            "distanceTerminationAU": 10,
+            "maxCPUTimeTerminationSecs": 60
+        },
+        "initialStateType": "Keplerian",
+        "vehicleInitialKeplerian": {
+            "a_au": 1,
+            "e": 0,
+            "i_deg": 0,
+            "aop_deg": 0,
+            "raan_deg": 0,
+            "ta_deg": 45
+        },
+        "vehicleInitialCartesian": {
+            "x1_m": 149600000000.0,
+            "x2_m": 0,
+            "x3_m": 0,
+            "v1_ms": 0,
+            "v2_ms": 29784,
+            "v3_ms": 0
+        }
+    },
+    "EDTConfigs": {
+        "configType": "CHB",
+        "tetherLength": 1000,
+        "tetherDiameter": 0.01,
+        "tetherAreaRatio": 1.0,
+        "imposedAreaBool": false,
+        "imposedArea": 500000000,
+        "emitterCurrentmA": 305,
+        "generalRotationCoefficient": 0.8,
+        "hoytether": {
+            "tetherDiameterSecondary": 0.01,
+            "tetherAreaRatioSecondary": 1.0,
+            "noPrimaryLines": 2,
+            "primaryLineSegmentLengthRatio": 0.5,
+            "slackCoefficient": 1.005,
+            "primaryLineSeparationRatio": 100,
+            "SRPOccultationCoefficient": 0.75
+        }
+    },
+    "saveDataConfigs": {
+        "outputSubFolder": "EDT-Config-True-Sensitivity/Config-Sensitivity-AlDensity-358/",
+        "baseFilename": "Config-Sensitivity-AlDensity-358-",
+        "verbosity": false,
+        "dataTypesToSave": {
+            "propData": true,
+            "magneticField": true,
+            "ionosphere": true,
+            "thrust": true,
+            "current": true,
+            "currentVNV": true,
+            "bodyData": true,
+            "dependentVariables": true,
+            "configInfo": true
+        }
+    },
+    "scConfigs": {
+        "SRP": {
+            "useSRP": false,
+            "endmassArea1": 1,
+            "endmassArea2": 1,
+            "endmassRadiationCoefficient": 1.5,
+            "tetherRadiationCoefficient": 1.5,
+            "SRPRotationCoefficient": 0.75
+        },
+        "endmassMass1": 50,
+        "endmassMass2": 50
+    },
+    "materialProperties": {
+        "imposedConductivityBool": false,
+        "imposedConductivity": 48600000.0,
+        "resistivity": {
+            "Al": 2.65e-08,
+            "Cu": 1.68e-08
+        },
+        "tempCoefficient": {
+            "Al": 0.00429,
+            "Cu": 0.0068
+        },
+        "density": {
+            "Al": 4546.046046046046,
+            "Cu": 8920
+        }
+    },
+    "constants": {
+        "gravitationalParameters": {
+            "Sun": 1.327124400419394e+20,
+            "Mercury": 22031780000000.0,
+            "Venus": 324858592000000.0,
+            "Earth": 398600435436000.0,
+            "Mars": 42828375214000.0,
+            "Jupiter": 1.267127648e+17,
+            "Saturn": 3.79405852e+16,
+            "Uranus": 5794548600000000.0,
+            "Neptune": 6836527100580000.0
+        }
+    }
+}

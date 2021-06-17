@@ -5,7 +5,7 @@ from astropy import units as u
 import itertools
 
 showing = True
-onlyDefineFunctions = True
+onlyDefineFunctions = False
 
 # def getB_p10(B0, R0, R, units=None):
 #     """

@@ -36,14 +36,23 @@ numpyArraysFileList_Processed = natsort.natsorted(glob.glob(results_DirPathToUse
 # InO_Populations
 fitArrayList = []
 popArrayList = []
+fitArrayListSeed2 = []
+popArrayListSeed2 = []
 for i in range(len(numpyArraysFileList_Processed)):
     filePath = numpyArraysFileList_Processed[i]
 
-    if "Fit" in filePath:
-        fitArrayList.append(np.load(filePath, allow_pickle=True))
+    if "Seed2" not in filePath:
+        if "Fit" in filePath:
+            fitArrayList.append(np.load(filePath, allow_pickle=True))
 
-    elif "Pop" in filePath:
-        popArrayList.append(np.load(filePath, allow_pickle=True))
+        elif "Pop" in filePath:
+            popArrayList.append(np.load(filePath, allow_pickle=True))
+    else:
+        if "Fit" in filePath:
+            fitArrayListSeed2.append(np.load(filePath, allow_pickle=True))
+
+        elif "Pop" in filePath:
+            popArrayListSeed2.append(np.load(filePath, allow_pickle=True))
 
 # print(fitArrayList[-1])
 plt.figure()
@@ -52,6 +61,9 @@ if generationToUse != "all":
 
     fitArrayToUse = fitArrayList[generationToUse]
     popArrayToUse = popArrayList[generationToUse]
+
+    fitArrayToUseSeed2 = fitArrayListSeed2[generationToUse]
+    popArrayToUseSeed2 = popArrayListSeed2[generationToUse]
     # plt.scatter(fitArrayToUse[:, 1]/ 1000, fitArrayToUse[:, 0], 1 )
     plt.scatter(np.zeros(len(fitArrayToUse)), fitArrayToUse[:, 0], 1 )
 
@@ -120,15 +132,19 @@ if plotOptimalTrajectory:
 
     # Plot the ideal trajectory, or maybe all trajectories in a generation or something? #
     plotterTemplateJsonPath = os.path.join(utils.InO_JsonDirPath, "InO_Plotter.json")
-    dummyProblemClass = utils.InO_Problem([0,0,0,0], [0,0,0,0], simLoadTodoList=["depVarData", "propData"], templateJsonPath=plotterTemplateJsonPath)
+    dummyProblemClass = utils.InO_Problem([0,0,0,0], [0,0,0,0], loadTodoList=["depVarData", "propData"], templateJsonPath=plotterTemplateJsonPath)
 
     # Gets the index for the one with the largest Ap #
     optimalIndex = utils.findNearestInArray(fitArrayToUse[:, 0], np.amax(fitArrayToUse[:, 0]) )[-1]
     optimalFit = fitArrayToUse[optimalIndex]
     optimalIndividual = popArrayToUse[optimalIndex]
 
-    print(optimalIndividual)
-    print(optimalFit)
+    print("---InO Results, Main Seed----")
+    print("Optimal Launch Year: %s" %optimalIndividual[0])
+    print("Optimal Initial Ap: %s" %optimalIndividual[1])
+    print("Optimal Initial Pe: %s" %optimalIndividual[2])
+    print("Optimal Target Pe: %s" %optimalIndividual[3])
+    print("Highest Max Ap: %s\n" %optimalFit[0])
 
     # dummyProblemClassNoEDT.fitness(optimalIndividual)
     # noEDTAllSimData = dummyProblemClassNoEDT.allSimData
@@ -162,6 +178,26 @@ if plotOptimalTrajectory:
 
     plt.figure()
     plt.plot(2000 + times/year, depVarData[:, 7]/AU)
+
+
+
+    # Get data from seed2 #
+    dummyProblemClass_Seed2 = utils.SSOP_Problem([0,0,0], [0,0,0], templateJsonPath=utils.SSOP_TemplateJsonPathPlotter)
+    # dummyProblemClassNoEDT_Seed2 = utils.SSOP_Problem([0,0,0], [0,0,0], templateJsonPath=utils.SSOP_TemplateJsonPathPlotter_NoEDT)
+
+    # Gets the index for the one with the largest Ap #
+    optimalIndex_Seed2 = utils.findNearestInArray(fitArrayToUseSeed2[:, 0], np.amax(fitArrayToUseSeed2[:, 0]) )[-1]
+    optimalFit_Seed2 = fitArrayToUseSeed2[optimalIndex_Seed2]
+    optimalIndividual_Seed2 = popArrayToUseSeed2[optimalIndex_Seed2]
+
+    # print(optimalIndividual)
+    # print(optimalFit)
+    print("---InO Results, Seed2----")
+    print("Optimal Launch Year: %s" %optimalIndividual_Seed2[0])
+    print("Optimal Initial Ap: %s" %optimalIndividual_Seed2[1])
+    print("Optimal Initial Pe: %s" %optimalIndividual_Seed2[2])
+    print("Optimal Target Pe: %s" %optimalIndividual_Seed2[3])
+    print("Highest Max Ap: %s\n" %optimalFit_Seed2[0])
 
 if showing:
     plt.show()

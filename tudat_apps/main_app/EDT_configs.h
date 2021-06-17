@@ -211,8 +211,8 @@ namespace EDTs {
             xSecAreaHoytetherPrimaryOuterTotal_  = noPrimaryLines_ * tetherAreaOuter_;
             xSecAreaHoytetherPrimaryTotal_ = xSecAreaHoytetherPrimaryInnerTotal_ + xSecAreaHoytetherPrimaryOuterTotal_;
 
-            double xSecAreaHoytetherSecondaryInnerTotal = noSecondaryLinks_ * tetherAreaInner_;
-            double xSecAreaHoytetherSecondaryOuterTotal  = noSecondaryLinks_ * tetherAreaOuter_;
+            double xSecAreaHoytetherSecondaryInnerTotal = noSecondaryLinks_ * tetherAreaInnerSecondary_;
+            double xSecAreaHoytetherSecondaryOuterTotal  = noSecondaryLinks_ * tetherAreaOuterSecondary_;
             double xSecAreaHoytetherSecondaryTotal = xSecAreaHoytetherSecondaryInnerTotal + xSecAreaHoytetherSecondaryOuterTotal;
 
 

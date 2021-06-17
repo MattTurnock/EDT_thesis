@@ -18,7 +18,7 @@ AU = 1.496E11
 doingSSOSensitivity = False
 doingNominalPrint = True
 
-showing = True
+showing = False
 
 # SaveFolder = "pyplots/finalSimsTempv2"
 
@@ -524,6 +524,7 @@ if doingSSOSensitivity:
             plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[startIndex:],  1E9* np.array(listOfMeanThrustsBare[i][startIndex:]), c="C0")
             plt.plot(configSensitivityRunnerValuesToPlotTrans_THISTIME, 1E9* np.array(listOfMeanThrustsTrans[i]), c="C1")
 
+            print("BOOT: ", configSensitivityRunnerValuesToPlotBare)
             idx = utils.findNearestInArray(configSensitivityRunnerValuesToPlotBare[i], baseTypeValues[i])[1]
             plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[idx], 1E9*listOfMeanThrustsBare[i][idx], 'o', markersize=20, c="C2")
             # plt.axvline(parameterScaler * baseTypeValues[i], c="C2")

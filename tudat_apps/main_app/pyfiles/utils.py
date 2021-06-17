@@ -1,14 +1,14 @@
 import os
 import numpy as np
 import subprocess
-import sys
 import glob
+import sys
 from matplotlib import pyplot as plt
 import scipy.interpolate as si
 import json
 import copy
 import re
-from scipy.interpolate import interp1d
+# from scipy.interpolate import interp1d
 import pandas as pd
 from datetime import datetime, timedelta
 import logging
@@ -105,10 +105,10 @@ SSOP_NoMoeadGenerations = 1 # NOTE: This should always be one, since many evolut
 SSOP_seed = 97
 SSOP_seed2 = 1264899
 
-SSOP_PopulationSize = 1000
-SSOP_NoEvolutions = 100
-# SSOP_PopulationSize = 15
-# SSOP_NoEvolutions = 5
+# SSOP_PopulationSize = 1000
+# SSOP_NoEvolutions = 100
+SSOP_PopulationSize = 10
+SSOP_NoEvolutions = 3
 
 # A bunch of directories and base filenames
 SSOP_JsonDirPathBaseFile = os.path.join(jsonInputs_dir, "finalSims", "SSOP", "SSOP_Base.json")
@@ -138,6 +138,7 @@ SSOP_Results_FitnessProcessedBase_seed2 = "SSOP_Processed_Fit_Seed2_%s.npy"
 #### Just for plotter ####
 SSOP_TemplateJsonPathPlotter = os.path.join(jsonInputs_dir, "finalSims", "SSOP", "SSOP_Base_Plotter.json")
 SSOP_TemplateJsonPathPlotter_NoEDT = os.path.join(jsonInputs_dir, "finalSims", "SSOP", "SSOP_Base_Plotter_NoEDT.json")
+SSOP_TemplateJsonPathPlotter_Perturbed = os.path.join(jsonInputs_dir, "finalSims", "SSOP", "SSOP_Base_Plotter_Perturbed.json")
 # SSOP_OutputJsonDirPathPlotter = os.path.join("finalSims", "SSOP")
 
 #######################################################################################################################
@@ -202,7 +203,7 @@ InO_seed2 = 1264899
 
 InO_PopulationSize = 1000
 InO_NoEvolutions = 100
-# InO_PopulationSize = 50
+# InO_PopulationSize = 10
 # InO_NoEvolutions = 3
 
 # Base InO Json file full path
@@ -241,8 +242,10 @@ InO_Results_FitnessProcessedBase_seed2 = "InO_Processed_Fit_Seed2_%s.npy"
 
 SOKGAStage1JsonSubDir = "finalSims/SOKGA_Stage1/"
 SOKGAStage2JsonSubDir = "finalSims/SOKGA_Stage2/"
+SOKGAStage2JsonSubDir_NoEDT = "finalSims/SOKGA_Stage2_NoEDT/"
 
 SOKGASimulationEndYear = 2200
+SOKGAMaxAltRequirement = 100
 
 
 #######################################################################################################################
@@ -350,6 +353,287 @@ configSensitivityRunnerValues = (lengths_m, diameters_m, currents_mA, areaRatios
 slackCoefficients =np.linspace(1, 1.1, minorRunsNumber, endpoint=True)
 lineSeparationRatios = np.logspace(-7, -5, minorRunsNumber, endpoint=True)
 occultationCoefficients = np.linspace(0.1, 1, minorRunsNumber, endpoint=True)
+
+
+
+#######################################################################################################################
+############################# Config sensitivity analysis info ####################################################
+#######################################################################################################################
+
+# Set json directory and create if not existing. Also set the base json
+configSensitivitySubDir = os.path.join("finalSims", "EDT_True_Sensitivity")
+
+initJsonName_ConfigSensitivity = "SSO_Config_Sensitivity_Nominal.json"
+initJson_ConfigSensitivity = os.path.join(jsonInputs_dir, "finalSims", initJsonName_ConfigSensitivity)
+jsonSaveDir_ConfigSensitivity = os.path.join(jsonInputs_dir, configSensitivitySubDir)
+
+configTrueSensitivitySpacingValues = 1000
+
+
+# Primary line separation ratio (ka)
+changeKeys_PrimaryLineSeparationRatio = [["EDTConfigs", "hoytether", "primaryLineSeparationRatio"],
+                                         ["GuidanceConfigs", "integratorSettings", "relativeErrorTolerance"],
+                                         ["GuidanceConfigs", "integratorSettings", "absoluteErrorTolerance"],
+                                         ["saveDataConfigs", "outputSubFolder"],
+                                         ["saveDataConfigs", "baseFilename"]]
+sensitivityRange_PrimaryLineSeparationRatio = (10, 1000)
+primaryLineSeparationRatios = np.linspace(sensitivityRange_PrimaryLineSeparationRatio[0], sensitivityRange_PrimaryLineSeparationRatio[1], configTrueSensitivitySpacingValues)
+outputSubFolder_PrimaryLineSeparationRatio = "EDT-Config-True-Sensitivity/Config-Sensitivity-PrimaryLineSeparationRatio-%s/"
+baseFilenameBase_PrimaryLineSeparationRatio = "Config-Sensitivity-PrimaryLineSeparationRatio-%s-"
+jsonNameBase_PrimaryLineSeparationRatio = "Config_Sensitivity_PrimaryLineSeparationRatio_%s.json"
+
+# Secondary tether diameter
+changeKeys_SecondaryTetherDiameter = [["EDTConfigs", "hoytether", "tetherDiameterSecondary"],
+                                      ["GuidanceConfigs", "integratorSettings", "relativeErrorTolerance"],
+                                      ["GuidanceConfigs", "integratorSettings", "absoluteErrorTolerance"],
+                                      ["saveDataConfigs", "outputSubFolder"],
+                                      ["saveDataConfigs", "baseFilename"]]
+sensitivityRange_SecondaryTetherDiameter = (0.1E-3, 100E-3)
+secondaryTetherDiameters_m = np.linspace(sensitivityRange_SecondaryTetherDiameter[0], sensitivityRange_SecondaryTetherDiameter[1], configTrueSensitivitySpacingValues)
+outputSubFolder_SecondaryTetherDiameter = "EDT-Config-True-Sensitivity/Config-Sensitivity-SecondaryTetherDiameter-%s/"
+baseFilenameBase_SecondaryTetherDiameter = "Config-Sensitivity-SecondaryTetherDiameter-%s-"
+jsonNameBase_SecondaryTetherDiameter = "Config_Sensitivity_SecondaryTetherDiameter_%s.json"
+
+# Secondary tether area ratio
+changeKeys_SecondaryTetherAreaRatio = [["EDTConfigs", "hoytether", "tetherAreaRatioSecondary"],
+                                       ["GuidanceConfigs", "integratorSettings", "relativeErrorTolerance"],
+                                       ["GuidanceConfigs", "integratorSettings", "absoluteErrorTolerance"],
+                                       ["saveDataConfigs", "outputSubFolder"],
+                                       ["saveDataConfigs", "baseFilename"]]
+sensitivityRange_SecondaryTetherAreaRatio = (0, 1)
+secondaryTetherAreaRatios = np.linspace(sensitivityRange_SecondaryTetherAreaRatio[0], sensitivityRange_SecondaryTetherAreaRatio[1], configTrueSensitivitySpacingValues)
+outputSubFolder_SecondaryTetherAreaRatio = "EDT-Config-True-Sensitivity/Config-Sensitivity-SecondaryTetherAreaRatio-%s/"
+baseFilenameBase_SecondaryTetherAreaRatio = "Config-Sensitivity-SecondaryTetherAreaRatio-%s-"
+jsonNameBase_SecondaryTetherAreaRatio = "Config_Sensitivity_SecondaryTetherAreaRatio_%s.json"
+
+
+# Slack coefficient
+changeKeys_SlackCoefficient = [["EDTConfigs", "hoytether", "slackCoefficient"],
+                               ["GuidanceConfigs", "integratorSettings", "relativeErrorTolerance"],
+                               ["GuidanceConfigs", "integratorSettings", "absoluteErrorTolerance"],
+                               ["saveDataConfigs", "outputSubFolder"],
+                               ["saveDataConfigs", "baseFilename"]]
+sensitivityRange_SlackCoefficient = (1, 1.1)
+slackCoefficients = np.linspace(sensitivityRange_SlackCoefficient[0], sensitivityRange_SlackCoefficient[1], configTrueSensitivitySpacingValues)
+outputSubFolder_SlackCoefficient = "EDT-Config-True-Sensitivity/Config-Sensitivity-SlackCoefficient-%s/"
+baseFilenameBase_SlackCoefficient = "Config-Sensitivity-SlackCoefficient-%s-"
+jsonNameBase_SlackCoefficient = "Config_Sensitivity_SlackCoefficient_%s.json"
+
+
+# # Occultation coefficient
+# changeKeys_OccultationCoefficient = [["EDTConfigs", "hoytether", "SRPOccultationCoefficient"],
+#                                      ["GuidanceConfigs", "integratorSettings", "relativeErrorTolerance"],
+#                                      ["GuidanceConfigs", "integratorSettings", "absoluteErrorTolerance"],
+#                                      ["saveDataConfigs", "outputSubFolder"],
+#                                      ["saveDataConfigs", "baseFilename"]]
+# sensitivityRange_OccultationCoefficient = (0.5, 1)
+# occul = np.linspace(sensitivityRange_OccultationCoefficient[0], sensitivityRange_OccultationCoefficient[1], configTrueSensitivitySpacingValues)
+# outputSubFolder_OccultationCoefficient = "EDT-Config-True-Sensitivity/Config-Sensitivity-OccultationCoefficient-%s/"
+# baseFilenameBase_OccultationCoefficient = "Config-Sensitivity-OccultationCoefficient-%s-"
+# jsonNameBase_OccultationCoefficient = "Config_Sensitivity_OccultationCoefficient_%s.json"
+
+
+# Al resistivity
+changeKeys_AlResistivity = [["materialProperties", "resistivity", "Al"],
+                            ["GuidanceConfigs", "integratorSettings", "relativeErrorTolerance"],
+                            ["GuidanceConfigs", "integratorSettings", "absoluteErrorTolerance"],
+                            ["saveDataConfigs", "outputSubFolder"],
+                            ["saveDataConfigs", "baseFilename"]]
+sensitivityRange_AlResistivity = (1E-8, 4E-8)
+AlResistivities = np.linspace(sensitivityRange_AlResistivity[0], sensitivityRange_AlResistivity[1], configTrueSensitivitySpacingValues)
+
+outputSubFolder_AlResistivity = "EDT-Config-True-Sensitivity/Config-Sensitivity-AlResistivity-%s/"
+baseFilenameBase_AlResistivity = "Config-Sensitivity-AlResistivity-%s-"
+jsonNameBase_AlResistivity = "Config_Sensitivity_AlResistivity_%s.json"
+
+
+# Cu Resistivity
+changeKeys_CuResistivity = [["materialProperties", "resistivity", "Cu"],
+                            ["GuidanceConfigs", "integratorSettings", "relativeErrorTolerance"],
+                            ["GuidanceConfigs", "integratorSettings", "absoluteErrorTolerance"],
+                            ["saveDataConfigs", "outputSubFolder"],
+                            ["saveDataConfigs", "baseFilename"]]
+sensitivityRange_CuResistivity = (1E-8, 4E-8)
+CuResistivities = np.linspace(sensitivityRange_CuResistivity[0], sensitivityRange_CuResistivity[1], configTrueSensitivitySpacingValues)
+outputSubFolder_CuResistivity = "EDT-Config-True-Sensitivity/Config-Sensitivity-CuResistivity-%s/"
+baseFilenameBase_CuResistivity = "Config-Sensitivity-CuResistivity-%s-"
+jsonNameBase_CuResistivity = "Config_Sensitivity_CuResistivity_%s.json"
+
+
+# Al density
+changeKeys_AlDensity = [["materialProperties", "density", "Al"],
+                        ["GuidanceConfigs", "integratorSettings", "relativeErrorTolerance"],
+                        ["GuidanceConfigs", "integratorSettings", "absoluteErrorTolerance"],
+                        ["saveDataConfigs", "outputSubFolder"],
+                        ["saveDataConfigs", "baseFilename"]]
+sensitivityRange_AlDensity = (1500, 10000)
+AlDensities = np.linspace(sensitivityRange_AlDensity[0], sensitivityRange_AlDensity[1], configTrueSensitivitySpacingValues)
+outputSubFolder_AlDensity = "EDT-Config-True-Sensitivity/Config-Sensitivity-AlDensity-%s/"
+baseFilenameBase_AlDensity = "Config-Sensitivity-AlDensity-%s-"
+jsonNameBase_AlDensity = "Config_Sensitivity_AlDensity_%s.json"
+
+
+# Cu density
+changeKeys_CuDensity = [["materialProperties", "density", "Cu"],
+                        ["GuidanceConfigs", "integratorSettings", "relativeErrorTolerance"],
+                        ["GuidanceConfigs", "integratorSettings", "absoluteErrorTolerance"],
+                        ["saveDataConfigs", "outputSubFolder"],
+                        ["saveDataConfigs", "baseFilename"]]
+sensitivityRange_CuDensity = (1500, 10000)
+CuDensities = np.linspace(sensitivityRange_CuDensity[0], sensitivityRange_CuDensity[1], configTrueSensitivitySpacingValues)
+outputSubFolder_CuDensity = "EDT-Config-True-Sensitivity/Config-Sensitivity-CuDensity-%s/"
+baseFilenameBase_CuDensity = "Config-Sensitivity-CuDensity-%s-"
+jsonNameBase_CuDensity = "Config_Sensitivity_CuDensity_%s.json"
+
+
+configTrueSensitivityRunnerValues = (AlDensities, AlResistivities, CuDensities, CuResistivities, primaryLineSeparationRatios,
+                                     secondaryTetherAreaRatios, secondaryTetherDiameters_m, slackCoefficients)
+
+
+
+#######################################################################################################################
+############################# Profile sensitivity analysis info ####################################################
+#######################################################################################################################
+# Info for the classes
+SSOP_NominalLaunchYear = 2029.4991257603863
+SSOP_NominalAphelion = 9.999881563877665
+SSOP_NominalPerihelion = 0.9994991693721855
+SSOP_NominalFitness = 10.009712188937668
+
+InO_NominalLaunchYear = 2031.1701362041983
+InO_NominalAphelion = 1.0009949015884072
+InO_NominalPerihelion = 0.3558594961900623
+InO_NominalTargetPe = 0.45257543010862245
+InO_NominalFitness = 1.0025956805763472
+
+
+# Temp folders to use for saving the data
+SSOP_SimOutputSubFolderTemp = "SSOP_Sensitivity/SSOP_Sensitivity_Temp"
+SSOP_SimOutputFilenameTemp = "SSOP-Sensitivity-Temp-"
+
+InO_SimOutputSubFolderTemp = "InO_Sensitivity/SSOP_Sensitivity_Temp"
+InO_SimOutputFilenameTemp = "InO-Sensitivity-Temp-"
+
+# Numpy savepath and name
+numpySavePath_ProfileSensitivity =os.path.join(numpyBinary_dir, "ProfileSensitivity")
+numpySaveName_ProfileSensitivity = "ProfileSensitivity_%s_%s_%s.npy"
+
+# Set json directory and create if not existing. Also set the base json
+profileSensitivitySubDir = os.path.join("finalSims", "Profile_Sensitivity")
+
+outputJsonDirPath_ProfileSensitivity = os.path.join(jsonInputs_dir, profileSensitivitySubDir)
+templateJsonPath_Global_SSOPSensitivity = os.path.join(outputJsonDirPath_ProfileSensitivity, "SSOP_Profile_Sensitivity_Nominal.json")
+templateJsonPath_Global_InOSensitivity = os.path.join(outputJsonDirPath_ProfileSensitivity, "InO_Profile_Sensitivity_Nominal.json")
+templateJsonPath_Global_InOSensitivity = os.path.join(outputJsonDirPath_ProfileSensitivity, "SOKGA_Profile_Sensitivity_Nominal.json")
+
+# jsonNameBase_Global_ProfileSensitivity = "Profile_Sensitivity_Global_%s_Temp.json" # Format: %(Profile, Parameter) eg %("SSOP", "B0")
+jsonNameBase_Intermediary_ProfileSensitivity = "Profile_Sensitivity_Inter_%s_%s_Temp.json" # Format: %(Profile, Parameter) eg %("SSOP", "B0")
+jsonNameBase_Final_ProfileSensitivity = "Profile_Sensitivity_Final_%s_%s_Temp.json" # Format: %(Profile, Parameter) eg %("SSOP", "B0")
+jsonNameBase_Final_ProfileSensitivity_InO = "Profile_Sensitivity_Final_%s_%s_Stage%s_Temp.json" # Format: %(Profile, Parameter) eg %("SSOP", "B0")
+# jsonNameBase_ProfileSensitivity = "Profile_Sensitivity_%s_%s_Temp.json" # Format: %(Profile, Parameter) eg %("SSOP", "B0")
+
+# initJson_ConfigSensitivity = os.path.join(jsonInputs_dir, "finalSims", initJsonName_ConfigSensitivity)
+# jsonSaveDir_ConfigSensitivity = os.path.join(jsonInputs_dir, configSensitivitySubDir)
+
+
+profileSensitivitySpacing = 1000
+profileSensitivityTolerance = 1E-4
+
+# Set values to plug into the function
+changeKeyLines_ProfileSensitivity = [["ParkerMagField", "phi0_deg"],
+                                     ["ParkerMagField", "twoSinePars", "a1"],
+                                     ["ParkerMagField", "twoSinePars", "a2"],
+                                     ["ParkerMagField", "twoSinePars", "b1"],
+                                     ["ParkerMagField", "twoSinePars", "b2"],
+                                     ["ParkerMagField", "twoSinePars", "c1"],
+                                     ["ParkerMagField", "twoSinePars", "c2"],
+                                     ["ParkerMagField", "twoSinePars", "d"],
+                                     ["GuidanceConfigs", "vehicleInitialKeplerian", "aop_deg"]]
+sensitivityRanges_ProfileSensitivity = [(0, 90),
+                                        (0,2),
+                                        (0, 3),
+                                        (0, 0.2),
+                                        (0, 1.14),
+                                        (0, 8),
+                                        (-5.8, 0),
+                                        (0, 12.4),
+                                        (0, 360)]
+parameterNames_ProfileSensitivity = ["phi0",
+                                     "a1",
+                                     "a2",
+                                     "b1",
+                                     "b2",
+                                     "c1",
+                                     "c2",
+                                     "d",
+                                     "AOP"]
+parameterPlotNames_ProfileSensitivity = ["$\phi_0$ [deg]",
+                                         "a1 [nT]",
+                                         "a2 [nT]",
+                                         "b1 [-]",
+                                         "b2 [-]",
+                                         "c1 [-]",
+                                         "c2 [-]",
+                                         "d [nT]",
+                                         "AOP [deg]"]
+nominalValues_ProfileSensitivity = [42.748,
+                                    1,
+                                    1.5,
+                                    0.1,
+                                    0.57,
+                                    4,
+                                    -2.9,
+                                    6.2,
+                                    0]
+
+
+# # Phi0
+# changeKeyLine_phi0 = ["ParkerMagField", "phi0_deg"]
+# sensitivityRange_phi0 = (0, 90)
+# phi0_SensitivityRange = np.linspace(sensitivityRange_phi0[0], sensitivityRange_phi0[1], profileSensitivitySpacing)
+
+# # Two-sine a1
+# changeKeyLine_a1 = ["ParkerMagField", "twoSinePars", "a1"]
+# sensitivityRange_a1 = (0, 2)
+# a1_SensitivityRange = np.linspace(sensitivityRange_a1[0], sensitivityRange_a1[1], profileSensitivitySpacing)
+
+# # Two-sine a2
+# changeKeyLine_a2 = ["ParkerMagField", "twoSinePars", "a2"]
+# sensitivityRange_a2 = (0, 3)
+# a2_SensitivityRange = np.linspace(sensitivityRange_a2[0], sensitivityRange_a2[1], profileSensitivitySpacing)
+
+# # Two-sine b1
+# changeKeyLine_b1 = ["ParkerMagField", "twoSinePars", "b1"]
+# sensitivityRange_b1 = (0, 0.2)
+# b1_SensitivityRange = np.linspace(sensitivityRange_b1[0], sensitivityRange_b1[1], profileSensitivitySpacing)
+
+# # Two-sine a1
+# changeKeyLine_a1 = ["ParkerMagField", "twoSinePars", "a1"]
+# sensitivityRange_a1 = (0, 2)
+# a1_SensitivityRange = np.linspace(sensitivityRange_a1[0], sensitivityRange_a1[1], profileSensitivitySpacing)
+
+# # Two-sine a1
+# changeKeyLine_a1 = ["ParkerMagField", "twoSinePars", "a1"]
+# sensitivityRange_a1 = (0, 2)
+# a1_SensitivityRange = np.linspace(sensitivityRange_a1[0], sensitivityRange_a1[1], profileSensitivitySpacing)
+
+# # Two-sine a1
+# changeKeyLine_a1 = ["ParkerMagField", "twoSinePars", "a1"]
+# sensitivityRange_a1 = (0, 2)
+# a1_SensitivityRange = np.linspace(sensitivityRange_a1[0], sensitivityRange_a1[1], profileSensitivitySpacing)
+
+# # Two-sine a1
+# changeKeyLine_a1 = ["ParkerMagField", "twoSinePars", "a1"]
+# sensitivityRange_a1 = (0, 2)
+# a1_SensitivityRange = np.linspace(sensitivityRange_a1[0], sensitivityRange_a1[1], profileSensitivitySpacing)
+
+# # Two-sine a1
+# changeKeyLine_a1 = ["ParkerMagField", "twoSinePars", "a1"]
+# sensitivityRange_a1 = (0, 2)
+# a1_SensitivityRange = np.linspace(sensitivityRange_a1[0], sensitivityRange_a1[1], profileSensitivitySpacing)
+
+
+
 
 
 #######################################################################################################################
@@ -718,7 +1002,7 @@ def concatenateAllSimDatas(allSimData1, allSimData2, jsonToKeep=1):
         newAllSimDataList[i] = newData
 
     # Convert list to tuple to comply with the usual all sim data format
-    newAllSimDataArray = np.array(newAllSimDataList)
+    newAllSimDataArray = np.array(newAllSimDataList, dtype=object)
 
     return newAllSimDataArray
 
@@ -1808,7 +2092,7 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
             for i in range(len(planetsToPlot)):
                 currentPlanet = planetsToPlot[i]
                 if currentPlanet == "Jupiter":
-                    circleRadius = 5.2
+                    circleRadius = 5.204
                     circleColour = 'r'
                     legendName = "Jupiter"
                 elif currentPlanet == "Earth":
@@ -1820,7 +2104,7 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
                     circleColour = 'brown'
                     legendName = "Mercury"
                 elif currentPlanet == "Saturn":
-                    circleRadius = 9.6
+                    circleRadius = 9.583
                     circleColour = "orange"
                     legendName = "Saturn"
                 else:
@@ -2471,10 +2755,21 @@ def interpolateAllDataArrays(allSimData, dataRange = [0,1], forcedArrayLength=No
 
 class SSOP_Problem:
 
-    def __init__(self, inputLowerBounds, inputUpperBounds, templateJsonPath=None, outputJsonDirPath=None, outputJsonName=None ):
+    def __init__(self, inputLowerBounds, inputUpperBounds, templateJsonPath=None, outputJsonDirPath=None, outputJsonName=None, 
+        AOP=None, jsonSubDirPath=None, loadTodoList=["propData", "depVarData"], printSetting=SSOP_printSetting):
+        """
+
+        :param inputLowerBounds:
+        :param inputUpperBounds:
+        :param templateJsonPath: Format full path ".../finalSims/SSOP/SSOP_Base.json"
+        :param outputJsonDirPath: Format full path ".../finalSims/SSOP/"
+        :param outputJsonName: Format name only "SSOP_Temp.json"
+        """
         ### Set bounds ###
         self.lowerBounds = inputLowerBounds
         self.upperBounds = inputUpperBounds
+        self.loadTodoList = loadTodoList
+        self.printSetting = printSetting
 
         # Set Json info #
         if templateJsonPath is None:
@@ -2485,9 +2780,16 @@ class SSOP_Problem:
         if outputJsonDirPath is None:
             self.jsonDirPath = SSOP_JsonDirPathTemp
             self.jsonName = SSOP_JsonNameTemp
+            self.jsonSubDirPath = SSOP_JsonSubDirPathTemp
         else:
             self.jsonDirPath = outputJsonDirPath
             self.jsonName = outputJsonName
+            self.jsonSubDirPath = jsonSubDirPath
+
+        if AOP is None:
+            self.AOP = SSOP_aop_default
+        else:
+            self.AOP = AOP
 
 
 
@@ -2500,7 +2802,7 @@ class SSOP_Problem:
         initialPeAU = x[2]
 
         # Calculate intermediate Keplerian parameters to pass to json #
-        a, e, i, AOP, RAAN, TA = ApPeToKeplerian(initialApAU, initialPeAU, SSOP_i_default, SSOP_aop_default, SSOP_raan_default, SSOP_ta_default)
+        a, e, i, AOP, RAAN, TA = ApPeToKeplerian(initialApAU, initialPeAU, SSOP_i_default, self.AOP, SSOP_raan_default, SSOP_ta_default)
 
         # Set SSOP change values, and create the new json #
         SSOPChangeValues = [ launchYear,
@@ -2517,10 +2819,12 @@ class SSOP_Problem:
         createModifiedJson(self.templateJsonPath, self.jsonDirPath, self.jsonName, SSOPChangeKeys, SSOPChangeValues)
 
         # Run the simulation using the temporary json #
-        runAllSimulations(SSOP_JsonSubDirPathTemp, runPath=simulationRunPathDefault, printSetting=SSOP_printSetting, runOnlyThisFile=SSOP_JsonNameTemp, printProgress=False)
+        # print("running with: ", self.jsonSubDirPath)
+        # print("and: ", self.jsonName)
+        runAllSimulations(self.jsonSubDirPath, runPath=simulationRunPathDefault, printSetting=self.printSetting, runOnlyThisFile=self.jsonName, printProgress=False)
 
         # Load simulation data from file #
-        self.allSimData = getAllSimDataFromJson(os.path.join(SSOP_JsonDirPathTemp, SSOP_JsonNameTemp), todoList=["propData", "depVarData"], printInfo=False)
+        self.allSimData = getAllSimDataFromJson(os.path.join(self.jsonDirPath, self.jsonName), todoList=self.loadTodoList, printInfo=False)
 
         # # Use simulation data to get the Apogee and Perigee at the target TOF #
         # maxAp, maxPe = getApPe_At_TOF(self.allSimData, SSOP_targetTOFYears)
@@ -2565,14 +2869,19 @@ class SSOP_Problem:
 
 class InO_Problem:
 
-    def __init__(self, inputLowerBounds, inputUpperBounds, printSetting=InO_printSetting, simLoadTodoList=["depVarData"],
-                 outputJsonName=None, templateJsonPath=None):
+    def __init__(self, inputLowerBounds, inputUpperBounds, templateJsonPath=None, outputJsonDirPath=None, outputJsonName=None,
+                 AOP=None, jsonSubDirPath=None, loadTodoList=["depVarData"], printSetting=InO_printSetting):
         ### Set bounds ###
         self.lowerBounds = inputLowerBounds
         self.upperBounds = inputUpperBounds
 
         self.printSetting = printSetting
-        self.simLoadTodoList = simLoadTodoList
+        self.loadTodoList = loadTodoList
+
+        if AOP is None:
+            self.AOP = SSOP_aop_default
+        else:
+            self.AOP = AOP
         # # Set Json info #
         # if templateJsonPath is None:
         #     self.templateJsonPath = InO_JsonDirPathBaseFile
@@ -2591,6 +2900,16 @@ class InO_Problem:
         else:
             self.templateJsonPath = templateJsonPath
 
+        if outputJsonDirPath is None:
+            self.jsonDirPath = InO_JsonDirPath
+        else:
+            self.jsonDirPath = outputJsonDirPath
+
+        if jsonSubDirPath is None:
+            self.jsonSubDirPath = InO_JsonSubDirPath
+        else:
+            self.jsonSubDirPath = jsonSubDirPath
+
 
 
     def fitness(self, x):
@@ -2605,7 +2924,7 @@ class InO_Problem:
         targetPeAU_stage1 = x[3]
 
         # Calculate intermediate Keplerian parameters to pass to json for stage 1 #
-        a_stage1, e_stage1, i_stage1, AOP_stage1, RAAN_stage1, TA_stage1 = ApPeToKeplerian(initialApAU_stage1, initialPeAU_stage1, InO_i_default, InO_aop_default, InO_raan_default, InO_ta_default)
+        a_stage1, e_stage1, i_stage1, AOP_stage1, RAAN_stage1, TA_stage1 = ApPeToKeplerian(initialApAU_stage1, initialPeAU_stage1, InO_i_default, self.AOP, InO_raan_default, InO_ta_default)
 
         # Set InO change values, and create the new json #
         InOChangeValues_stage1 = [  # Spice Bodies
@@ -2636,13 +2955,13 @@ class InO_Problem:
                             InO_SimOutputFilenameTemp_stage1]
 
 
-        createModifiedJson(self.templateJsonPath, InO_JsonDirPath, self.jsonName_stage1, InOChangeKeys, InOChangeValues_stage1)
+        createModifiedJson(self.templateJsonPath, self.jsonDirPath, self.jsonName_stage1, InOChangeKeys, InOChangeValues_stage1)
 
         # Run the simulation using the temporary json #
-        runAllSimulations(InO_JsonSubDirPath, runPath=simulationRunPathDefault, printSetting=self.printSetting, runOnlyThisFile=InO_JsonNameTemp_stage1, printProgress=False)
+        runAllSimulations(self.jsonSubDirPath, runPath=simulationRunPathDefault, printSetting=self.printSetting, runOnlyThisFile=self.jsonName_stage1, printProgress=False)
 
         # Load simulation data from file #
-        self.allSimData_stage1 = getAllSimDataFromJson(os.path.join(InO_JsonDirPath, InO_JsonNameTemp_stage1), todoList=self.simLoadTodoList, printInfo=False)
+        self.allSimData_stage1 = getAllSimDataFromJson(os.path.join(self.jsonDirPath, self.jsonName_stage1), todoList=self.loadTodoList, printInfo=False)
 
         depVarDateStage1 = self.allSimData_stage1[2]
 
@@ -2693,13 +3012,13 @@ class InO_Problem:
                                         InO_SimOutputSubFolderTemp_stage2,
                                         InO_SimOutputFilenameTemp_stage2]
 
-            createModifiedJson(self.templateJsonPath, InO_JsonDirPath, self.jsonName_stage2, InOChangeKeys, InOChangeValues_stage2)
+            createModifiedJson(self.templateJsonPath, self.jsonDirPath, self.jsonName_stage2, InOChangeKeys, InOChangeValues_stage2)
 
             # Run the simulation using the temporary json #
-            runAllSimulations(InO_JsonSubDirPath, runPath=simulationRunPathDefault, printSetting=self.printSetting, runOnlyThisFile=InO_JsonNameTemp_stage2, printProgress=False)
+            runAllSimulations(self.jsonSubDirPath, runPath=simulationRunPathDefault, printSetting=self.printSetting, runOnlyThisFile=self.jsonName_stage2, printProgress=False)
 
             # Load simulation data from file #
-            self.allSimData_stage2 = getAllSimDataFromJson(os.path.join(InO_JsonDirPath, InO_JsonNameTemp_stage2), todoList=self.simLoadTodoList, printInfo=False)
+            self.allSimData_stage2 = getAllSimDataFromJson(os.path.join(self.jsonDirPath, self.jsonName_stage2), todoList=self.loadTodoList, printInfo=False)
 
             # Concatenate sim datas to form the total trajectory in a single go
             self.allSimDataComplete = concatenateAllSimDatas(self.allSimData_stage1, self.allSimData_stage2, jsonToKeep=1)
@@ -2765,3 +3084,353 @@ def getApPe_At_TOF(allSimData, targetTOFYears):
 
     return (ApAtTOF, PeAtTOF)
 
+
+def getVelTOFTarget(allSimData, maxAltRequirement):
+    # Get sim data and associated parts
+    # allSimData = listOfAllNewSimDataArrays[i]
+    depVarData = allSimData[2]
+    propData = allSimData[5]
+    jsonDataDict = allSimData[9]
+
+    # Find target altitude
+    targetAlt = maxAltRequirement * AU
+    targetAltIndex = findNearestInArray(depVarData[:, 7], targetAlt)[1]
+
+    # Find TOF at altitude
+    launchEpoch = propData[0, 0]
+    epochAtTargetAlt = depVarData[targetAltIndex, 0]
+    TOFAtTargetAlt = epochAtTargetAlt - launchEpoch
+
+    # Find velocity at target altitude
+    velArrAtTargetAlt = propData[targetAltIndex, 4:7]
+    velAtTargetAlt = np.linalg.norm(velArrAtTargetAlt)
+
+    return (TOFAtTargetAlt, velAtTargetAlt)
+
+
+#######################################################################################################################
+############################# Sensitivity analysis functions ####################################################
+#######################################################################################################################
+
+# Function to create the jsons for a particular sensitivity case. NOTE: first value in change keys should be the one that is a sensitivity parameter
+def createConfigSensitivityJsons(jsonChangeKeys, sensitivityRange, noValues,  outputSubFolder, baseFilenameBase, jsonNameBase, errorTolerance=1E-4, linspace=True):
+
+    if linspace:
+        sensitivityValuesList = np.linspace(sensitivityRange[0], sensitivityRange[1], noValues)
+    else:
+        print("YOU DONE GOOFED, WE HAVENT DONE LOGSPACE YET")
+
+    for i in range(len(sensitivityValuesList)):
+
+        jsonName = jsonNameBase %i
+        changeValues = [sensitivityValuesList[i],
+                        errorTolerance,
+                        errorTolerance,
+                        outputSubFolder %i,
+                        baseFilenameBase %i]
+
+        createModifiedJson(initJson_ConfigSensitivity, jsonSaveDir_ConfigSensitivity, jsonName, jsonChangeKeys, changeValues)
+
+# Function to run sensitivity analysis for SSOP or InO
+def runProfileSensitivity(sensitivityValuesList, profileName="SSOP", parameterName="B0",
+                          changeKeyLine=["ParkerMagField", "B0_tesla"], errorTolerance=1E-4,
+                          numpySavePath=numpySavePath_ProfileSensitivity,
+                          numpySaveNameBase=numpySaveName_ProfileSensitivity,
+                          loadOnly=False,
+                          loadingBars=True):
+
+    # Set saving paths #
+    fitnessArrayFullSavePath = os.path.join(numpySavePath, numpySaveNameBase %(profileName, parameterName, "Fitness"))
+    allSimDataArrayFullSavePath = os.path.join(numpySavePath, numpySaveNameBase %(profileName, parameterName, "allSimData"))
+
+
+    if not loadOnly:
+        # thisJsonName_Global_Template = jsonNameBase_Global_ProfileSensitivity %(profileName, parameterName)
+        thisJsonName_Intermediary_Template = jsonNameBase_Intermediary_ProfileSensitivity %(profileName, parameterName)
+
+        fitnessList = []
+        allSimDataList = []
+        if loadingBars: bar = IncrementalBar("%s-%s Progress: " %(profileName, parameterName), max=len(sensitivityValuesList), suffix='[%(percent).1f%%. ETA: %(eta)ds]   ')
+        for i in range(len(sensitivityValuesList)):
+
+            parameterValue = sensitivityValuesList[i]
+
+            changeKeys = [changeKeyLine,
+                          ["GuidanceConfigs", "integratorSettings", "relativeErrorTolerance"],
+                          ["GuidanceConfigs", "integratorSettings", "absoluteErrorTolerance"],
+                          ["saveDataConfigs", "outputSubFolder"],
+                          ["saveDataConfigs", "baseFilename"]]
+
+            changeValues = [parameterValue,
+                            errorTolerance,
+                            errorTolerance,
+                            SSOP_SimOutputSubFolderTemp,
+                            SSOP_SimOutputFilenameTemp]
+
+            createModifiedJson(templateJsonPath_Global_SSOPSensitivity, outputJsonDirPath_ProfileSensitivity,
+                               thisJsonName_Intermediary_Template, changeKeys, changeValues)
+
+
+            if profileName=="SSOP":
+                # Create dummy SSOP Problem #
+                dummyProblem = SSOP_Problem([0,0,0], [0,0,0],
+                                            templateJsonPath=os.path.join(outputJsonDirPath_ProfileSensitivity, thisJsonName_Intermediary_Template),
+                                            outputJsonDirPath=outputJsonDirPath_ProfileSensitivity,
+                                            outputJsonName=jsonNameBase_Final_ProfileSensitivity %(profileName, parameterName),
+                                            jsonSubDirPath=profileSensitivitySubDir,
+                                            loadTodoList=["propData", "depVarData", "magData"])
+
+                xInput = [SSOP_NominalLaunchYear, SSOP_NominalAphelion, SSOP_NominalPerihelion]
+                fitness = 1/dummyProblem.fitness(xInput)[0]
+
+                allSimData = dummyProblem.allSimData
+
+            elif profileName=="InO":
+                # Create dummy InO Problem #
+                dummyProblem = InO_Problem([0,0,0,0], [0,0,0,0],
+                                            templateJsonPath=os.path.join(outputJsonDirPath_ProfileSensitivity, thisJsonName_Intermediary_Template),
+                                            outputJsonDirPath=outputJsonDirPath_ProfileSensitivity,
+                                            outputJsonName=jsonNameBase_Final_ProfileSensitivity_InO %(profileName, parameterName, "%s"),
+                                            jsonSubDirPath=profileSensitivitySubDir,
+                                            loadTodoList=["propData", "depVarData", "magData"])
+
+                xInput = [InO_NominalLaunchYear, InO_NominalAphelion, InO_NominalPerihelion, InO_NominalTargetPe]
+                fitness = 1/dummyProblem.fitness(xInput)[0]
+
+                allSimData = dummyProblem.allSimDataComplete
+
+            else:
+                print("ERROR: Unsupported profile name: ", profileName)
+                sys.exit()
+
+            fitnessList.append(fitness)
+
+
+
+            magfieldData = allSimData[4]
+            Bmag_init = magfieldData[0,1]
+            Bmag_final = magfieldData[-1,1]
+            # print("init B : ", Bmag_init)
+            # print("final B: ", Bmag_final)
+            allSimDataList.append(allSimData)
+
+
+            if loadingBars: bar.next()
+        if loadingBars: bar.finish()
+
+        fitnessArray = np.array(fitnessList, dtype=object)
+        allSimDataArray = np.array(allSimDataList, dtype=object)
+
+        checkFolderExist(numpySavePath)
+        np.save(fitnessArrayFullSavePath, fitnessArray)
+        np.save(allSimDataArrayFullSavePath, allSimDataArray)
+
+    fitnessArrayLoaded = np.load(fitnessArrayFullSavePath, allow_pickle=True)
+    allSimDataArrayLoaded = np.load(allSimDataArrayFullSavePath, allow_pickle=True)
+
+    return fitnessArrayLoaded, allSimDataArrayLoaded
+
+
+
+
+# Function to run sensitivity analysis for SSOP or InO
+def runProfileSensitivity_SOKGA(sensitivityValuesList, parameterName="B0", changeKeyLine=["ParkerMagField", "B0_tesla"], errorTolerance=1E-4,
+                                numpySavePath=numpySavePath_ProfileSensitivity,
+                                numpySaveNameBase=numpySaveName_ProfileSensitivity,
+                                loadOnly=False,
+                                loadTodoList=["bodyData", "currentData", "currentVNVData", "depVarData", "ionoData", "magData", "propData", "thrustData", "configInfo"]):
+
+    # Potential inputs / outside parameters #
+    SOKGAStage1JsonSubDir_Sensitivity = "finalSims/Profile_Sensitivity_SOKGA/Stage1/"
+    SOKGAStage2JsonSubDir_Sensitivity = "finalSims/Profile_Sensitivity_SOKGA/Stage2/"
+    SOGASimDataArrayPath = os.path.join(numpyBinary_dir, "SOKGA", "SOKGA_simDataArrayParetoJupiter.npy")
+    runStage1s = True
+    runStage2s = True
+    printSetting=0
+
+    # Common settings #
+    simulationRunPath = os.path.join(cppApplications_dir, "application_simulation_SSO-CHB")
+    # Set saving paths #
+    TOFsArrayFullSavePath = os.path.join(numpySavePath, numpySaveNameBase %("SOKGA", parameterName, "TOFs"))
+    VelsArrayFullSavePath = os.path.join(numpySavePath, numpySaveNameBase %("SOKGA", parameterName, "Vels"))
+    allSimDataArrayFullSavePath = os.path.join(numpySavePath, numpySaveNameBase %("SOKGA", parameterName, "allSimData"))
+
+    SOKGABaseJson = os.path.join(jsonInputs_dir, "finalSims", "SOKGA_Base.json")
+
+    SOKGAStage1JsonSaveDirPath = os.path.join(jsonInputs_dir, SOKGAStage1JsonSubDir_Sensitivity)
+    SOKGAStage2JsonSaveDirPath = os.path.join(jsonInputs_dir, SOKGAStage2JsonSubDir_Sensitivity)
+
+    if printSetting == 0:
+        printProgress = False
+    else:
+        printProgress = True
+
+
+
+
+    if not loadOnly:
+        ############################################## Create Stage 1 simulation jsons ######################################################
+
+        if printSetting != 0: print("Creating Stage 1 Jsons")
+
+        SOKGA_simDataArrayPareto = np.load(SOGASimDataArrayPath, allow_pickle=True)
+        SOKGA_Stage1InitialCartesian = SOKGA_simDataArrayPareto[0][-1]['GuidanceConfigs']['vehicleInitialCartesian']
+        SOKGA_Stage1LaunchYear = SOKGA_simDataArrayPareto[0][-1]['GuidanceConfigs']['initialEphemerisYear']
+
+        # processedDataJupiter = np.load(os.path.join(utils.numpyBinary_dir, "GAStage2NewArrayData_Jupiter_Processed.npy"), allow_pickle=True)
+
+        SOKGAStage1JsonSavenameBase = "SOKGA_Stage1_%s_%s_Temp.json"
+        SOKGAStage1OutputSubFolderBase = "SOKGA_Profile_Sensitivity/SOKGA_Stage1_%s_%s_Temp/"
+        SOKGAStage1FilenameBase = "SOGKA_Stage1_%s_%s_Temp-"
+
+        SOKGAStage2JsonSavenameBase = "SOKGA_Stage2_%s_%s_Temp.json"
+        SOKGAStage2OutputSubFolderBase = "SOKGA_Profile_Sensitivity/SOKGA_Stage2_%s_%s_Temp/"
+        SOKGAStage2FilenameBase = "SOGKA_Stage2_%s_%s_Temp-"
+
+
+        SOKGAChangeKeys = [ ["DUMMY LIST - REPLACE ME IN LOOP WITH THE PARAMETER TO CHANGE"],
+                            ["Spice", "bodiesToInclude", "Mercury"],
+                            ["Spice", "bodiesToInclude", "Venus"],
+                            ["Spice", "bodiesToInclude", "Earth"],
+                            ["Spice", "bodiesToInclude", "Mars"],
+                            ["Spice", "bodiesToInclude", "Jupiter"],
+                            ["Spice", "bodiesToInclude", "Saturn"],
+                            ["Spice", "bodiesToInclude", "Uranus"],
+                            ["Spice", "bodiesToInclude", "Neptune"],
+                            ["GuidanceConfigs", "thrustMagnitudeConfig"],
+                            ["GuidanceConfigs", "initialEphemerisYear"],
+                            ["GuidanceConfigs", "terminationSettings", "terminationType"],
+                            ["GuidanceConfigs", "terminationSettings", "absoluteTimeTerminationYear"],
+                            ["GuidanceConfigs", "terminationSettings", "proximityTerminationBody2"],
+                            ["GuidanceConfigs", "terminationSettings", "proximityTerminationCutoffAU"],
+                            ["GuidanceConfigs", "vehicleInitialCartesian", "x1_m"],
+                            ["GuidanceConfigs", "vehicleInitialCartesian", "x2_m"],
+                            ["GuidanceConfigs", "vehicleInitialCartesian", "x3_m"],
+                            ["GuidanceConfigs", "vehicleInitialCartesian", "v1_ms"],
+                            ["GuidanceConfigs", "vehicleInitialCartesian", "v2_ms"],
+                            ["GuidanceConfigs", "vehicleInitialCartesian", "v3_ms"],
+                            ["saveDataConfigs", "outputSubFolder"],
+                            ["saveDataConfigs", "baseFilename"],
+                            ["scConfigs", "useSRP"]]
+
+
+        TOFsList = []
+        VelsList = []
+        allSimDataList = []
+        for i in range(len(sensitivityValuesList)):
+
+            parameterValue = sensitivityValuesList[i]
+            SOKGAChangeKeys[0] = changeKeyLine
+
+
+            thisJsonSavename = SOKGAStage1JsonSavenameBase %("Jupiter", parameterName)
+            thisOutputSubFolder = SOKGAStage1OutputSubFolderBase %("Jupiter", parameterName)
+            thisFilename = SOKGAStage1FilenameBase %("Jupiter", parameterName)
+
+
+
+            changeValues = [parameterValue,
+                            0,
+                            0,
+                            0,
+                            0,
+                            1,
+                            0,
+                            0,
+                            0,
+                            "disabled",
+                            SOKGA_Stage1LaunchYear,
+                            "proximityTermination",
+                            SOKGASimulationEndYear,
+                            "Jupiter",
+                            closeApproachCutoffAU,
+                            SOKGA_Stage1InitialCartesian["x1_m"],
+                            SOKGA_Stage1InitialCartesian["x2_m"],
+                            SOKGA_Stage1InitialCartesian["x3_m"],
+                            SOKGA_Stage1InitialCartesian["v1_ms"],
+                            SOKGA_Stage1InitialCartesian["v2_ms"],
+                            SOKGA_Stage1InitialCartesian["v3_ms"],
+                            thisOutputSubFolder,
+                            thisFilename,
+                            False]
+
+            createModifiedJson(SOKGABaseJson, SOKGAStage1JsonSaveDirPath, thisJsonSavename, SOKGAChangeKeys, changeValues)
+            runAllSimulations(SOKGAStage1JsonSubDir_Sensitivity, printSetting=printSetting, runPath=simulationRunPath,
+                              printProgress=printProgress, runOnlyThisFile=thisJsonSavename)
+
+
+            ###### Stage 2 #######
+
+            thisStage1Json = os.path.join(SOKGAStage1JsonSaveDirPath, thisJsonSavename)# allStage1Jsons[i]
+            allSimData = getAllSimDataFromJson(thisStage1Json, printInfo=False, todoList=loadTodoList)
+            propDataArray = allSimData[5]
+
+            if "Jupiter" in thisStage1Json:
+                planet = "Jupiter"
+                # index = parameterName
+            # elif "Saturn" in thisStage1Json:
+            #     planet = "Saturn"
+            #     index = i - len(processedDataJupiter)
+
+            thisJsonSavename_stage2 = SOKGAStage2JsonSavenameBase %(planet, parameterName)
+            thisOutputSubFolder_stage2 = SOKGAStage2OutputSubFolderBase %(planet, parameterName)
+            thisFilename_stage2 = SOKGAStage2FilenameBase %(planet, parameterName)
+
+            initialEphemerisYear_stage2 = 2000 + propDataArray[-1, 0] / year
+
+            changeValues_stage2 = [parameterValue,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            "nominal",
+                            initialEphemerisYear_stage2,
+                            "nominalTimeTermination",
+                            SOKGASimulationEndYear,
+                            planet,
+                            closeApproachCutoffAU,
+                            propDataArray[-1, 1],
+                            propDataArray[-1, 2],
+                            propDataArray[-1, 3],
+                            propDataArray[-1, 4],
+                            propDataArray[-1, 5],
+                            propDataArray[-1, 6],
+                            thisOutputSubFolder_stage2,
+                            thisFilename_stage2,
+                            True]
+
+            createModifiedJson(SOKGABaseJson, SOKGAStage2JsonSaveDirPath, thisJsonSavename_stage2, SOKGAChangeKeys, changeValues_stage2)
+            runAllSimulations(SOKGAStage2JsonSubDir_Sensitivity, printSetting=printSetting, runPath=simulationRunPath,
+                              printProgress=printProgress, runOnlyThisFile=thisJsonSavename_stage2)
+
+            # Get data and fitness from it #
+            thisStage2Json = os.path.join(SOKGAStage2JsonSaveDirPath, thisJsonSavename_stage2)# allStage1Jsons[i]
+            allSimData_stage2 = getAllSimDataFromJson(thisStage2Json, printInfo=False, todoList=loadTodoList)
+            # propDataArray_stage2 = allSimData_stage2[5]
+
+            allSimData_combined = concatenateAllSimDatas(allSimData, allSimData_stage2, jsonToKeep=1)
+
+            TOFAtTargetAlt, velAtTargetAlt = getVelTOFTarget(allSimData_combined, SOKGAMaxAltRequirement)
+
+            TOFsList.append(TOFAtTargetAlt)
+            VelsList.append(velAtTargetAlt)
+            allSimDataList.append(allSimData_combined)
+
+        TOFsArray = np.array(TOFsList)
+        VelsArray = np.array(VelsList)
+        allSimDataArray = np.array(allSimDataList)
+
+        checkFolderExist(numpySavePath)
+        np.save(TOFsArrayFullSavePath, TOFsArray)
+        np.save(VelsArrayFullSavePath, VelsArray)
+        np.save(allSimDataArrayFullSavePath, allSimDataArray)
+
+    TOFsArray = np.load(TOFsArrayFullSavePath, allow_pickle=True)
+    VelsArray = np.load(VelsArrayFullSavePath, allow_pickle=True)
+    allSimDataArray = np.load(allSimDataArrayFullSavePath, allow_pickle=True)
+
+    return TOFsArray, VelsArray, allSimDataArray

@@ -20,7 +20,7 @@ inputUpperBounds = [utils.launchDateRange[1],
 
 def doSSOPOptimisation(results_PopulationFileBase, results_FitnessFileBase, results_PopulationProcessedBase, results_FitnessProcessedBase, seedNumber):
 
-    utils.checkFolderExist(utils.SSOP_Results_DirPath, emptyDirectory=True)
+    utils.checkFolderExist(utils.SSOP_Results_DirPath, emptyDirectory=False)
 
 
     # Create problem, with defined bounds #
@@ -63,7 +63,7 @@ def doSSOPOptimisation(results_PopulationFileBase, results_FitnessFileBase, resu
         bar.next()
     bar.finish()
 
-doSeed1 = False
+doSeed1 = True
 doSeed2 = True
 
 if doSeed1:
