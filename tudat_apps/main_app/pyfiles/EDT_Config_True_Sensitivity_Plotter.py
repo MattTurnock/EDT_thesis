@@ -7,10 +7,14 @@ import matplotlib
 import natsort
 
 
-matplotlib.rcParams.update({'font.size': 85,
-                            "lines.linewidth": 4})
+# matplotlib.rcParams.update({'font.size': 85,
+#                             "lines.linewidth": 4})
+matplotlib.rcParams.update({'font.size': 30,
+                            "lines.linewidth": 1})
+markersize = 10
 
-thisFigureSize = 3*np.array([12, 10])
+# thisFigureSize = 3*np.array([12, 10])
+thisFigureSize = utils.figSizeDefault
 
 year = 365*24*60*60
 AU = 1.496E11
@@ -52,7 +56,7 @@ meanAccelBase = np.mean(thrustDataBase[:, 1])/spacecraftMassBase
 
 if doingSSOSensitivity:
     # typesTodo = ["currents", "diameters", "endmassMasses", "lengthRatios", "lengths", "lineSeparationCoefficients", "noLines", "occultationCoefficients", "slackCoefficients", "areaRatios"]
-    baseTypeValues =      [2780,             2.65E-8,              8920,            1.68E-8,             100,                              0.5,                           10E-3,                          1.005]
+    baseTypeValues =      [2780,             2.65E-8,              8920,            1.68E-8,             100,                              1.0,                           10E-3,                          1.005]
     typesTodo =           ["AlDensity",      "AlResistivity",      "CuDensity",     "CuResistivity",     "PrimaryLineSeparationRatio",     "SecondaryTetherAreaRatio",    "SecondaryTetherDiameter",  "SlackCoefficient" ]
     typesTodoPlotTitles = ["Shell Density",  "Shell Resistivity",  "Core Density",  "Core Resistivity",  "Primary Line Separation Ratio",  "Secondary Area Ratio",        "Secondary Diameter",       "Slack Coefficient"]
     typesUnits =          ["kg/m$^3$",       "$\Omega$m",          "kg/m$^3$",      "$\Omega$m",         "-",                              "-",                           "mm",                       "-"]
@@ -516,7 +520,7 @@ if doingSSOSensitivity:
             # print("LESS HOT: ", baseTypeValues[i])
             # print("")
             idx = utils.findNearestInArray(configSensitivityRunnerValuesToPlotBare[i], baseTypeValues[i])[1]
-            plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[idx], 1E9*listOfMeanThrustsBare[i][idx], 'o', markersize=20, c="C2")
+            plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[idx], 1E9*listOfMeanThrustsBare[i][idx], 'o', markersize=markersize, c="C2")
             # plt.axvline(parameterScaler * baseTypeValues[i], c="C2")
 
             plt.legend(["Parameter Trend", "Nominal Case"])
@@ -543,14 +547,16 @@ if doingSSOSensitivity:
             plt.grid(which="both")
 
             # plt.title()
-
+            nominalYValue = 1E12*listOfMeanAccelsBare[i][idx]
+            if "Core" in typesTodoPlotTitles[i]:
+                plt.ylim(nominalYValue -0.1, nominalYValue +0.1)
 
             # print("TYPE: ", thisParameterType)
             # print(configSensitivityRunnerValuesToPlotBare[i])
             plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[startIndex:],  np.array(1E12*np.array(listOfMeanAccelsBare[i][startIndex:])), c="C0")
             # plt.plot(configSensitivityRunnerValuesToPlotTrans_THISTIME, np.array(1E12*np.array(listOfMeanAccelsTrans[i])), c="C1")
 
-            plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[idx], 1E12*listOfMeanAccelsBare[i][idx], 'o', markersize=20, c="C2")
+            plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[idx], nominalYValue, 'o', markersize=markersize, c="C2")
             # plt.axvline(parameterScaler * baseTypeValues[i], c="C2")
 
             plt.legend(["Parameter Trend", "Nominal Case"])

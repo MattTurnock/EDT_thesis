@@ -220,14 +220,16 @@ namespace EDTs {
             double AlDensity = materialProperties_["density"]["Al"];
             double CuDensity = materialProperties_["density"]["Cu"];
             compositeMaterialDensity_ = calculateCompositeDensity(AlDensity, CuDensity, tetherAreaOuter_, tetherAreaInner_);
+            compositeMaterialDensitySecondary_ = calculateCompositeDensity(AlDensity, CuDensity, tetherAreaOuterSecondary_, tetherAreaInnerSecondary_);
 
             double volumeHoytetherPrimaryTotal = xSecAreaHoytetherPrimaryTotal_ * length_;
             double volumeHoytetherSecondaryTotal = xSecAreaHoytetherSecondaryTotal * secondaryLineSegmentLength_;
-            double totalMaterialVolume = volumeHoytetherPrimaryTotal + volumeHoytetherSecondaryTotal;
+//            double totalMaterialVolume = volumeHoytetherPrimaryTotal + volumeHoytetherSecondaryTotal;
 
 //            std::cout << "Volumes: " << volumeHoytetherPrimaryTotal << ",  " << volumeHoytetherSecondaryTotal << std::endl;
 
-            tetherMass_ = totalMaterialVolume * compositeMaterialDensity_;
+//            tetherMass_ = totalMaterialVolume * compositeMaterialDensity_;
+            tetherMass_ = (volumeHoytetherPrimaryTotal * compositeMaterialDensity_) + (volumeHoytetherSecondaryTotal * compositeMaterialDensitySecondary_);
 //            std::cout << "Hoytether area conducting: " << xSecAreaConducting_ << std::endl;
 
         }
@@ -539,6 +541,7 @@ namespace EDTs {
         double emitterCurrentmA_; // Corresponds to Ic, the current from the e- emitter
         double emitterCurrent_ ;
         double compositeMaterialDensity_;
+        double compositeMaterialDensitySecondary_;
         double tetherMass_;
         double endmassMass1_;
         double endmassMass2_;
