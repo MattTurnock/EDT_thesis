@@ -41,11 +41,11 @@ int main(int argc, char *argv[] )
         jsonName = argv[1];
     }
     else{
-//        jsonName = "VnV/testVariablesCurrentVnV_2a.json"; // TODO: change to nominal test variables
+        jsonName = "VnV/testVariablesCurrentVnV_1a.json"; // TODO: change to nominal test variables
 //        jsonName = "finalSims/SSO.json"; // TODO: change to nominal test variables
 //        jsonName = "finalSims/InO.json"; // TODO: change to nominal test variables
 //        jsonName = "VnV/testVariablesIntegratorGA_Reference.json"; // TODO: Make python file to run all variants as needed
-        jsonName = "testVariables.json";
+//        jsonName = "testVariables.json";
 //        jsonName = "finalSims/SOKGA_reference.json";
 //        jsonName = "testCase_Guidance.json";
 //        jsonName = "testCase_NoGuidance.json";

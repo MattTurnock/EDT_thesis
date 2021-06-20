@@ -80,6 +80,7 @@ def get_fbarrad(CR, r, A, M, W0=constants["SC"], r0=1*u.AU, c=constants["c"], un
 
     return fbar
 
+
 if onlyDefineFunctions is False:
 
     ranges = []

@@ -1,0 +1,47 @@
+2021-06-19 15:26:40,511 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_1a.json
+
+2021-06-19 15:26:40,552 - Task failed successfully
+2021-06-19 15:26:40,553 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_1b.json
+
+2021-06-19 15:26:40,587 - Task failed successfully
+2021-06-19 15:26:40,588 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_2a.json
+
+2021-06-19 15:26:40,623 - Task failed successfully
+2021-06-19 15:26:40,624 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA.json
+
+2021-06-19 15:26:40,835 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA_Reference.json
+
+2021-06-19 15:26:40,931 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner.json
+
+2021-06-19 15:26:41,166 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner_Reference.json
+
+2021-06-19 15:26:41,262 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesParkerReferenceVnV.json
+
+2021-06-19 15:26:41,496 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesParkerVnV.json
+
+2021-06-19 15:26:41,593 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesSRPNominalVnV.json
+
+2021-06-19 15:26:41,696 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesSRPZeroAreaVnV.json
+

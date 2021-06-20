@@ -1,0 +1,110 @@
+2021-06-19 14:20:45,780 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_1a.json
+
+2021-06-19 14:20:45,784 - ===============Loaded Variables From File==================
+2021-06-19 14:20:45,784 - ===============Prepping Sim==================
+2021-06-19 14:20:45,785 -  -- Loading spice kernels -- 
+2021-06-19 14:20:45,806 -  -- Creating environment class -- 
+2021-06-19 14:20:45,806 -  -- Creating Config class -- 
+2021-06-19 14:20:45,806 -  -- Creating Guidance class -- 
+2021-06-19 14:20:45,806 -  -- Creating Propbodies class -- 
+2021-06-19 14:20:45,806 - Using bodies: 
+2021-06-19 14:20:45,807 - Sun, Jupiter, 
+2021-06-19 14:20:45,807 -  -- Creating Propsettings class -- 
+2021-06-19 14:20:45,807 - ====================Propagating==========================
+2021-06-19 14:20:45,817 - ====================Saving Data==========================
+2021-06-19 14:20:45,817 - Saving propData
+2021-06-19 14:20:45,817 - Saving magneticFieldData
+2021-06-19 14:20:45,817 - Saving ionosphericData
+2021-06-19 14:20:45,817 - Saving thrustData
+2021-06-19 14:20:45,817 - Saving currentData
+2021-06-19 14:20:45,817 - Saving currentVNVData
+2021-06-19 14:20:45,818 - Saving bodyData
+2021-06-19 14:20:45,818 - Saving dependentVariableData
+2021-06-19 14:20:45,818 - Saving configInfo
+2021-06-19 14:20:45,818 - Task failed successfully
+2021-06-19 14:20:45,819 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_1b.json
+
+2021-06-19 14:20:45,823 - ===============Loaded Variables From File==================
+2021-06-19 14:20:45,824 - ===============Prepping Sim==================
+2021-06-19 14:20:45,824 -  -- Loading spice kernels -- 
+2021-06-19 14:20:45,844 -  -- Creating environment class -- 
+2021-06-19 14:20:45,844 -  -- Creating Config class -- 
+2021-06-19 14:20:45,845 -  -- Creating Guidance class -- 
+2021-06-19 14:20:45,845 -  -- Creating Propbodies class -- 
+2021-06-19 14:20:45,845 - Using bodies: 
+2021-06-19 14:20:45,845 - Sun, Jupiter, 
+2021-06-19 14:20:45,845 -  -- Creating Propsettings class -- 
+2021-06-19 14:20:45,845 - ====================Propagating==========================
+2021-06-19 14:20:45,854 - ====================Saving Data==========================
+2021-06-19 14:20:45,855 - Saving propData
+2021-06-19 14:20:45,855 - Saving magneticFieldData
+2021-06-19 14:20:45,855 - Saving ionosphericData
+2021-06-19 14:20:45,855 - Saving thrustData
+2021-06-19 14:20:45,855 - Saving currentData
+2021-06-19 14:20:45,855 - Saving currentVNVData
+2021-06-19 14:20:45,856 - Saving bodyData
+2021-06-19 14:20:45,856 - Saving dependentVariableData
+2021-06-19 14:20:45,856 - Saving configInfo
+2021-06-19 14:20:45,856 - Task failed successfully
+2021-06-19 14:20:45,857 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_2a.json
+
+2021-06-19 14:20:45,861 - ===============Loaded Variables From File==================
+2021-06-19 14:20:45,861 - ===============Prepping Sim==================
+2021-06-19 14:20:45,861 -  -- Loading spice kernels -- 
+2021-06-19 14:20:45,884 -  -- Creating environment class -- 
+2021-06-19 14:20:45,884 -  -- Creating Config class -- 
+2021-06-19 14:20:45,884 -  -- Creating Guidance class -- 
+2021-06-19 14:20:45,884 -  -- Creating Propbodies class -- 
+2021-06-19 14:20:45,884 - Using bodies: 
+2021-06-19 14:20:45,884 - Sun, Jupiter, 
+2021-06-19 14:20:45,884 -  -- Creating Propsettings class -- 
+2021-06-19 14:20:45,884 - ====================Propagating==========================
+2021-06-19 14:20:45,894 - ====================Saving Data==========================
+2021-06-19 14:20:45,894 - Saving propData
+2021-06-19 14:20:45,895 - Saving magneticFieldData
+2021-06-19 14:20:45,895 - Saving ionosphericData
+2021-06-19 14:20:45,895 - Saving thrustData
+2021-06-19 14:20:45,895 - Saving currentData
+2021-06-19 14:20:45,895 - Saving currentVNVData
+2021-06-19 14:20:45,895 - Saving bodyData
+2021-06-19 14:20:45,895 - Saving dependentVariableData
+2021-06-19 14:20:45,896 - Saving configInfo
+2021-06-19 14:20:45,896 - Task failed successfully
+2021-06-19 14:20:45,896 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA.json
+
+2021-06-19 14:20:45,991 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA_Reference.json
+
+2021-06-19 14:20:46,094 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner.json
+
+2021-06-19 14:20:46,194 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner_Reference.json
+
+2021-06-19 14:20:46,299 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesParkerReferenceVnV.json
+
+2021-06-19 14:20:46,395 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesParkerVnV.json
+
+2021-06-19 14:20:46,496 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesSRPNominalVnV.json
+
+2021-06-19 14:20:46,592 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesSRPZeroAreaVnV.json
+

@@ -96,7 +96,7 @@ public:
         Eigen::Vector3d currentDirectionVectorNoThrust;
         currentDirectionVectorNoThrust << 0, 0, -1;
         Eigen::Vector3d currentDirectionArbitraryVnV;
-        currentDirectionArbitraryVnV <<  0.17583754,  0.87544648, -0.45019399;
+        currentDirectionArbitraryVnV << 0.176,  0.875, -0.45;
 
         // Initialise boolean forcing current magnitude to 0, if thrusting should be disabled
         forceZeroCurrentMagnitude_ = false;
@@ -259,6 +259,7 @@ public:
             }
 
         }
+//        std::cout << "current direction: " << currentDirectionVector_ << std::endl;
 //        std::cout << "Force current bool: " << forceZeroCurrentMagnitude_ << std::endl;
         updateAllEnviro(simulationTime_, forceZeroCurrentMagnitude_);
 
@@ -372,7 +373,7 @@ public:
     void updateCurrentMagnitude(){
 //        std::cout << "Config type: " << configType_ <<  std::endl; //TODO: Remove me
         // For spacecraft using a bare tether concept
-        if ( (configType_ == "CHB") or (configType_ == "AlMB") ){
+        if ( (configType_ == "CHB") or (configType_ == "AlMB") or (configType_ == "CHTr") ){
 
             // Set intermediate values, from simulation data (or calculated elsewhere)
             velocityWrtMagField_ = guidanceEnvironment_.getVehicleVelocity(); // TODO: This just uses inertial velocity as relative velocity, make sure solar magfield is not moving (eg with solar wind)
@@ -389,7 +390,8 @@ public:
             // Calculate unit current, using sigma, Em and A
             motionalEMF_ = gen::getMotionalEMF(velocityWrtMagField_,
                                                guidanceEnvironment_.getMagFieldInertial(),
-                                               guidanceEnvironment_.getCurrentDirectionVector());
+                                               guidanceEnvironment_.getCurrentDirectionVector(),
+                                               vehicleConfig_.getTetherLength());
 
 //            std::cout << "vehicle state: "
 //                    << guidanceEnvironment_.getVehicleState()[0] << " "

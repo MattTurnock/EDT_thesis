@@ -363,8 +363,8 @@ namespace gen {
     }
 
     // Function to get motional EMF Em from simulation parameters
-    double getMotionalEMF(Eigen::Vector3d velocityWrtMagField, Eigen::Vector3d magFieldVector, Eigen::Vector3d EDTLengthUnitVector){
-        return (velocityWrtMagField.cross(magFieldVector)).dot(EDTLengthUnitVector);
+    double getMotionalEMF(Eigen::Vector3d velocityWrtMagField, Eigen::Vector3d magFieldVector, Eigen::Vector3d EDTLengthUnitVector, double EDTLength){
+        return EDTLength*(velocityWrtMagField.cross(magFieldVector)).dot(EDTLengthUnitVector);
     }
 
     // Function to get average unit current i_avg

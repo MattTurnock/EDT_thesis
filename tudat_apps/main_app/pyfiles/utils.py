@@ -2366,7 +2366,7 @@ A_1a = 4.704E-4
 Ic_1a = 2E-3
 L_1a = 10
 jsonFilename_1a = baseJsonFilename %"1a"
-thrustDirectionConfig_1a = "nominalPrograde"
+thrustDirectionConfig_1a = "justPositiveCurrent"
 baseVariables_1a = [V_1a, B_1a, l_1a, sigma_1a, A_1a, Ic_1a, L_1a, jsonFilename_1a, thrustDirectionConfig_1a]
 
 V_1b =V_1a
@@ -2377,13 +2377,16 @@ A_1b = A_1a
 Ic_1b = Ic_1a
 L_1b = L_1a
 jsonFilename_1b = baseJsonFilename %"1b"
-thrustDirectionConfig_1b = "nominalRetrograde"
+thrustDirectionConfig_1b = "justNegativeCurrent"
 baseVariables_1b = [V_1b, B_1b, l_1b, sigma_1b, A_1b, Ic_1b, L_1b, jsonFilename_1b, thrustDirectionConfig_1b]
 
-V_2a = 30000 * np.array([-0.106, 0.534, 0.623])
-B_2a = 6.51E-9*np.array([0.217, -0.173, -0.801])
-l_2a_temp = np.array([0.141, 0.702, -0.361])
-l_2a = l_2a_temp / np.linalg.norm(l_2a_temp)
+# V_2a = 30000 * np.array([-0.106, 0.534, 0.623])
+# B_2a = 6.51E-9*np.array([0.217, -0.173, -0.801])
+V_2a = np.array([-3180, 16020, 18690])
+B_2a = 1e-9*np.array([1.413, -1.126, -5.215])
+# l_2a_temp = np.array([0.141, 0.702, -0.361])
+# l_2a = l_2a_temp / np.linalg.norm(l_2a_temp)
+l_2a = np.array([0.176, 0.875, -0.450])
 sigma_2a = 5.952E7
 A_2a = 5E-3
 Ic_2a = 37.2E-3
@@ -2395,11 +2398,12 @@ baseVariables_2a = [V_2a, B_2a, l_2a, sigma_2a, A_2a, Ic_2a, L_2a, jsonFilename_
 # SUPER TEMP, TODO: REMOVE ME WHEN DONE AND DO PROPERLY
 V_valid = np.array([0, 7350, 0])
 B_valid_mag = 17500E-9 # from https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#igrfwmm
-B_valid = B_valid_mag*np.array([0,0,-1]) # Note: magfield does in fact point DOWN
+# B_valid = B_valid_mag*np.array([0,0,-1]) # Note: magfield does in fact point DOWN
+B_valid = 1e-9*np.array([13100,-2100,24300]) # Note: magfield does in fact point DOWN
 l_valid = np.array([-1,0,0])
 sigma_valid =3.4014E7
 A_valid = 1.9635E-7
-Ic_valid = 0.01 #TODO: add me
+Ic_valid = 0.015 #TODO: add me
 L_valid = 500
 
 baseVariables_valid = [V_valid, B_valid, l_valid, sigma_valid, A_valid, Ic_valid, L_valid, "oogabooga", "oogabooga2"]
@@ -2436,7 +2440,7 @@ class currentVNVCalcs:
 
     def calculateEm(self):
         cross = np.cross(self.V, self.B, axis=0)
-        dot = np.dot(cross, self.l) # TODO: Check this! Should be based on length somehwat?
+        dot = self.L * np.dot(cross, self.l)
         return dot
 
     def calculateI0(self):
@@ -2463,7 +2467,7 @@ class currentVNVCalcs:
         return abs(self.Iavg) * self.l
 
     def calculateF(self):
-        return np.cross(self.IavgVector, self.B)
+        return self.L * np.cross(self.IavgVector, self.B)
 
     def calculateFMagnitude(self):
         return np.linalg.norm(self.F)
@@ -2537,13 +2541,16 @@ def createCurrentVNVJsons(allBaseVariables,
         ["GuidanceConfigs", "thrustMagnitudeConfig"],
         ["GuidanceConfigs", "thrustDirectionConfig"],
         # EDT Configs
+        ["EDTConfigs", "configType"],
         ["EDTConfigs", "tetherLength"],
         ["EDTConfigs", "emitterCurrentmA"],
         ["EDTConfigs", "imposedAreaBool"],
         ["EDTConfigs", "imposedArea"],
+        ["EDTConfigs", "generalRotationCoefficient"],
         # Save Data Configs
         ["saveDataConfigs", "outputSubFolder"],
         ["saveDataConfigs", "baseFilename"],
+        ["saveDataConfigs", "verbosity"],
         ["saveDataConfigs", "dataTypesToSave", "propData"],
         ["saveDataConfigs", "dataTypesToSave", "magneticField"],
         ["saveDataConfigs", "dataTypesToSave", "ionosphere"],
@@ -2584,7 +2591,7 @@ def createCurrentVNVJsons(allBaseVariables,
             B[2]*1E9,
             # Termination settings
             "nominalTimeTermination",
-            0.000001,
+            0.1,
             # Initial State
             "Cartesian",
             1.496E11,
@@ -2597,13 +2604,16 @@ def createCurrentVNVJsons(allBaseVariables,
             "nominal",
             thrustDirectionConfig,
             # EDT Configs
+            "CHB",
             L,
             Ic*1E3,
             True,
             A,
+            1.0,
             # Save Data Configs
             outputSubFolderBase %namingInsert,
             baseFilenameBase %namingInsert,
+            False,
             True,
             True,
             True,
@@ -2623,9 +2633,10 @@ def createCurrentVNVJsons(allBaseVariables,
 def getCurrentVNVDataLine(VnVSubDirCurrent, VNVString, printing=True, savename="templateXX.txt"):
 
     currentVNV_simulated_allData = getAllSimDataFromFolder(VnVSubDirCurrent)
-    currentVNV_simulated_currentVNVData = currentVNV_simulated_allData[7][1, :]
-    currentVNV_simulated_propData = currentVNV_simulated_allData[5][1, :]
     currentVNV_simulated_magData = currentVNV_simulated_allData[4][1, :]
+    currentVNV_simulated_propData = currentVNV_simulated_allData[5][1, :]
+    currentVNV_simulated_thrustData = currentVNV_simulated_allData[6][1, :]
+    currentVNV_simulated_currentVNVData = currentVNV_simulated_allData[7][1, :]
 
     Em = currentVNV_simulated_currentVNVData[1]
     I0 = currentVNV_simulated_currentVNVData[2]
@@ -2635,7 +2646,7 @@ def getCurrentVNVDataLine(VnVSubDirCurrent, VNVString, printing=True, savename="
     Iavg = currentVNV_simulated_currentVNVData[6]
     IavgVector = currentVNV_simulated_currentVNVData[7:10]
 
-    currentVNV_simulated_thrustData = currentVNV_simulated_allData[6][1, :]
+
     FMagnitude = currentVNV_simulated_thrustData[1]
     F = currentVNV_simulated_thrustData[2:5]
 

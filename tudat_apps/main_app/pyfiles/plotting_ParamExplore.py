@@ -15,7 +15,7 @@ thisFigureSize = 3*np.array([12, 10])
 year = 365*24*60*60
 AU = 1.496E11
 
-doingSSOSensitivity = False
+doingSSOSensitivity = True
 doingNominalPrint = True
 
 showing = False
@@ -52,12 +52,18 @@ meanAccelBase = np.mean(thrustDataBase[:, 1])/spacecraftMassBase
 
 if doingSSOSensitivity:
     # typesTodo = ["currents", "diameters", "endmassMasses", "lengthRatios", "lengths", "lineSeparationCoefficients", "noLines", "occultationCoefficients", "slackCoefficients", "areaRatios"]
-    baseTypeValues =      [10*1E3,    10*1E-3,      100,    0.5,           10,                        0.5,                            10,              0.7]
+    nominalThrustnN = 1278.2969818078948
+    nominalAccelPmS = 903.7651999112746
+    baseTypeValues =      [10*1E3,    10*1E-3,      100,    0.5,              10,                        0.5,                            10,              0.7]
     typesTodo =           ["lengths", "diameters", "currents", "areaRatios",  "noLines",                 "lengthRatios",                 "endmassMasses", "rotationCoefficients"]
     typesTodoPlotTitles = ["Length",  "Diameter",  "Current",  "Area Ratio",  "Number of Primary Lines", "Primary Segment Length Ratio", "Endmass Mass",  "Rotation Coefficient"]
+    nominalValues       = [1000,      10E-3,       305,         1.0,           2,                         0.5,                            50,              0.8] #NOTE: These are the ones obtained after assesment    typesUnits =          ["m",       "m",         "mA",        "-",           "-",                       "-",                            "kg",            "-"]
+    typesToPlotNominal_T= ["lengths", "currents"] #NOTE: this decides for which parameters to plot the nominal directly on there (for thrust)
+    typesToPlotNominal_A= ["diameters", "currents", "noLines"] #NOTE: this decides for which parameters to plot the nominal directly on there (for accel)
     typesUnits =          ["m",       "m",         "mA",        "-",           "-",                       "-",                            "kg",            "-"]
     logPlotTypesThrust =  [                        "currents"]#,                "noLines"                                                                                         ]
     logPlotTypesAccel  =  ["lengths", "diameters", "currents",                "noLines"                                                                                         ]
+    baseLegend = ["Bare", "Transient", "Base"]
     listOfJsons = []
     listOfDatas = []
     rejectedJsons = []
@@ -524,12 +530,21 @@ if doingSSOSensitivity:
             plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[startIndex:],  1E9* np.array(listOfMeanThrustsBare[i][startIndex:]), c="C0")
             plt.plot(configSensitivityRunnerValuesToPlotTrans_THISTIME, 1E9* np.array(listOfMeanThrustsTrans[i]), c="C1")
 
-            print("BOOT: ", configSensitivityRunnerValuesToPlotBare)
+            # print("BOOT: ", configSensitivityRunnerValuesToPlotBare)
             idx = utils.findNearestInArray(configSensitivityRunnerValuesToPlotBare[i], baseTypeValues[i])[1]
-            plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[idx], 1E9*listOfMeanThrustsBare[i][idx], 'o', markersize=20, c="C2")
+            plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[idx], 1E9*listOfMeanThrustsBare[i][idx], 'o', markersize=20, c="C2")#####################################################################################################
+
             # plt.axvline(parameterScaler * baseTypeValues[i], c="C2")
 
-            plt.legend(["Bare", "Transient", "Base"])
+
+
+            if thisParameterType in typesToPlotNominal_T:
+                plt.plot(nominalValues[i] * parameterScaler, nominalThrustnN, 'o', markersize=20, c="C3")#####################################################################################################
+                legend = baseLegend + ["Nominal"]
+            else:
+                legend = baseLegend
+
+            plt.legend(legend)
 
             # plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
 
@@ -559,10 +574,16 @@ if doingSSOSensitivity:
             plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[startIndex:],  np.array(1E12*np.array(listOfMeanAccelsBare[i][startIndex:])), c="C0")
             plt.plot(configSensitivityRunnerValuesToPlotTrans_THISTIME, np.array(1E12*np.array(listOfMeanAccelsTrans[i])), c="C1")
 
-            plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[idx], 1E12*listOfMeanAccelsBare[i][idx], 'o', markersize=20, c="C2")
+            plt.plot(configSensitivityRunnerValuesToPlotBare_THISTIME[idx], 1E12*listOfMeanAccelsBare[i][idx], 'o', markersize=20, c="C2")##########################################################################################################################
             # plt.axvline(parameterScaler * baseTypeValues[i], c="C2")
 
-            plt.legend(["Bare", "Transient", "Base"])
+            if thisParameterType in typesToPlotNominal_A:
+                plt.plot(nominalValues[i] * parameterScaler, nominalAccelPmS, 'o', markersize=20, c="C3")#####################################################################################################
+                legend = baseLegend + ["Nominal"]
+            else:
+                legend = baseLegend
+
+            plt.legend(legend)
 
 
 

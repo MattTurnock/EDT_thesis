@@ -7,7 +7,7 @@
       "Venus": 0,
       "Earth": 0,
       "Mars": 0,
-      "Jupiter": 1,
+      "Jupiter": 0,
       "Saturn": 0,
       "Uranus": 0,
       "Neptune": 0
@@ -103,7 +103,7 @@
   "saveDataConfigs": {
     "outputSubFolder": "testCase",
     "baseFilename": "testCase-",
-    "verbosity": false,
+    "verbosity": true,
     "dataTypesToSave": {
       "propData": true,
       "magneticField": true,

@@ -1,0 +1,22 @@
+2021-06-18 21:01:55,894 - Ignoring file: testVariablesIntegratorGA.json
+2021-06-18 21:01:55,894 - Ignoring file: testVariablesIntegratorGA_Reference.json
+2021-06-18 21:01:55,895 - Ignoring file: testVariablesIntegratorInner.json
+2021-06-18 21:01:55,895 - Ignoring file: testVariablesIntegratorInner_Reference.json
+2021-06-18 21:01:55,895 - Ignoring file: testVariablesParkerReferenceVnV.json
+2021-06-18 21:01:55,895 - Ignoring file: testVariablesParkerReferenceVnV_BACKUP.json
+2021-06-18 21:01:55,895 - Ignoring file: testVariablesParkerVnV.json
+2021-06-18 21:01:55,895 - Ignoring file: testVariablesParkerVnV_BACKUP.json
+2021-06-18 21:01:55,895 - Ignoring file: testVariablesSRPNominalVnV.json
+2021-06-18 21:01:55,895 - Ignoring file: testVariablesSRPZeroAreaVnV.json
+2021-06-18 21:01:55,895 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_1a.json
+
+2021-06-18 21:01:56,034 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_1b.json
+
+2021-06-18 21:01:56,133 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesCurrentVnV_2a.json
+

@@ -15,10 +15,7 @@ VnVSubDir_1b = VnVSubDir_base %"1b"
 VnVSubDir_2a = VnVSubDir_base %"2a"
 
 
-############################## Create relevant jsons to run, from base data for each case in utils ####################
 
-allBaseVariables = [utils.baseVariables_1a, utils.baseVariables_1b, utils.baseVariables_2a]
-utils.createCurrentVNVJsons(allBaseVariables)
 
 
 ############################ Do reference calculations for each set of base data #################################
@@ -46,7 +43,7 @@ latexMatrix[3] = currentVNV_reference_1b.outputVector
 latexMatrix[4] = currentVNV_sim_2a_outputVector
 latexMatrix[5] = currentVNV_reference_2a.outputVector
 
-np.savetxt(os.path.join(utils.pyplots_dir, "LatexMatrixCurrentVNV.txt"), latexMatrix, delimiter=" & ", newline=" \\\ \n\hline\n 1S & ", fmt="%1.4f")
+np.savetxt(os.path.join(utils.pyplots_dir, "LatexMatrixCurrentVNV.txt"), latexMatrix, delimiter=" & ", newline=" \\\ \n 1S & ", fmt="%1.4f")
 
 
 utils.logger.info("========== whaaaaaaa =================\n")
