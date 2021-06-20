@@ -16,13 +16,14 @@ matplotlib.rcParams.update({'font.size': 20})
 plotFolderBase = "pyplots/GA_%s_%s-%s"
 figNumberCount=1
 
-doingJupiter=False
-doingSaturn=False
+doingJupiter=True
+doingSaturn=True
 doingMars=False
-doingJupiterStage2 = True
-doingSaturnStage2 = True
-doingProcessing = True
+doingJupiterStage2 = False
+doingSaturnStage2 = False
+doingProcessing = False
 # justPrintingStage2Info = True
+doingStage2Plots = False
 
 doingTitles = False
 showing=False
@@ -83,9 +84,9 @@ if doingJupiter:
     allYearsJupiterDataSynodic = utils.getAllYearsGA(quickConfigsJupiter, JupiterSubfolderSynodic)
     fitnessFileDVsJupiterSynodic, fitnessFileTOFSJupiterSynodic, launchYearsJupiterSynodic, arrivalYearsJupiterSynodic, startYearsJupiterSynodic, endYearsJupiterSynodic = allYearsJupiterDataSynodic[0:6]
 
-    utils.plotManyDataGA(allYearsJupiterDataSynodic, figNumberCount, quickConfigsJupiter, plotType="DV-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Synodic", plotTitle=plotTitles["Jupiter_DVTOFS_Syn"])
+    utils.plotManyDataGA(allYearsJupiterDataSynodic, figNumberCount, quickConfigsJupiter, plotType="DV-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Synodic", plotTitle=plotTitles["Jupiter_DVTOFS_Syn"], plotLegend=False)
     figNumberCount += 1
-    utils.plotManyDataGA(allYearsJupiterDataSynodic, figNumberCount, quickConfigsJupiter, plotType="launchYears-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Synodic", plotTitle=plotTitles["Jupiter_yearsTOFS_Syn"])
+    utils.plotManyDataGA(allYearsJupiterDataSynodic, figNumberCount, quickConfigsJupiter, plotType="launchYears-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Synodic", plotTitle=plotTitles["Jupiter_yearsTOFS_Syn"], plotLegend=False)
     figNumberCount += 1
 
     # Set Jupiter-specific parameters
@@ -98,9 +99,9 @@ if doingJupiter:
     allYearsJupiterDataGlobal = utils.getAllYearsGA(quickConfigsJupiter, JupiterSubfolderGlobal)
     fitnessFileDVsJupiterGlobal, fitnessFileTOFSJupiterGlobal, launchYearsJupiterGlobal, arrivalYearsJupiterGlobal, startYearsJupiterGlobal, endYearsJupiterGlobal = allYearsJupiterDataGlobal[0:6]
 
-    utils.plotManyDataGA(allYearsJupiterDataGlobal, figNumberCount, quickConfigsJupiter, plotType="DV-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Global", plotTitle=plotTitles["Jupiter_DVTOFS_Glob"])
+    utils.plotManyDataGA(allYearsJupiterDataGlobal, figNumberCount, quickConfigsJupiter, plotType="DV-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Global", plotTitle=plotTitles["Jupiter_DVTOFS_Glob"], plotLegend=False)
     figNumberCount += 1
-    utils.plotManyDataGA(allYearsJupiterDataGlobal, figNumberCount, quickConfigsJupiter, plotType="launchYears-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Global", plotTitle=plotTitles["Jupiter_yearsTOFS_Glob"])
+    utils.plotManyDataGA(allYearsJupiterDataGlobal, figNumberCount, quickConfigsJupiter, plotType="launchYears-TOFS", saveFolder=plotFolderJupiter, savenameSuffix="_Global", plotTitle=plotTitles["Jupiter_yearsTOFS_Glob"], plotLegend=False)
     figNumberCount += 1
 
     jupiterPorkchopPathList = os.listdir(os.path.join(utils.simulation_output_dir, JupiterSubfolderGlobal))
@@ -160,9 +161,9 @@ if doingSaturn:
     allYearsSaturnDataSynodic = utils.getAllYearsGA(utils.quickConfigsSaturn, SaturnSubfolderSynodic)
     fitnessFileDVsSaturnSynodic, fitnessFileTOFSSaturnSynodic, launchYearsSaturnSynodic, arrivalYearsSaturnSynodic, startYearsSaturnSynodic, endYearsSaturnSynodic = allYearsSaturnDataSynodic[0:6]
 
-    utils.plotManyDataGA(allYearsSaturnDataSynodic, figNumberCount, utils.quickConfigsSaturn, plotType="DV-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Synodic", plotTitle=plotTitles["Saturn_DVTOFS_Syn"])
+    utils.plotManyDataGA(allYearsSaturnDataSynodic, figNumberCount, utils.quickConfigsSaturn, plotType="DV-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Synodic", plotTitle=plotTitles["Saturn_DVTOFS_Syn"], plotLegend=False)
     figNumberCount += 1
-    utils.plotManyDataGA(allYearsSaturnDataSynodic, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Synodic", plotTitle=plotTitles["Saturn_yearsTOFS_Syn"])
+    utils.plotManyDataGA(allYearsSaturnDataSynodic, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Synodic", plotTitle=plotTitles["Saturn_yearsTOFS_Syn"], plotLegend=False)
     figNumberCount += 1
 
     # Set Saturn-specific parameters
@@ -173,9 +174,9 @@ if doingSaturn:
     allYearsSaturnDataGlobal = utils.getAllYearsGA(utils.quickConfigsSaturn, SaturnSubfolderGlobal)
     fitnessFileDVsSaturnGlobal, fitnessFileTOFSSaturnGlobal, launchYearsSaturnGlobal, arrivalYearsSaturnGlobal, startYearsSaturnGlobal, endYearsSaturnGlobal = allYearsSaturnDataGlobal[0:6]
 
-    utils.plotManyDataGA(allYearsSaturnDataGlobal, figNumberCount, utils.quickConfigsSaturn, plotType="DV-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Global", plotTitle=plotTitles["Saturn_DVTOFS_Glob"])
+    utils.plotManyDataGA(allYearsSaturnDataGlobal, figNumberCount, utils.quickConfigsSaturn, plotType="DV-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Global", plotTitle=plotTitles["Saturn_DVTOFS_Glob"], plotLegend=False)
     figNumberCount += 1
-    utils.plotManyDataGA(allYearsSaturnDataGlobal, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Global", plotTitle=plotTitles["Saturn_yearsTOFS_Glob"])
+    utils.plotManyDataGA(allYearsSaturnDataGlobal, figNumberCount, utils.quickConfigsSaturn, plotType="launchYears-TOFS", saveFolder=plotFolderSaturn, savenameSuffix="_Global", plotTitle=plotTitles["Saturn_yearsTOFS_Glob"], plotLegend=False)
     figNumberCount += 1
 
     SaturnPorkchopPathList = os.listdir(os.path.join(utils.simulation_output_dir, SaturnSubfolderGlobal))
@@ -243,11 +244,11 @@ if doingMars:
 
     utils.plotManyDataGA(allYearsMarsDataGlobal, figNumberCount, utils.quickConfigsMars,
                          plotType="DV-TOFS", saveFolder=plotFolderMars, savenameSuffix="_Global", removeDominated=False,
-                          TOFUnits="Days", ylims=[200,1000], xlims=[5.5, 10], printMinDV=True)
+                          TOFUnits="Days", ylims=[200,1000], xlims=[5.5, 10], printMinDV=True, plotLegend=False)
     figNumberCount += 1
     utils.plotManyDataGA(allYearsMarsDataGlobal, figNumberCount, utils.quickConfigsMars,
                          plotType="launchYears-TOFS", saveFolder=plotFolderMars, savenameSuffix="_Global", removeDominated=False,
-                          TOFUnits="Days", ylims=[200,1000], printMinDV=True)
+                          TOFUnits="Days", ylims=[200,1000], printMinDV=True, plotLegend=False)
     figNumberCount += 1
 
     MarsPorkchopPathList = os.listdir(os.path.join(utils.simulation_output_dir, MarsSubfolderGlobal))
@@ -382,68 +383,68 @@ def trueFlatten(inputArray):
     return np.array(newList)
 
 
+if doingStage2Plots:
+
+    GAPlotNumpyFolder = os.path.join(utils.numpyBinary_dir, "GAPlotsData/")
+    if doingProcessing:
+        saveGAPlotNumpyData(GAPlotNumpyFolder, "Saturn", emptyNumpyDirectory=True)
+        saveGAPlotNumpyData(GAPlotNumpyFolder, "Jupiter", emptyNumpyDirectory=False)
 
 
-GAPlotNumpyFolder = os.path.join(utils.numpyBinary_dir, "GAPlotsData/")
-if doingProcessing:
-    saveGAPlotNumpyData(GAPlotNumpyFolder, "Saturn", emptyNumpyDirectory=True)
-    saveGAPlotNumpyData(GAPlotNumpyFolder, "Jupiter", emptyNumpyDirectory=False)
+
+    print("Loading numpy arrays")
+    GAJupiterListOfAllSimDataLists = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfAllSimDataLists.npy"), allow_pickle=True)
+    GAJupiterListOfCloseApproachArrays = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfCloseApproachArrays.npy"), allow_pickle=True)
+    GAJupiterListOfLaunchDatesArrays = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfLaunchDatesArrays.npy"), allow_pickle=True)
+    GAJupiterListOfInitialStateLists = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfInitialStateLists.npy"), allow_pickle=True)
+    GAJupiterSynodicSubDirListToUse = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterSynodicSubDirListToUse.npy"), allow_pickle=True)
+
+    GASaturnListOfAllSimDataLists = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfAllSimDataLists.npy"), allow_pickle=True)
+    GASaturnListOfCloseApproachArrays = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfCloseApproachArrays.npy"), allow_pickle=True)
+    GASaturnListOfLaunchDatesArrays = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfLaunchDatesArrays.npy"), allow_pickle=True)
+    GASaturnListOfInitialStateLists = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfInitialStateLists.npy"), allow_pickle=True)
+    GASaturnSynodicSubDirListToUse = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnSynodicSubDirListToUse.npy"), allow_pickle=True)
 
 
+    stage2PyplotFolder = "pyplots/GA_Stage2/"
 
-print("Loading numpy arrays")
-GAJupiterListOfAllSimDataLists = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfAllSimDataLists.npy"), allow_pickle=True)
-GAJupiterListOfCloseApproachArrays = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfCloseApproachArrays.npy"), allow_pickle=True)
-GAJupiterListOfLaunchDatesArrays = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfLaunchDatesArrays.npy"), allow_pickle=True)
-GAJupiterListOfInitialStateLists = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterListOfInitialStateLists.npy"), allow_pickle=True)
-GAJupiterSynodicSubDirListToUse = np.load(os.path.join(GAPlotNumpyFolder, "GAJupiterSynodicSubDirListToUse.npy"), allow_pickle=True)
+    jupiterStage2PyplotSavenameBase = "GA_Jupiter_Stage2_%s.png"
+    saturnStage2PyplotSavenameBase = "GA_Saturn_Stage2_%s.png"
 
-GASaturnListOfAllSimDataLists = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfAllSimDataLists.npy"), allow_pickle=True)
-GASaturnListOfCloseApproachArrays = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfCloseApproachArrays.npy"), allow_pickle=True)
-GASaturnListOfLaunchDatesArrays = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfLaunchDatesArrays.npy"), allow_pickle=True)
-GASaturnListOfInitialStateLists = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnListOfInitialStateLists.npy"), allow_pickle=True)
-GASaturnSynodicSubDirListToUse = np.load(os.path.join(GAPlotNumpyFolder, "GASaturnSynodicSubDirListToUse.npy"), allow_pickle=True)
+    print(len(GAJupiterListOfCloseApproachArrays))
+    print("Largest Jupiter separation [AU]: ", np.amax(trueFlatten(GAJupiterListOfCloseApproachArrays)) / AU)
+    print("", len(GAJupiterListOfCloseApproachArrays), "----", len(GASaturnListOfCloseApproachArrays))
 
-
-stage2PyplotFolder = "pyplots/GA_Stage2/"
-
-jupiterStage2PyplotSavenameBase = "GA_Jupiter_Stage2_%s.png"
-saturnStage2PyplotSavenameBase = "GA_Saturn_Stage2_%s.png"
-
-print(len(GAJupiterListOfCloseApproachArrays))
-print("Largest Jupiter separation [AU]: ", np.amax(trueFlatten(GAJupiterListOfCloseApproachArrays)) / AU)
-print("", len(GAJupiterListOfCloseApproachArrays), "----", len(GASaturnListOfCloseApproachArrays))
-
-# for i in range(len(GAJupiterListOfCloseApproachArrays)):
-#     print(len(GAJupiterListOfAllSimDataLists[i]), "    ", len(GAJupiterListOfCloseApproachArrays[i]), "    ", len(GAJupiterListOfLaunchDatesArrays[i]), "    ", len(GAJupiterListOfInitialStateLists[i]), "    ", len(GAJupiterSynodicSubDirListToUse[i]))
-# print("")
-# for i in range(len(GASaturnListOfCloseApproachArrays)):
-#     print(len(GASaturnListOfAllSimDataLists[i]), "    ", len(GASaturnListOfCloseApproachArrays[i]), "    ", len(GASaturnListOfLaunchDatesArrays[i]), "    ", len(GASaturnListOfInitialStateLists[i]), "    ", len(GASaturnSynodicSubDirListToUse[i]))
+    # for i in range(len(GAJupiterListOfCloseApproachArrays)):
+    #     print(len(GAJupiterListOfAllSimDataLists[i]), "    ", len(GAJupiterListOfCloseApproachArrays[i]), "    ", len(GAJupiterListOfLaunchDatesArrays[i]), "    ", len(GAJupiterListOfInitialStateLists[i]), "    ", len(GAJupiterSynodicSubDirListToUse[i]))
+    # print("")
+    # for i in range(len(GASaturnListOfCloseApproachArrays)):
+    #     print(len(GASaturnListOfAllSimDataLists[i]), "    ", len(GASaturnListOfCloseApproachArrays[i]), "    ", len(GASaturnListOfLaunchDatesArrays[i]), "    ", len(GASaturnListOfInitialStateLists[i]), "    ", len(GASaturnSynodicSubDirListToUse[i]))
 
 
-print(len(GASaturnListOfCloseApproachArrays))
-print("Largest Saturn separation [m]: ", np.amax(trueFlatten(GASaturnListOfCloseApproachArrays)) )
+    print(len(GASaturnListOfCloseApproachArrays))
+    print("Largest Saturn separation [m]: ", np.amax(trueFlatten(GASaturnListOfCloseApproachArrays)) )
 
-utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=False,
-                           saveFolder=stage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=20, plotLegend=False, fignumber=1, plotGrid=False)
-utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
-                           saveFolder=stage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=10, plotLegend=False, fignumber=1, scatterLinewidths=0.5)
-utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=False, plotParetoFront=False,
-                               saveFolder=stage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Scatter", scatterPointSize=2, plotLegend=False, fignumber=2)
+    utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=False,
+                               saveFolder=stage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=20, plotLegend=False, fignumber=1, plotGrid=False)
+    utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
+                               saveFolder=stage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=10, plotLegend=False, fignumber=1, scatterLinewidths=0.5)
+    utils.plotManyStage2GAData(GAJupiterListOfAllSimDataLists, GAJupiterListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=False, plotParetoFront=False,
+                                   saveFolder=stage2PyplotFolder, savename=jupiterStage2PyplotSavenameBase %"Syn-DV-Alt-Scatter", scatterPointSize=2, plotLegend=False, fignumber=2)
 
-print("")
+    print("")
 
-# utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
-#                            saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=2, initialStateFilename=utils.GASaturnInitialStateFilename, plotLegend=False)
+    # utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
+    #                            saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=2, initialStateFilename=utils.GASaturnInitialStateFilename, plotLegend=False)
 
-utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=False,
-                           saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=20, plotLegend=False, fignumber=3, plotGrid=False)
-utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
-                           saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=10, plotLegend=False, fignumber=3, scatterLinewidths=0.5)
+    utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=False,
+                               saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=20, plotLegend=False, fignumber=3, plotGrid=False)
+    utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=True, plotParetoFront=True,
+                               saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Pareto", scatterPointSize=10, plotLegend=False, fignumber=3, scatterLinewidths=0.5)
 
 
-utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=False, plotParetoFront=False,
-                           saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Scatter", scatterPointSize=2, initialStateFilename=utils.GASaturnInitialStateFilename, plotLegend=False, fignumber=4)
+    utils.plotManyStage2GAData(GASaturnListOfAllSimDataLists, GASaturnListOfInitialStateLists, plotType="DV-FinalAlt", removeDominated=False, plotParetoFront=False,
+                               saveFolder=stage2PyplotFolder, savename=saturnStage2PyplotSavenameBase %"Syn-DV-Alt-Scatter", scatterPointSize=2, initialStateFilename=utils.GASaturnInitialStateFilename, plotLegend=False, fignumber=4)
 
 
 
