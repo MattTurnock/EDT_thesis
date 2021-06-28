@@ -41,11 +41,11 @@ int main(int argc, char *argv[] )
         jsonName = argv[1];
     }
     else{
-        jsonName = "VnV/testVariablesCurrentVnV_1a.json"; // TODO: change to nominal test variables
+//        jsonName = "VnV/testVariablesCurrentVnV_1a.json"; // TODO: change to nominal test variables
 //        jsonName = "finalSims/SSO.json"; // TODO: change to nominal test variables
 //        jsonName = "finalSims/InO.json"; // TODO: change to nominal test variables
 //        jsonName = "VnV/testVariablesIntegratorGA_Reference.json"; // TODO: Make python file to run all variants as needed
-//        jsonName = "testVariables.json";
+        jsonName = "testVariables.json";
 //        jsonName = "finalSims/SOKGA_reference.json";
 //        jsonName = "testCase_Guidance.json";
 //        jsonName = "testCase_NoGuidance.json";
@@ -68,9 +68,13 @@ int main(int argc, char *argv[] )
 
     // Get spice path for merged spice kernels and load them
     std::string customKernelName = simulationVariables["Spice"]["customKernelName"];
-    std::string customSpiceKernelPath = gen::tudatKernelsRootPath + customKernelName;
+    std::string customSpiceKernelPath = input_output::getSpiceKernelPath() + customKernelName;
     const std::vector<std::string> spicePathVector = {customSpiceKernelPath};
+    std::cout << customSpiceKernelPath << std::endl;
+
     spice_interface::loadStandardSpiceKernels( spicePathVector );
+//    spice_interface::loadSpiceKernelInTudat(customSpiceKernelPath);
+//    spice_interface::loadStandardSpiceKernels();
 
     // Create EDT Environment class
     if (verbosity) {std::cout<< " -- Creating environment class -- " << std::endl;}
@@ -103,6 +107,7 @@ int main(int argc, char *argv[] )
     nlohmann::json configVariables = simulationVariables["EDTConfigs"];
     nlohmann::json SRPVariables = simulationVariables["scConfigs"]["SRP"];
     nlohmann::json materialProperties = simulationVariables["materialProperties"];
+    std::cout << "Problems in Config class itself" << std::endl;
     EDTs::EDTConfig CHBEDTConfig = EDTs::EDTConfig(simulationVariables, configVariables, configType, SRPVariables, materialProperties);
 
 

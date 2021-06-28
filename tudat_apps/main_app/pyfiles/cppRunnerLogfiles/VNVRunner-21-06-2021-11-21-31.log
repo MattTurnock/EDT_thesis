@@ -1,0 +1,28 @@
+2021-06-21 11:21:31,461 - Ignoring file: testVariablesCurrentVnV_1a.json
+2021-06-21 11:21:31,462 - Ignoring file: testVariablesCurrentVnV_1b.json
+2021-06-21 11:21:31,462 - Ignoring file: testVariablesCurrentVnV_2a.json
+2021-06-21 11:21:31,462 - Ignoring file: testVariablesParkerReferenceVnV.json
+2021-06-21 11:21:31,462 - Ignoring file: testVariablesParkerVnV.json
+2021-06-21 11:21:31,462 - Ignoring file: testVariablesSRPNominalVnV.json
+2021-06-21 11:21:31,462 - Ignoring file: testVariablesSRPZeroAreaVnV.json
+2021-06-21 11:21:31,462 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA.json
+
+2021-06-21 11:21:31,516 - ===============Loaded Variables From File==================
+2021-06-21 11:21:31,517 - ===============Prepping Sim==================
+2021-06-21 11:21:31,517 -  -- Loading spice kernels -- 
+2021-06-21 11:21:38,903 -  -- Creating environment class -- 
+2021-06-21 11:21:38,904 -  -- Creating Config class -- 
+2021-06-21 11:21:39,612 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA_Reference.json
+
+2021-06-21 11:21:39,943 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner.json
+
+2021-06-21 11:21:40,255 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner_Reference.json
+

@@ -43,6 +43,7 @@
   "GuidanceConfigs": {
     "thrustMagnitudeConfig": "nominal",
     "thrustDirectionConfig": "nominalPrograde",
+        "minPeAU": 0.1,
     "initialEphemerisYear": 2041.03262268973337,
     "integratorSettings": {
       "initialTimeStep": 1.0,
@@ -90,25 +91,27 @@
   },
   "EDTConfigs": {
     "configType": "CHB",
-    "tetherLength": 10,
-    "tetherAreaInner": 3.92E-5,
-    "tetherAreaOuter": 3.92E-5,
+    "tetherLength": 1000,
+    "tetherDiameter": 10E-3,
+    "tetherAreaRatio": 1.0,
     "imposedAreaBool": false,
-    "imposedArea": 4.704E-4,
-    "emitterCurrentmA": 0,
+    "imposedArea": 500000000,
+    "emitterCurrentmA": 305,
+    "generalRotationCoefficient": 0.8,
     "hoytether": {
-      "tetherAreaInnerSecondary": 3.92E-5,
-      "tetherAreaOuterSecondary": 3.92E-5,
-      "noPrimaryLines": 6,
-      "primaryLineSegmentLength": 1.0,
+      "tetherDiameterSecondary": 10E-3,
+      "tetherAreaRatioSecondary": 1.0,
+      "noPrimaryLines": 2,
+      "primaryLineSegmentLengthRatio": 0.5,
       "slackCoefficient": 1.005,
-      "primaryLineSeparation": 0.5,
-      "occultationCoefficient": 0.7
+      "primaryLineSeparationRatio": 100,
+      "SRPOccultationCoefficient": 0.75
     }
   },
   "saveDataConfigs": {
     "outputSubFolder": "integratorInnerReferenceVnV/",
     "baseFilename": "integrator-inner-reference",
+    "verbosity": true,
     "dataTypesToSave": {
       "propData": true,
       "magneticField": true,
@@ -117,17 +120,21 @@
       "current": true,
       "currentVNV": true,
       "bodyData": true,
-      "dependentVariables": true
+      "dependentVariables": true,
+      "configInfo": true
     }
   },
   "scConfigs": {
     "SRP": {
-      "endmassArea1": 1.2,
-      "endmassArea2": 1.2,
-      "endmassRadiationCoefficient": 0.5,
-      "tetherRadiationCoefficient": 0.5,
-      "rotationFactor": 0.7
-    }
+      "useSRP": false,
+      "endmassArea1": 1,
+      "endmassArea2": 1,
+      "endmassRadiationCoefficient": 1.5,
+      "tetherRadiationCoefficient": 1.5,
+      "SRPRotationCoefficient": 0.75
+    },
+    "endmassMass1": 50,
+    "endmassMass2": 50
   },
   "materialProperties": {
     "imposedConductivityBool": false,
@@ -139,6 +146,10 @@
     "tempCoefficient": {
       "Al": 0.00429,
       "Cu": 0.0068
+    },
+    "density": {
+      "Al": 2780,
+      "Cu": 8920
     }
   },
   "constants": {

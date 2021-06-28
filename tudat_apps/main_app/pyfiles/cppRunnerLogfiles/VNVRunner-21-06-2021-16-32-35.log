@@ -1,0 +1,37 @@
+2021-06-21 16:32:35,690 - Ignoring file: testVariablesCurrentVnV_1a.json
+2021-06-21 16:32:35,690 - Ignoring file: testVariablesCurrentVnV_1b.json
+2021-06-21 16:32:35,690 - Ignoring file: testVariablesCurrentVnV_2a.json
+2021-06-21 16:32:35,690 - Ignoring file: testVariablesParkerReferenceVnV.json
+2021-06-21 16:32:35,691 - Ignoring file: testVariablesParkerVnV.json
+2021-06-21 16:32:35,691 - Ignoring file: testVariablesSRPNominalVnV.json
+2021-06-21 16:32:35,691 - Ignoring file: testVariablesSRPZeroAreaVnV.json
+2021-06-21 16:32:35,691 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA.json
+
+2021-06-21 16:32:35,699 - ===============Loaded Variables From File==================
+2021-06-21 16:32:35,700 - ===============Prepping Sim==================
+2021-06-21 16:32:35,700 -  -- Loading spice kernels -- 
+2021-06-21 16:32:35,700 - /home/matt/Documents/Tudat_bundle/tudatBundle/tudat/Tudat/External/SpiceInterface/Kernels/de430.bsp
+2021-06-21 16:32:35,728 -  -- Creating environment class -- 
+2021-06-21 16:32:35,729 -  -- Creating Config class -- 
+2021-06-21 16:32:35,729 - Problems in Config class itself
+2021-06-21 16:32:35,729 -  -- Creating Guidance class -- 
+2021-06-21 16:32:35,729 -  -- Creating Propbodies class -- 
+2021-06-21 16:32:35,729 - Using bodies: 
+2021-06-21 16:32:35,729 - Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+2021-06-21 16:32:35,729 -  -- Creating Propsettings class -- 
+2021-06-21 16:32:35,730 - ====================Propagating==========================
+2021-06-21 16:32:35,987 - ====================Saving Data==========================
+2021-06-21 16:32:36,268 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA_Reference.json
+
+2021-06-21 16:32:36,586 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner.json
+
+2021-06-21 16:32:36,849 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner_Reference.json
+

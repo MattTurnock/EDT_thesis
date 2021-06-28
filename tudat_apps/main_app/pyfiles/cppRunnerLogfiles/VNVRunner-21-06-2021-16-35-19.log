@@ -1,0 +1,47 @@
+2021-06-21 16:35:19,637 - Ignoring file: testVariablesCurrentVnV_1a.json
+2021-06-21 16:35:19,638 - Ignoring file: testVariablesCurrentVnV_1b.json
+2021-06-21 16:35:19,638 - Ignoring file: testVariablesCurrentVnV_2a.json
+2021-06-21 16:35:19,638 - Ignoring file: testVariablesParkerReferenceVnV.json
+2021-06-21 16:35:19,638 - Ignoring file: testVariablesParkerVnV.json
+2021-06-21 16:35:19,639 - Ignoring file: testVariablesSRPNominalVnV.json
+2021-06-21 16:35:19,639 - Ignoring file: testVariablesSRPZeroAreaVnV.json
+2021-06-21 16:35:19,639 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA.json
+
+2021-06-21 16:35:19,649 - ===============Loaded Variables From File==================
+2021-06-21 16:35:19,650 - ===============Prepping Sim==================
+2021-06-21 16:35:19,650 -  -- Loading spice kernels -- 
+2021-06-21 16:35:19,650 - /home/matt/Documents/Tudat_bundle/tudatBundle/tudat/Tudat/External/SpiceInterface/Kernels/de430.bsp
+2021-06-21 16:35:19,681 -  -- Creating environment class -- 
+2021-06-21 16:35:19,681 -  -- Creating Config class -- 
+2021-06-21 16:35:19,681 - Problems in Config class itself
+2021-06-21 16:35:19,681 -  -- Creating Guidance class -- 
+2021-06-21 16:35:19,682 -  -- Creating Propbodies class -- 
+2021-06-21 16:35:19,682 - Using bodies: 
+2021-06-21 16:35:19,682 - Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+2021-06-21 16:35:19,682 -  -- Creating Propsettings class -- 
+2021-06-21 16:35:19,682 - ====================Propagating==========================
+2021-06-21 16:35:19,685 - ====================Saving Data==========================
+2021-06-21 16:35:19,685 - Saving propData
+2021-06-21 16:35:19,686 - Saving magneticFieldData
+2021-06-21 16:35:19,686 - Saving ionosphericData
+2021-06-21 16:35:19,686 - Saving thrustData
+2021-06-21 16:35:19,686 - Saving currentData
+2021-06-21 16:35:19,686 - Saving currentVNVData
+2021-06-21 16:35:19,687 - Saving bodyData
+2021-06-21 16:35:19,687 - Saving dependentVariableData
+2021-06-21 16:35:19,687 - Saving configInfo
+2021-06-21 16:35:19,687 - Task failed successfully
+2021-06-21 16:35:19,688 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA_Reference.json
+
+2021-06-21 16:35:20,051 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner.json
+
+2021-06-21 16:35:20,469 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner_Reference.json
+

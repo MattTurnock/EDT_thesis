@@ -222,14 +222,14 @@ meanPhiDegYearly = np.rad2deg( np.arctan2(405, meanSWYearly) )
 print("Monthly mean phi ", meanPhiDegYearly)
 
 
-b1LowerBoundPhi = -100#(2*pi)/150
-b1UpperBoundPhi = 100#(2*pi)/80
+b1LowerBoundPhi = 0.1#(2*pi)/150
+b1UpperBoundPhi = 0.4#(2*pi)/80
 
-b2LowerBoundPhi = (2*pi)/12
-b2UpperBoundPhi = (2*pi)/10
+b2LowerBoundPhi = 0.5
+b2UpperBoundPhi = 0.6
 
 # boundsPhi = ([-100, -100, b1LowerBoundPhi, b2LowerBoundPhi, -100, -100, -100], [100, 100, b1UpperBoundPhi, b2UpperBoundPhi, 100, 100, 100])
-boundsPhi = ([-100, -100, -100000, b2LowerBoundPhi, -100, -100, -100], [100, 100, 100000, b2UpperBoundPhi, 100, 100, 100])
+boundsPhi = ([-100, -100, b1LowerBoundPhi, b2LowerBoundPhi, -100, -100, -100], [100, 100, b1UpperBoundPhi, b2UpperBoundPhi, 100, 100, 100])
 
 # popt, pcov = scipy.optimize.curve_fit(twosines, times, magfieldStrengths, bounds=bounds)
 poptPhi, pcovPhi = scipy.optimize.curve_fit(twosines, timesMonthly, phisMonthly, bounds=boundsPhi)

@@ -1,0 +1,55 @@
+2021-06-21 15:35:33,201 - Ignoring file: testVariablesCurrentVnV_1a.json
+2021-06-21 15:35:33,201 - Ignoring file: testVariablesCurrentVnV_1b.json
+2021-06-21 15:35:33,201 - Ignoring file: testVariablesCurrentVnV_2a.json
+2021-06-21 15:35:33,202 - Ignoring file: testVariablesParkerReferenceVnV.json
+2021-06-21 15:35:33,202 - Ignoring file: testVariablesParkerVnV.json
+2021-06-21 15:35:33,202 - Ignoring file: testVariablesSRPNominalVnV.json
+2021-06-21 15:35:33,202 - Ignoring file: testVariablesSRPZeroAreaVnV.json
+2021-06-21 15:35:33,202 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA.json
+
+2021-06-21 15:35:33,210 - ===============Loaded Variables From File==================
+2021-06-21 15:35:33,210 - ===============Prepping Sim==================
+2021-06-21 15:35:33,210 -  -- Loading spice kernels -- 
+2021-06-21 15:35:33,210 - /home/matt/Documents/Tudat_bundle/tudatBundle/tudat/Tudat/External/SpiceInterface/Kernels/de430.bsp
+2021-06-21 15:35:36,073 -  -- Creating environment class -- 
+2021-06-21 15:35:36,073 -  -- Creating Config class -- 
+2021-06-21 15:35:36,073 - Problems in Config class itself
+2021-06-21 15:35:36,074 -  -- Creating Guidance class -- 
+2021-06-21 15:35:36,074 -  -- Creating Propbodies class -- 
+2021-06-21 15:35:36,074 - Using bodies: 
+2021-06-21 15:35:36,074 - Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+2021-06-21 15:35:36,074 -  -- Creating Propsettings class -- 
+2021-06-21 15:35:36,074 - ====================Propagating==========================
+2021-06-21 15:35:36,074 -  
+2021-06-21 15:35:36,075 - ================================================================================
+2021-06-21 15:35:36,075 -  
+2021-06-21 15:35:36,075 - Toolkit version: N0066
+2021-06-21 15:35:36,075 -  
+2021-06-21 15:35:36,075 - SPICE(NOLOADEDFILES) --
+2021-06-21 15:35:36,075 -  
+2021-06-21 15:35:36,075 - At least one SPK file needs to be loaded by SPKLEF before beginning a search.
+2021-06-21 15:35:36,076 -  
+2021-06-21 15:35:36,076 - A traceback follows.  The name of the highest level module is first.
+2021-06-21 15:35:36,076 - spkezr_c --> SPKEZR --> SPKEZ --> SPKACS --> SPKAPS --> SPKLTC --> SPKGEO -->
+2021-06-21 15:35:36,076 - SPKSFS
+2021-06-21 15:35:36,076 -  
+2021-06-21 15:35:36,076 - Oh, by the way:  The SPICELIB error handling actions are USER-TAILORABLE.  You
+2021-06-21 15:35:36,076 - can choose whether the Toolkit aborts or continues when errors occur, which
+2021-06-21 15:35:36,077 - error messages to output, and where to send the output.  Please read the ERROR
+2021-06-21 15:35:36,077 - "Required Reading" file, or see the routines ERRACT, ERRDEV, and ERRPRT.
+2021-06-21 15:35:36,077 -  
+2021-06-21 15:35:36,077 - ================================================================================
+2021-06-21 15:35:36,077 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA_Reference.json
+
+2021-06-21 15:35:36,511 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner.json
+
+2021-06-21 15:35:36,800 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner_Reference.json
+

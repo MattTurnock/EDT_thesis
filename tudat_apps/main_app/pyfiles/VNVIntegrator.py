@@ -38,8 +38,10 @@ pos_GA = propData_GA[:, 1:4]
 vel_GA = propData_GA[:, 4:]
 
 imposedLegendGA= ["Reference Spacecraft", "Nominal Spacecraft", "Jupiter", "Earth", "Sun"]
-utils.plotTrajectoryData(propData_GA, sameScale=True, planetsToPlot=["Jupiter", "Earth"], plotSun=True, fignumber=1, plotOnlyTrajectory=False, trajectoryLabel="Nominal Spacecraft", saveFolder=VnVSaveFolder, savename="Integrator_GA.pdf", legendLabelsCustom=imposedLegendGA, figsize=DEFAULTSIZE)
-utils.rescaleAndSavePlot(1, [-5.3,5.3], [-5.3,5.3], VnVSaveFolder, "Integrator_GA_Zoom.pdf")
+utils.plotTrajectoryData(propData_GA, sameScale=True, planetsToPlot=["Jupiter", "Earth"], plotSun=True, fignumber=1,
+                         plotOnlyTrajectory=False, trajectoryLabel="Nominal Spacecraft", saveFolder=VnVSaveFolder,
+                         savename="Integrator_GA.pdf", legendLabelsCustom=imposedLegendGA, figsize=DEFAULTSIZE, newFontSize=15)
+# utils.rescaleAndSavePlot(1, [-5.3,5.3], [-5.3,5.3], VnVSaveFolder, "Integrator_GA_Zoom.pdf")
 
 
 # Difference plotting
@@ -94,7 +96,11 @@ vel_inner = propData_inner[:, 4:]
 
 
 imposedLegendInner = ["Reference Spacecraft", "Nominal Spacecraft", "Earth", "Jupiter", "Mercury", "Sun"]
-utils.plotTrajectoryData(propData_inner, sameScale=True, planetsToPlot=["Earth", "Jupiter", "Mercury"], plotSun=True, fignumber=3, plotOnlyTrajectory=False, trajectoryLabel="Nominal SPacecraft", saveFolder=VnVSaveFolder, savename="Integrator_inner.pdf", legendLabelsCustom=imposedLegendInner, figsize=DEFAULTSIZE, ylims=[-10,10])
+utils.plotTrajectoryData(propData_inner, sameScale=True, planetsToPlot=["Earth", "Jupiter", "Mercury"], plotSun=True,
+                         fignumber=3, plotOnlyTrajectory=False, trajectoryLabel="Nominal SPacecraft",
+                         saveFolder=VnVSaveFolder, savename="Integrator_inner.pdf", legendLabelsCustom=imposedLegendInner,
+                         figsize=DEFAULTSIZE, ylims=[-10,10], legendLocation='upper left')
+# plt.show()
 utils.rescaleAndSavePlot(3, [-0.5,0.5], [-0.5,0.5], VnVSaveFolder, "Integrator_inner_Zoom.pdf")
 
 

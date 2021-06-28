@@ -1,0 +1,47 @@
+2021-06-21 16:32:01,434 - Ignoring file: testVariablesCurrentVnV_1a.json
+2021-06-21 16:32:01,435 - Ignoring file: testVariablesCurrentVnV_1b.json
+2021-06-21 16:32:01,435 - Ignoring file: testVariablesCurrentVnV_2a.json
+2021-06-21 16:32:01,435 - Ignoring file: testVariablesParkerReferenceVnV.json
+2021-06-21 16:32:01,436 - Ignoring file: testVariablesParkerVnV.json
+2021-06-21 16:32:01,436 - Ignoring file: testVariablesSRPNominalVnV.json
+2021-06-21 16:32:01,436 - Ignoring file: testVariablesSRPZeroAreaVnV.json
+2021-06-21 16:32:01,436 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA.json
+
+2021-06-21 16:32:01,458 - ===============Loaded Variables From File==================
+2021-06-21 16:32:01,458 - ===============Prepping Sim==================
+2021-06-21 16:32:01,458 -  -- Loading spice kernels -- 
+2021-06-21 16:32:01,459 - /home/matt/Documents/Tudat_bundle/tudatBundle/tudat/Tudat/External/SpiceInterface/Kernels/de430_mar097_small
+2021-06-21 16:32:01,490 -  
+2021-06-21 16:32:01,491 - ================================================================================
+2021-06-21 16:32:01,491 -  
+2021-06-21 16:32:01,491 - Toolkit version: N0066
+2021-06-21 16:32:01,491 -  
+2021-06-21 16:32:01,491 - SPICE(NOSUCHFILE) --
+2021-06-21 16:32:01,491 -  
+2021-06-21 16:32:01,492 - The attempt to load "/home/matt/Documents/Tudat_bundle/tudatBundle/tudat/Tudat/
+2021-06-21 16:32:01,492 - External/SpiceInterface/Kernels/de430_mar097_small" by the routine FURNSH
+2021-06-21 16:32:01,492 - failed. It could not be located.
+2021-06-21 16:32:01,492 -  
+2021-06-21 16:32:01,492 - A traceback follows.  The name of the highest level module is first.
+2021-06-21 16:32:01,492 - furnsh_c --> FURNSH --> ZZLDKER
+2021-06-21 16:32:01,492 -  
+2021-06-21 16:32:01,492 - Oh, by the way:  The SPICELIB error handling actions are USER-TAILORABLE.  You
+2021-06-21 16:32:01,493 - can choose whether the Toolkit aborts or continues when errors occur, which
+2021-06-21 16:32:01,493 - error messages to output, and where to send the output.  Please read the ERROR
+2021-06-21 16:32:01,493 - "Required Reading" file, or see the routines ERRACT, ERRDEV, and ERRPRT.
+2021-06-21 16:32:01,493 -  
+2021-06-21 16:32:01,493 - ================================================================================
+2021-06-21 16:32:01,493 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA_Reference.json
+
+2021-06-21 16:32:02,611 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner.json
+
+2021-06-21 16:32:02,892 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner_Reference.json
+

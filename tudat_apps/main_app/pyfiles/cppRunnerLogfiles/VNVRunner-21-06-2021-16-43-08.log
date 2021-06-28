@@ -1,0 +1,119 @@
+2021-06-21 16:43:08,206 - Ignoring file: testVariablesCurrentVnV_1a.json
+2021-06-21 16:43:08,206 - Ignoring file: testVariablesCurrentVnV_1b.json
+2021-06-21 16:43:08,206 - Ignoring file: testVariablesCurrentVnV_2a.json
+2021-06-21 16:43:08,206 - Ignoring file: testVariablesParkerReferenceVnV.json
+2021-06-21 16:43:08,206 - Ignoring file: testVariablesParkerVnV.json
+2021-06-21 16:43:08,207 - Ignoring file: testVariablesSRPNominalVnV.json
+2021-06-21 16:43:08,207 - Ignoring file: testVariablesSRPZeroAreaVnV.json
+2021-06-21 16:43:08,207 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA.json
+
+2021-06-21 16:43:08,219 - ===============Loaded Variables From File==================
+2021-06-21 16:43:08,220 - ===============Prepping Sim==================
+2021-06-21 16:43:08,220 -  -- Loading spice kernels -- 
+2021-06-21 16:43:08,220 - /home/matt/Documents/Tudat_bundle/tudatBundle/tudat/Tudat/External/SpiceInterface/Kernels/de430.bsp
+2021-06-21 16:43:08,250 -  -- Creating environment class -- 
+2021-06-21 16:43:08,250 -  -- Creating Config class -- 
+2021-06-21 16:43:08,250 - Problems in Config class itself
+2021-06-21 16:43:08,250 -  -- Creating Guidance class -- 
+2021-06-21 16:43:08,250 -  -- Creating Propbodies class -- 
+2021-06-21 16:43:08,250 - Using bodies: 
+2021-06-21 16:43:08,251 - Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+2021-06-21 16:43:08,251 -  -- Creating Propsettings class -- 
+2021-06-21 16:43:08,251 - ====================Propagating==========================
+2021-06-21 16:43:08,253 - ====================Saving Data==========================
+2021-06-21 16:43:08,253 - Saving propData
+2021-06-21 16:43:08,253 - Saving magneticFieldData
+2021-06-21 16:43:08,253 - Saving ionosphericData
+2021-06-21 16:43:08,254 - Saving thrustData
+2021-06-21 16:43:08,254 - Saving currentData
+2021-06-21 16:43:08,254 - Saving currentVNVData
+2021-06-21 16:43:08,254 - Saving bodyData
+2021-06-21 16:43:08,254 - Saving dependentVariableData
+2021-06-21 16:43:08,254 - Saving configInfo
+2021-06-21 16:43:08,254 - Task failed successfully
+2021-06-21 16:43:08,255 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorGA_Reference.json
+
+2021-06-21 16:43:08,263 - ===============Loaded Variables From File==================
+2021-06-21 16:43:08,264 - ===============Prepping Sim==================
+2021-06-21 16:43:08,264 -  -- Loading spice kernels -- 
+2021-06-21 16:43:08,264 - /home/matt/Documents/Tudat_bundle/tudatBundle/tudat/Tudat/External/SpiceInterface/Kernels/de430.bsp
+2021-06-21 16:43:08,291 -  -- Creating environment class -- 
+2021-06-21 16:43:08,291 -  -- Creating Config class -- 
+2021-06-21 16:43:08,291 - Problems in Config class itself
+2021-06-21 16:43:08,292 -  -- Creating Guidance class -- 
+2021-06-21 16:43:08,292 -  -- Creating Propbodies class -- 
+2021-06-21 16:43:08,292 - Using bodies: 
+2021-06-21 16:43:08,292 - Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+2021-06-21 16:43:08,292 -  -- Creating Propsettings class -- 
+2021-06-21 16:43:08,292 - ====================Propagating==========================
+2021-06-21 16:44:08,454 - ====================Saving Data==========================
+2021-06-21 16:44:08,455 - Saving propData
+2021-06-21 16:44:09,315 - Saving magneticFieldData
+2021-06-21 16:44:10,250 - Saving ionosphericData
+2021-06-21 16:44:10,799 - Saving thrustData
+2021-06-21 16:44:11,760 - Saving currentData
+2021-06-21 16:44:12,762 - Saving currentVNVData
+2021-06-21 16:44:14,381 - Saving bodyData
+2021-06-21 16:44:15,516 - Saving dependentVariableData
+2021-06-21 16:44:17,180 - Saving configInfo
+2021-06-21 16:44:17,180 - Task failed successfully
+2021-06-21 16:44:17,806 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner.json
+
+2021-06-21 16:44:17,815 - ===============Loaded Variables From File==================
+2021-06-21 16:44:17,815 - ===============Prepping Sim==================
+2021-06-21 16:44:17,816 -  -- Loading spice kernels -- 
+2021-06-21 16:44:17,816 - /home/matt/Documents/Tudat_bundle/tudatBundle/tudat/Tudat/External/SpiceInterface/Kernels/de430.bsp
+2021-06-21 16:44:17,849 -  -- Creating environment class -- 
+2021-06-21 16:44:17,850 -  -- Creating Config class -- 
+2021-06-21 16:44:17,850 - Problems in Config class itself
+2021-06-21 16:44:17,850 -  -- Creating Guidance class -- 
+2021-06-21 16:44:17,850 -  -- Creating Propbodies class -- 
+2021-06-21 16:44:17,850 - Using bodies: 
+2021-06-21 16:44:17,850 - Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+2021-06-21 16:44:17,851 -  -- Creating Propsettings class -- 
+2021-06-21 16:44:17,851 - ====================Propagating==========================
+2021-06-21 16:44:19,120 - ====================Saving Data==========================
+2021-06-21 16:44:19,162 - Saving propData
+2021-06-21 16:44:19,167 - Saving magneticFieldData
+2021-06-21 16:44:19,172 - Saving ionosphericData
+2021-06-21 16:44:19,175 - Saving thrustData
+2021-06-21 16:44:19,180 - Saving currentData
+2021-06-21 16:44:19,185 - Saving currentVNVData
+2021-06-21 16:44:19,194 - Saving bodyData
+2021-06-21 16:44:19,200 - Saving dependentVariableData
+2021-06-21 16:44:19,208 - Saving configInfo
+2021-06-21 16:44:19,208 - Task failed successfully
+2021-06-21 16:44:19,214 - 
+
+Running application application_simulation_SSO-CHB, with json testVariablesIntegratorInner_Reference.json
+
+2021-06-21 16:44:19,221 - ===============Loaded Variables From File==================
+2021-06-21 16:44:19,222 - ===============Prepping Sim==================
+2021-06-21 16:44:19,222 -  -- Loading spice kernels -- 
+2021-06-21 16:44:19,222 - /home/matt/Documents/Tudat_bundle/tudatBundle/tudat/Tudat/External/SpiceInterface/Kernels/de430.bsp
+2021-06-21 16:44:19,254 -  -- Creating environment class -- 
+2021-06-21 16:44:19,254 -  -- Creating Config class -- 
+2021-06-21 16:44:19,254 - Problems in Config class itself
+2021-06-21 16:44:19,255 -  -- Creating Guidance class -- 
+2021-06-21 16:44:19,255 -  -- Creating Propbodies class -- 
+2021-06-21 16:44:19,255 - Using bodies: 
+2021-06-21 16:44:19,255 - Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, 
+2021-06-21 16:44:19,255 -  -- Creating Propsettings class -- 
+2021-06-21 16:44:19,255 - ====================Propagating==========================
+2021-06-21 16:45:19,386 - ====================Saving Data==========================
+2021-06-21 16:45:19,413 - Saving propData
+2021-06-21 16:45:19,866 - Saving magneticFieldData
+2021-06-21 16:45:20,475 - Saving ionosphericData
+2021-06-21 16:45:20,870 - Saving thrustData
+2021-06-21 16:45:21,417 - Saving currentData
+2021-06-21 16:45:22,028 - Saving currentVNVData
+2021-06-21 16:45:23,008 - Saving bodyData
+2021-06-21 16:45:23,715 - Saving dependentVariableData
+2021-06-21 16:45:24,728 - Saving configInfo
+2021-06-21 16:45:24,728 - Task failed successfully

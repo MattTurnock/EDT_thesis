@@ -13,7 +13,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import logging
 import natsort
-from progress.bar import IncrementalBar
+# from progress.bar import IncrementalBar
 
 #######################################################################################################################
 ############################## Set various project directories ############################################
@@ -1977,7 +1977,7 @@ figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, 
 def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plotType="x-y", legendSize=11, plotSun=False,
                        figsize=figSizeDefault, saveFolder=None, savename=None, xlims=None, ylims=None, sameScale=False, planetsToPlot=[],
                        plotOnlyTrajectory=False, trajectoryLabel="Spacecraft Trajectory", legendLabelsCustom=None, logScaleX=False, logScaleY=False,
-                       scatter=False, plotTitle=None, doNotPlot=False, savePngAndPdf=False, scatterSize=None):
+                       scatter=False, plotTitle=None, doNotPlot=False, savePngAndPdf=False, scatterSize=None, legendLocation='best', newFontSize=None):
 
     times = dataArray[:,0]
     timesYears = times / (365.25 * 24 * 60 * 60)
@@ -2118,8 +2118,13 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
             plt.scatter([0], [0], c="orange", s=scatterSize)
             legendLabels.append("Sun")
 
-        plt.xlabel(xLabel)
-        plt.ylabel(yLabel)
+        if newFontSize is None:
+            plt.xlabel(xLabel)
+            plt.ylabel(yLabel)
+        else:
+            plt.xlabel(xLabel, fontsize=newFontSize)
+            plt.ylabel(yLabel, fontsize=newFontSize)
+            ax.tick_params(axis='both', which='major', labelsize=newFontSize)
         plt.grid(which="both")
         if sameScale: plt.axis('scaled')
         if logScaleX: plt.xscale("log")
@@ -2129,8 +2134,10 @@ def plotTrajectoryData(dataArray, dataArrayType="propData", fignumber=None, plot
         else:
             legendLabelsTodo = legendLabels
 
-
-        plt.legend(legendLabelsTodo)
+        if newFontSize is None:
+            plt.legend(legendLabelsTodo, loc=legendLocation)
+        else:
+            plt.legend(legendLabelsTodo, loc=legendLocation, prop={'size': newFontSize})
 
         if xlims is not None: plt.xlim(xlims)
         if ylims is not None: plt.ylim(ylims)
