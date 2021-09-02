@@ -1,4 +1,5 @@
 # MTurnock MSc Thesis - EDTs For Deep Space Missions, A Feasibility Study
+Link: https://github.com/MattTurnock/EDT_thesis
 
 This repository contains the software developed for the above mentioned MSc thesis project. Both scripts used in the literature study and main application are included.
 
